@@ -9,7 +9,9 @@ import {
   type FormEvent,
 } from "react";
 
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+} from "@/components/ui/button";
 
 import {
   collectionFields,
@@ -60,7 +62,9 @@ function toValues(
         ];
       }
 
-      if (field.type === "tags") {
+      if (
+        field.type === "tags"
+      ) {
         return [
           field.name,
           Array.isArray(value)
@@ -91,7 +95,8 @@ function toData(
           values[field.name];
 
         if (
-          field.type === "checkbox"
+          field.type ===
+          "checkbox"
         ) {
           return [
             field.name,
@@ -100,7 +105,8 @@ function toData(
         }
 
         if (
-          field.type === "number"
+          field.type ===
+          "number"
         ) {
           return [
             field.name,
@@ -111,7 +117,8 @@ function toData(
         }
 
         if (
-          field.type === "tags"
+          field.type ===
+          "tags"
         ) {
           return [
             field.name,
@@ -155,7 +162,9 @@ export function ContentManager({
     useState<Item[]>([]);
 
   const [editing, setEditing] =
-    useState<Item | null>(null);
+    useState<Item | null>(
+      null
+    );
 
   const [values, setValues] =
     useState<Values>(() =>
@@ -170,17 +179,35 @@ export function ContentManager({
 
   const load = useCallback(
     async () => {
-      const response =
-        await fetch(
-          `/api/admin/${collection}`
+      try {
+        const response =
+          await fetch(
+            `/api/admin/${collection}`,
+            {
+              cache: "no-store",
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+              "Unable to load entries."
+          );
+        }
+
+        setItems(
+          result.items || []
         );
-
-      const result =
-        await response.json();
-
-      setItems(
-        result.items || []
-      );
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to load entries."
+        );
+      }
     },
     [collection]
   );
@@ -193,6 +220,8 @@ export function ContentManager({
     setValues(
       toValues(fields)
     );
+
+    setMessage("");
   }, [
     fields,
     load,
@@ -216,6 +245,16 @@ export function ContentManager({
           HTMLInputElement
           ? event.target.checked
           : event.target.value,
+    }));
+  }
+
+  function setValue(
+    name: string,
+    value: string | boolean
+  ) {
+    setValues((current) => ({
+      ...current,
+      [name]: value,
     }));
   }
 
@@ -267,12 +306,10 @@ export function ContentManager({
         await response.json();
 
       if (!response.ok) {
-        setMessage(
+        throw new Error(
           result.message ||
             "Unable to save this entry."
         );
-
-        return;
       }
 
       setMessage(
@@ -288,22 +325,45 @@ export function ContentManager({
       );
 
       await load();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save entry."
+      );
     } finally {
       setPending(false);
     }
   }
 
-  function edit(item: Item) {
+  function edit(
+    item: Item
+  ) {
     setEditing(item);
 
     setValues(
-      toValues(fields, item)
+      toValues(
+        fields,
+        item
+      )
     );
+
+    setMessage("");
 
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
+  }
+
+  function cancelEditing() {
+    setEditing(null);
+
+    setValues(
+      toValues(fields)
+    );
+
+    setMessage("");
   }
 
   async function remove(
@@ -317,34 +377,67 @@ export function ContentManager({
       return;
     }
 
-    await fetch(
-      `/api/admin/${collection}?id=${id}`,
-      {
-        method: "DELETE",
-      }
-    );
+    try {
+      const response =
+        await fetch(
+          `/api/admin/${collection}?id=${id}`,
+          {
+            method: "DELETE",
+          }
+        );
 
-    await load();
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+            "Unable to delete entry."
+        );
+      }
+
+      if (
+        editing?._id === id
+      ) {
+        cancelEditing();
+      }
+
+      await load();
+
+      setMessage(
+        "Entry deleted successfully."
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to delete entry."
+      );
+    }
   }
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,.9fr)_minmax(22rem,1.1fr)]">
 
       <section>
+
         <h1 className="font-display text-4xl">
           {label}
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-muted">
+
           {editing
             ? "Update the selected entry."
             : "Create a new entry."}
+
         </p>
 
         <form
           onSubmit={save}
-          className="mt-7 grid gap-4"
+          className="mt-7 grid gap-5"
         >
+
           {fields.map(
             (field) => (
               <Field
@@ -354,67 +447,61 @@ export function ContentManager({
                   values[field.name]
                 }
                 onChange={change}
-                onUpload={(
-                  url
-                ) => {
-                  setValues(
-                    (current) => ({
-                      ...current,
-
-                      [field.name]:
-                        url,
-                    })
-                  );
-                }}
+                onValueChange={
+                  setValue
+                }
               />
             )
           )}
 
           <div className="flex flex-wrap gap-3">
+
             <Button
               disabled={pending}
               type="submit"
             >
+
               {pending
                 ? "Saving…"
                 : editing
                   ? "Save changes"
                   : "Create entry"}
+
             </Button>
 
             {editing && (
+
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => {
-                  setEditing(
-                    null
-                  );
-
-                  setValues(
-                    toValues(
-                      fields
-                    )
-                  );
-                }}
+                onClick={
+                  cancelEditing
+                }
               >
                 Cancel
               </Button>
+
             )}
+
           </div>
 
           {message && (
+
             <p
               role="status"
               className="text-sm text-muted"
             >
               {message}
             </p>
+
           )}
+
         </form>
+
       </section>
 
       <section>
+
         <h2 className="font-display text-2xl">
           Entries
         </h2>
@@ -422,20 +509,25 @@ export function ContentManager({
         <div className="mt-5 divide-y border-y border-line">
 
           {items.length ? (
+
             items.map(
               (item) => (
+
                 <article
                   key={item._id}
                   className="flex items-start justify-between gap-4 py-4"
                 >
-                  <div>
+
+                  <div className="min-w-0">
+
                     <h3 className="font-medium">
-                      {titleOf(
-                        item
-                      )}
+
+                      {titleOf(item)}
+
                     </h3>
 
                     <p className="mt-1 line-clamp-2 text-sm text-muted">
+
                       {String(
                         item.excerpt ||
                           item.text ||
@@ -445,7 +537,9 @@ export function ContentManager({
                           item.status ||
                           ""
                       )}
+
                     </p>
+
                   </div>
 
                   <div className="flex shrink-0 gap-3 text-sm">
@@ -464,7 +558,7 @@ export function ContentManager({
                       type="button"
                       className="text-muted hover:text-red-600"
                       onClick={() =>
-                        remove(
+                        void remove(
                           item._id
                         )
                       }
@@ -473,16 +567,22 @@ export function ContentManager({
                     </button>
 
                   </div>
+
                 </article>
+
               )
             )
+
           ) : (
+
             <p className="py-5 text-sm text-muted">
               No entries yet.
             </p>
+
           )}
 
         </div>
+
       </section>
 
     </div>
@@ -493,7 +593,7 @@ function Field({
   field,
   value,
   onChange,
-  onUpload,
+  onValueChange,
 }: {
   field: AdminField;
 
@@ -512,8 +612,9 @@ function Field({
     >
   ) => void;
 
-  onUpload: (
-    url: string
+  onValueChange: (
+    name: string,
+    value: string | boolean
   ) => void;
 }) {
   const common = {
@@ -551,16 +652,13 @@ function Field({
     "checkbox"
   ) {
     return (
+
       <label className="flex items-center gap-3 text-sm">
 
         <input
           type="checkbox"
-          checked={Boolean(
-            value
-          )}
-          onChange={(
-            event
-          ) =>
+          checked={Boolean(value)}
+          onChange={(event) =>
             onChange(
               field,
               event
@@ -571,6 +669,7 @@ function Field({
         {field.label}
 
       </label>
+
     );
   }
 
@@ -579,6 +678,7 @@ function Field({
     "markdown"
   ) {
     return (
+
       <label className="grid gap-2 text-sm">
 
         {field.label}
@@ -591,28 +691,24 @@ function Field({
           value={String(
             value || ""
           )}
-          onChange={(
-            next
-          ) =>
-            onChange(
-              field,
-              {
-                target: {
-                  value:
-                    next,
-                },
-              } as ChangeEvent<HTMLTextAreaElement>
+          onChange={(next) =>
+            onValueChange(
+              field.name,
+              next
             )
           }
         />
 
         {field.hint && (
+
           <span className="text-xs text-muted">
             {field.hint}
           </span>
+
         )}
 
       </label>
+
     );
   }
 
@@ -621,18 +717,25 @@ function Field({
     "image"
   ) {
     return (
+
       <ImageField
         field={field}
         value={String(
           value || ""
         )}
-        onChange={onChange}
-        onUpload={onUpload}
+        onChange={(url) =>
+          onValueChange(
+            field.name,
+            url
+          )
+        }
       />
+
     );
   }
 
   return (
+
     <label className="grid gap-2 text-sm">
 
       {field.label}
@@ -640,23 +743,25 @@ function Field({
       {field.type ===
       "select" ? (
 
-        <select
-          {...common}
-        >
+        <select {...common}>
+
           <option value="">
             Select...
           </option>
 
           {field.options?.map(
             (option) => (
+
               <option
                 key={option}
                 value={option}
               >
                 {option}
               </option>
+
             )
           )}
+
         </select>
 
       ) : field.type ===
@@ -680,12 +785,15 @@ function Field({
       )}
 
       {field.hint && (
+
         <span className="text-xs text-muted">
           {field.hint}
         </span>
+
       )}
 
     </label>
+
   );
 }
 
@@ -693,23 +801,12 @@ function ImageField({
   field,
   value,
   onChange,
-  onUpload,
 }: {
   field: AdminField;
 
   value: string;
 
   onChange: (
-    field: AdminField,
-
-    event: ChangeEvent<
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | HTMLSelectElement
-    >
-  ) => void;
-
-  onUpload: (
     url: string
   ) => void;
 }) {
@@ -723,17 +820,59 @@ function ImageField({
     setError,
   ] = useState("");
 
+  const [
+    selectedFileName,
+    setSelectedFileName,
+  ] = useState("");
+
   async function upload(
     event: ChangeEvent<HTMLInputElement>
   ) {
     const file =
       event.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+    ];
+
+    if (
+      !allowedTypes.includes(
+        file.type
+      )
+    ) {
+      setError(
+        "Only JPG, JPEG, PNG, WebP and AVIF images are allowed."
+      );
+
+      return;
+    }
+
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
+      setError(
+        "Image must be smaller than 10MB."
+      );
+
+      return;
+    }
 
     setUploading(true);
 
     setError("");
+
+    setSelectedFileName(
+      file.name
+    );
 
     try {
       const formData =
@@ -763,93 +902,170 @@ function ImageField({
         );
       }
 
-      onUpload(
+      if (!result.url) {
+        throw new Error(
+          "Cloudinary did not return an image URL."
+        );
+      }
+
+      onChange(
         result.url
       );
     } catch (
       uploadError
     ) {
       setError(
-        uploadError instanceof
-          Error
+        uploadError instanceof Error
           ? uploadError.message
           : "Unable to upload image."
       );
     } finally {
       setUploading(false);
+
+      event.target.value = "";
     }
   }
 
+  function removeImage() {
+    onChange("");
+
+    setSelectedFileName("");
+
+    setError("");
+  }
+
   return (
-    <div className="grid gap-3">
 
-      <span className="text-sm">
-        {field.label}
-      </span>
+    <div className="grid gap-3 border border-line p-4">
 
-      {value && (
-        <div className="border border-line p-2">
+      <div>
 
-          <img
-            src={value}
-            alt=""
-            className="max-h-64 w-full object-cover"
-          />
-
-        </div>
-      )}
-
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif"
-        onChange={upload}
-        disabled={uploading}
-        className="block w-full text-sm"
-      />
-
-      {uploading && (
-        <p className="text-sm text-gold">
-          Uploading to
-          Cloudinary…
-        </p>
-      )}
-
-      {error && (
-        <p className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      <p className="text-xs text-muted">
-        Upload an image directly.
-        It will automatically
-        upload to Cloudinary.
-      </p>
-
-      <div className="border-t border-line pt-3">
-
-        <p className="mb-2 text-xs text-muted">
-          Or use an existing image
-          URL:
+        <p className="text-sm font-medium">
+          {field.label}
         </p>
 
-        <input
-          type="url"
-          value={value}
-          placeholder="https://..."
-          onChange={(
-            event
-          ) =>
-            onChange(
-              field,
-              event
-            )
-          }
-          className="w-full border border-line bg-transparent px-3 py-3 text-sm"
-        />
+        <p className="mt-1 text-xs text-muted">
+
+          Upload an image directly.
+          The image will automatically
+          upload to Cloudinary and its
+          URL will be saved with this entry.
+
+        </p>
 
       </div>
 
+      {value ? (
+
+        <div className="overflow-hidden border border-line">
+
+          <img
+            src={value}
+            alt={field.label}
+            className="max-h-80 w-full object-contain"
+          />
+
+        </div>
+
+      ) : (
+
+        <div className="flex min-h-32 items-center justify-center border border-dashed border-line p-5 text-center text-sm text-muted">
+
+          No image uploaded.
+
+        </div>
+
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
+
+        <label
+          className={`inline-flex cursor-pointer items-center border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
+            uploading
+              ? "cursor-not-allowed opacity-60"
+              : ""
+          }`}
+        >
+
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            onChange={upload}
+            disabled={uploading}
+            className="hidden"
+          />
+
+          {uploading
+            ? "Uploading to Cloudinary…"
+            : value
+              ? "Replace image"
+              : "Upload image"}
+
+        </label>
+
+        {value && (
+
+          <button
+            type="button"
+            onClick={
+              removeImage
+            }
+            disabled={
+              uploading
+            }
+            className="text-sm text-red-600 hover:underline"
+          >
+            Remove image
+          </button>
+
+        )}
+
+      </div>
+
+      {selectedFileName && (
+
+        <p className="text-xs text-muted">
+
+          Selected:
+          {" "}
+          {selectedFileName}
+
+        </p>
+
+      )}
+
+      {uploading && (
+
+        <p className="text-sm text-gold">
+
+          Uploading image securely
+          to Cloudinary…
+
+        </p>
+
+      )}
+
+      {error && (
+
+        <p className="text-sm text-red-600">
+
+          {error}
+
+        </p>
+
+      )}
+
+      {value && (
+
+        <p className="break-all text-xs text-muted">
+
+          Image successfully connected.
+
+        </p>
+
+      )}
+
     </div>
+
   );
 }

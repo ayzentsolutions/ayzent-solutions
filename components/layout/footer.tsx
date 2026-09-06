@@ -240,10 +240,7 @@ export async function Footer() {
             variant="ghost"
             className="px-0 py-0"
           >
-            {
-              settings.heroPrimaryText ||
-              "Start a Project"
-            }
+           Start a Project
           </ButtonLink>
 
         </Container>

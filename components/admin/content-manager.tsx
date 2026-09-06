@@ -54,7 +54,8 @@ function toValues(
         item?.[field.name];
 
       if (
-        field.type === "checkbox"
+        field.type ===
+        "checkbox"
       ) {
         return [
           field.name,
@@ -67,6 +68,7 @@ function toValues(
       ) {
         return [
           field.name,
+
           Array.isArray(value)
             ? value.join(", ")
             : "",
@@ -75,6 +77,7 @@ function toValues(
 
       return [
         field.name,
+
         value === undefined ||
         value === null
           ? ""
@@ -110,18 +113,19 @@ function toData(
         ) {
           return [
             field.name,
+
             value === ""
-              ? 0
+              ? undefined
               : Number(value),
           ];
         }
 
         if (
-          field.type ===
-          "tags"
+          field.type === "tags"
         ) {
           return [
             field.name,
+
             String(value)
               .split(",")
               .map((item) =>
@@ -138,8 +142,43 @@ function toData(
       })
       .filter(
         ([, value]) =>
-          value !== ""
+          value !== "" &&
+          value !== undefined
       )
+  );
+}
+
+function groupFields(
+  fields: AdminField[]
+) {
+  const groups = new Map<
+    string,
+    AdminField[]
+  >();
+
+  fields.forEach((field) => {
+    const group =
+      field.group || "Content";
+
+    const existing =
+      groups.get(group) || [];
+
+    groups.set(
+      group,
+      [
+        ...existing,
+        field,
+      ]
+    );
+  });
+
+  return Array.from(
+    groups.entries()
+  ).map(
+    ([title, fields]) => ({
+      title,
+      fields,
+    })
   );
 }
 
@@ -157,6 +196,12 @@ export function ContentManager({
       ] || [],
     [collection]
   );
+
+  const groupedFields =
+    useMemo(
+      () => groupFields(fields),
+      [fields]
+    );
 
   const [items, setItems] =
     useState<Item[]>([]);
@@ -229,6 +274,7 @@ export function ContentManager({
 
   function change(
     field: AdminField,
+
     event: ChangeEvent<
       | HTMLInputElement
       | HTMLTextAreaElement
@@ -417,7 +463,7 @@ export function ContentManager({
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,.9fr)_minmax(22rem,1.1fr)]">
+    <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
 
       <section>
 
@@ -435,22 +481,51 @@ export function ContentManager({
 
         <form
           onSubmit={save}
-          className="mt-7 grid gap-5"
+          className="mt-8 grid gap-7"
         >
 
-          {fields.map(
-            (field) => (
-              <Field
-                key={field.name}
-                field={field}
-                value={
-                  values[field.name]
-                }
-                onChange={change}
-                onValueChange={
-                  setValue
-                }
-              />
+          {groupedFields.map(
+            (group) => (
+
+              <fieldset
+                key={group.title}
+                className="border border-line bg-surface/40"
+              >
+
+                <legend className="ml-4 px-2 text-xs font-medium uppercase tracking-[0.18em] text-gold">
+
+                  {group.title}
+
+                </legend>
+
+                <div className="grid gap-5 p-5">
+
+                  {group.fields.map(
+                    (field) => (
+
+                      <Field
+                        key={field.name}
+                        field={field}
+                        value={
+                          values[
+                            field.name
+                          ]
+                        }
+                        onChange={
+                          change
+                        }
+                        onValueChange={
+                          setValue
+                        }
+                      />
+
+                    )
+                  )}
+
+                </div>
+
+              </fieldset>
+
             )
           )}
 
@@ -500,7 +575,7 @@ export function ContentManager({
 
       </section>
 
-      <section>
+      <section className="xl:sticky xl:top-6 xl:h-fit">
 
         <h2 className="font-display text-2xl">
           Entries
@@ -576,7 +651,9 @@ export function ContentManager({
           ) : (
 
             <p className="py-5 text-sm text-muted">
+
               No entries yet.
+
             </p>
 
           )}
@@ -644,7 +721,7 @@ function Field({
       ),
 
     className:
-      "w-full border border-line bg-transparent px-3 py-3 text-sm",
+      "w-full border border-line bg-background px-3 py-3 text-sm",
   };
 
   if (
@@ -713,8 +790,7 @@ function Field({
   }
 
   if (
-    field.type ===
-    "image"
+    field.type === "image"
   ) {
     return (
 
@@ -769,7 +845,7 @@ function Field({
 
         <textarea
           {...common}
-          rows={4}
+          rows={5}
           className={`${common.className} resize-y`}
         />
 
@@ -777,9 +853,7 @@ function Field({
 
         <input
           {...common}
-          type={
-            field.type
-          }
+          type={field.type}
         />
 
       )}
@@ -787,7 +861,9 @@ function Field({
       {field.hint && (
 
         <span className="text-xs text-muted">
+
           {field.hint}
+
         </span>
 
       )}
@@ -818,11 +894,6 @@ function ImageField({
   const [
     error,
     setError,
-  ] = useState("");
-
-  const [
-    selectedFileName,
-    setSelectedFileName,
   ] = useState("");
 
   async function upload(
@@ -869,10 +940,6 @@ function ImageField({
     setUploading(true);
 
     setError("");
-
-    setSelectedFileName(
-      file.name
-    );
 
     try {
       const formData =
@@ -926,30 +993,22 @@ function ImageField({
     }
   }
 
-  function removeImage() {
-    onChange("");
-
-    setSelectedFileName("");
-
-    setError("");
-  }
-
   return (
 
-    <div className="grid gap-3 border border-line p-4">
+    <div className="grid gap-3">
 
       <div>
 
         <p className="text-sm font-medium">
+
           {field.label}
+
         </p>
 
         <p className="mt-1 text-xs text-muted">
 
-          Upload an image directly.
-          The image will automatically
-          upload to Cloudinary and its
-          URL will be saved with this entry.
+          Upload directly to Cloudinary.
+          The image URL is automatically saved.
 
         </p>
 
@@ -957,7 +1016,7 @@ function ImageField({
 
       {value ? (
 
-        <div className="overflow-hidden border border-line">
+        <div className="overflow-hidden border border-line bg-background">
 
           <img
             src={value}
@@ -969,7 +1028,7 @@ function ImageField({
 
       ) : (
 
-        <div className="flex min-h-32 items-center justify-center border border-dashed border-line p-5 text-center text-sm text-muted">
+        <div className="flex min-h-32 items-center justify-center border border-dashed border-line text-sm text-muted">
 
           No image uploaded.
 
@@ -977,10 +1036,10 @@ function ImageField({
 
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap gap-3">
 
         <label
-          className={`inline-flex cursor-pointer items-center border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
+          className={`inline-flex cursor-pointer border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
             uploading
               ? "cursor-not-allowed opacity-60"
               : ""
@@ -996,7 +1055,7 @@ function ImageField({
           />
 
           {uploading
-            ? "Uploading to Cloudinary…"
+            ? "Uploading…"
             : value
               ? "Replace image"
               : "Upload image"}
@@ -1007,13 +1066,10 @@ function ImageField({
 
           <button
             type="button"
-            onClick={
-              removeImage
+            className="text-sm text-red-600"
+            onClick={() =>
+              onChange("")
             }
-            disabled={
-              uploading
-            }
-            className="text-sm text-red-600 hover:underline"
           >
             Remove image
           </button>
@@ -1022,44 +1078,11 @@ function ImageField({
 
       </div>
 
-      {selectedFileName && (
-
-        <p className="text-xs text-muted">
-
-          Selected:
-          {" "}
-          {selectedFileName}
-
-        </p>
-
-      )}
-
-      {uploading && (
-
-        <p className="text-sm text-gold">
-
-          Uploading image securely
-          to Cloudinary…
-
-        </p>
-
-      )}
-
       {error && (
 
         <p className="text-sm text-red-600">
 
           {error}
-
-        </p>
-
-      )}
-
-      {value && (
-
-        <p className="break-all text-xs text-muted">
-
-          Image successfully connected.
 
         </p>
 

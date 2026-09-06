@@ -25,10 +25,11 @@ const status = [
   "archived",
 ];
 
-export const collectionFields: Record<
-  string,
-  AdminField[]
-> = {
+export const collectionFields:
+  Record<
+    string,
+    AdminField[]
+  > = {
   /*
   |--------------------------------------------------------------------------
   | SITE SETTINGS
@@ -51,13 +52,13 @@ export const collectionFields: Record<
 
     {
       name: "email",
-      label: "Email",
+      label: "Business Email",
       type: "email",
     },
 
     {
       name: "phone",
-      label: "Phone",
+      label: "Phone Number",
       type: "text",
     },
 
@@ -65,13 +66,25 @@ export const collectionFields: Record<
       name: "whatsapp",
       label: "WhatsApp Number",
       type: "text",
+      hint:
+        "Enter numbers only with country code. Example: 919876543210",
     },
 
     {
-      name: "address",
-      label: "Address",
+      name: "location",
+      label: "Location / Working From",
       type: "text",
     },
+
+    {
+      name: "footerDescription",
+      label: "Footer Description",
+      type: "textarea",
+    },
+
+    /*
+    | Homepage Hero
+    */
 
     {
       name: "heroEyebrow",
@@ -86,47 +99,301 @@ export const collectionFields: Record<
     },
 
     {
+      name: "heroHighlight",
+      label: "Homepage Hero Highlight",
+      type: "text",
+      hint:
+        "This part will appear in gold italic styling.",
+    },
+
+    {
       name: "heroText",
-      label: "Homepage Hero Description",
+      label:
+        "Homepage Hero Description",
       type: "textarea",
     },
 
     {
       name: "heroPrimaryText",
-      label: "Primary CTA Text",
+      label:
+        "Primary Button Text",
       type: "text",
     },
 
     {
       name: "heroPrimaryLink",
-      label: "Primary CTA Link",
+      label:
+        "Primary Button Link",
       type: "text",
     },
 
     {
       name: "heroSecondaryText",
-      label: "Secondary CTA Text",
+      label:
+        "Secondary Button Text",
       type: "text",
     },
 
     {
       name: "heroSecondaryLink",
-      label: "Secondary CTA Link",
+      label:
+        "Secondary Button Link",
+      type: "text",
+    },
+
+    /*
+    | Homepage CTA
+    */
+
+    {
+      name: "homeCtaEyebrow",
+      label:
+        "Homepage CTA Eyebrow",
       type: "text",
     },
 
     {
-      name: "footerDescription",
-      label: "Footer Description",
+      name: "homeCtaTitle",
+      label:
+        "Homepage CTA Title",
+      type: "textarea",
+    },
+
+    {
+      name: "homeCtaButtonText",
+      label:
+        "Homepage CTA Button Text",
+      type: "text",
+    },
+
+    {
+      name: "homeCtaButtonLink",
+      label:
+        "Homepage CTA Button Link",
+      type: "text",
+    },
+
+    /*
+    | Header
+    */
+
+    {
+      name: "headerButtonText",
+      label:
+        "Header Button Text",
+      type: "text",
+    },
+
+    {
+      name: "headerButtonLink",
+      label:
+        "Header Button Link",
+      type: "text",
+    },
+
+    /*
+    | Contact Page
+    */
+
+    {
+      name: "contactEyebrow",
+      label:
+        "Contact Hero Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "contactTitle",
+      label:
+        "Contact Hero Title",
+      type: "textarea",
+    },
+
+    {
+      name: "contactText",
+      label:
+        "Contact Hero Description",
       type: "textarea",
     },
   ],
 
   /*
   |--------------------------------------------------------------------------
-  | ANNOUNCEMENTS
+  | ABOUT PAGE
   |--------------------------------------------------------------------------
   */
+
+  aboutContent: [
+    {
+      name: "heroEyebrow",
+      label: "Hero Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "heroTitle",
+      label: "Hero Title",
+      type: "textarea",
+      required: true,
+    },
+
+    {
+      name: "heroText",
+      label:
+        "Hero Description",
+      type: "textarea",
+    },
+
+    /*
+    | Story
+    */
+
+    {
+      name: "storyEyebrow",
+      label:
+        "Story Section Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "storyParagraphOne",
+      label:
+        "Story Paragraph 1",
+      type: "textarea",
+    },
+
+    {
+      name: "storyParagraphTwo",
+      label:
+        "Story Paragraph 2",
+      type: "textarea",
+    },
+
+    /*
+    | Mission
+    */
+
+    {
+      name: "missionEyebrow",
+      label:
+        "Mission Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "mission",
+      label: "Mission",
+      type: "textarea",
+    },
+
+    /*
+    | Vision
+    */
+
+    {
+      name: "visionEyebrow",
+      label:
+        "Vision Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "vision",
+      label: "Vision",
+      type: "textarea",
+    },
+
+    /*
+    | Values
+    */
+
+    {
+      name: "valuesEyebrow",
+      label:
+        "Values Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "values",
+      label: "Company Values",
+      type: "tags",
+      hint:
+        "Separate values with commas.",
+    },
+
+    /*
+    | Team
+    */
+
+    {
+      name: "teamEyebrow",
+      label:
+        "Team Section Eyebrow",
+      type: "text",
+    },
+
+    {
+      name: "teamTitle",
+      label:
+        "Team Section Title",
+      type: "textarea",
+    },
+
+    {
+      name: "teamText",
+      label:
+        "Team Introduction",
+      type: "textarea",
+    },
+
+    /*
+    | Founder Quote
+    */
+
+    {
+      name: "quote",
+      label: "Founder Quote",
+      type: "textarea",
+    },
+
+    {
+      name: "quoteAuthor",
+      label:
+        "Quote Author",
+      type: "text",
+    },
+
+    /*
+    | CTA
+    */
+
+    {
+      name: "ctaTitle",
+      label: "CTA Title",
+      type: "text",
+    },
+
+    {
+      name: "ctaText",
+      label: "CTA Description",
+      type: "textarea",
+    },
+
+    {
+      name: "ctaButtonText",
+      label:
+        "CTA Button Text",
+      type: "text",
+    },
+
+    {
+      name: "ctaButtonLink",
+      label:
+        "CTA Button Link",
+      type: "text",
+    },
+  ],
 
   announcements: [
     {
@@ -145,7 +412,8 @@ export const collectionFields: Record<
 
     {
       name: "image",
-      label: "Announcement Image",
+      label:
+        "Announcement Image",
       type: "image",
     },
 
@@ -173,12 +441,6 @@ export const collectionFields: Record<
       type: "checkbox",
     },
   ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | SERVICES
-  |--------------------------------------------------------------------------
-  */
 
   services: [
     {
@@ -208,12 +470,6 @@ export const collectionFields: Record<
     },
   ],
 
-  /*
-  |--------------------------------------------------------------------------
-  | PROJECTS
-  |--------------------------------------------------------------------------
-  */
-
   projects: [
     {
       name: "name",
@@ -227,8 +483,6 @@ export const collectionFields: Record<
       label: "Slug",
       type: "text",
       required: true,
-      hint:
-        "Lowercase words separated by hyphens.",
     },
 
     {
@@ -285,8 +539,6 @@ export const collectionFields: Record<
       name: "gallery",
       label: "Gallery Images",
       type: "tags",
-      hint:
-        "Currently enter image URLs separated by commas.",
     },
 
     {
@@ -310,7 +562,8 @@ export const collectionFields: Record<
 
     {
       name: "featured",
-      label: "Featured Project",
+      label:
+        "Featured Project",
       type: "checkbox",
     },
 
@@ -326,12 +579,6 @@ export const collectionFields: Record<
       type: "checkbox",
     },
   ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | BLOG
-  |--------------------------------------------------------------------------
-  */
 
   posts: [
     {
@@ -357,7 +604,8 @@ export const collectionFields: Record<
 
     {
       name: "content",
-      label: "Article Content",
+      label:
+        "Article Content",
       type: "markdown",
       required: true,
     },
@@ -389,7 +637,8 @@ export const collectionFields: Record<
 
     {
       name: "seoDescription",
-      label: "SEO Description",
+      label:
+        "SEO Description",
       type: "textarea",
     },
 
@@ -451,12 +700,6 @@ export const collectionFields: Record<
     },
   ],
 
-  /*
-  |--------------------------------------------------------------------------
-  | TEAM
-  |--------------------------------------------------------------------------
-  */
-
   team: [
     {
       name: "name",
@@ -488,8 +731,6 @@ export const collectionFields: Record<
       name: "socialLinks",
       label: "Social Links",
       type: "tags",
-      hint:
-        "Enter one URL per item, separated by commas.",
     },
 
     {
@@ -515,7 +756,8 @@ export const collectionFields: Record<
 
     {
       name: "roleCompany",
-      label: "Role / Company",
+      label:
+        "Role / Company",
       type: "text",
     },
 
@@ -600,12 +842,6 @@ export const collectionFields: Record<
     },
   ],
 
-  /*
-  |--------------------------------------------------------------------------
-  | JOBS
-  |--------------------------------------------------------------------------
-  */
-
   jobs: [
     {
       name: "title",
@@ -635,13 +871,16 @@ export const collectionFields: Record<
 
     {
       name: "type",
-      label: "Employment Type",
+      label:
+        "Employment Type",
       type: "text",
     },
 
     {
-      name: "applicationInstructions",
-      label: "Application Instructions",
+      name:
+        "applicationInstructions",
+      label:
+        "Application Instructions",
       type: "textarea",
     },
 
@@ -649,7 +888,10 @@ export const collectionFields: Record<
       name: "status",
       label: "Status",
       type: "select",
-      options: ["open", "closed"],
+      options: [
+        "open",
+        "closed",
+      ],
     },
 
     {
@@ -658,12 +900,6 @@ export const collectionFields: Record<
       type: "number",
     },
   ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | SOCIAL
-  |--------------------------------------------------------------------------
-  */
 
   socialLinks: [
     {
@@ -693,16 +929,11 @@ export const collectionFields: Record<
     },
   ],
 
-  /*
-  |--------------------------------------------------------------------------
-  | ADMIN ONLY
-  |--------------------------------------------------------------------------
-  */
-
   inquiries: [
     {
       name: "status",
-      label: "Inquiry Status",
+      label:
+        "Inquiry Status",
       type: "select",
       options: [
         "New",
@@ -718,7 +949,8 @@ export const collectionFields: Record<
   newsletterSubscribers: [
     {
       name: "status",
-      label: "Subscriber Status",
+      label:
+        "Subscriber Status",
       type: "select",
       options: [
         "active",
@@ -731,7 +963,8 @@ export const collectionFields: Record<
   comments: [
     {
       name: "status",
-      label: "Moderation Status",
+      label:
+        "Moderation Status",
       type: "select",
       options: [
         "pending",

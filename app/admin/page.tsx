@@ -1,8 +1,12 @@
 import Link from "next/link";
 
-import { Dashboard } from "@/components/admin/dashboard";
+import {
+  Dashboard,
+} from "@/components/admin/dashboard";
 
-import { LogoutButton } from "@/components/admin/logout-button";
+import {
+  LogoutButton,
+} from "@/components/admin/logout-button";
 
 import {
   cmsNavigation,
@@ -38,12 +42,16 @@ export default function AdminPage() {
 
             {cmsNavigation.map(
               (group) => (
+
                 <div
                   key={group.title}
                 >
+
                   <p className="mb-2 px-3 text-xs font-medium uppercase tracking-[.16em] text-muted">
 
-                    {group.title}
+                    {
+                      group.title
+                    }
 
                   </p>
 
@@ -59,7 +67,7 @@ export default function AdminPage() {
                             collection
                           }
                           href={`/admin/${collection}`}
-                          className="block border border-line px-3 py-2 text-sm transition hover:border-gold hover:text-gold lg:border-0"
+                          className="block px-3 py-2 text-sm transition hover:bg-surface hover:text-gold"
                         >
 
                           {
@@ -76,6 +84,7 @@ export default function AdminPage() {
                   </div>
 
                 </div>
+
               )
             )}
 
@@ -94,7 +103,9 @@ export default function AdminPage() {
           </h1>
 
           <div className="mt-10">
+
             <Dashboard />
+
           </div>
 
         </section>

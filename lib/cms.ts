@@ -1,23 +1,73 @@
 export const cmsCollections = [
+  /*
+  |--------------------------------------------------------------------------
+  | Website
+  |--------------------------------------------------------------------------
+  */
+
   "siteSettings",
+  "heroSlides",
+
+  /*
+  |--------------------------------------------------------------------------
+  | About
+  |--------------------------------------------------------------------------
+  */
+
   "aboutContent",
+
+  /*
+  |--------------------------------------------------------------------------
+  | Core Content
+  |--------------------------------------------------------------------------
+  */
 
   "services",
   "projects",
+
+  /*
+  |--------------------------------------------------------------------------
+  | Blog
+  |--------------------------------------------------------------------------
+  */
 
   "posts",
   "categories",
   "tags",
 
+  /*
+  |--------------------------------------------------------------------------
+  | Careers
+  |--------------------------------------------------------------------------
+  */
+
   "jobs",
+
+  /*
+  |--------------------------------------------------------------------------
+  | Homepage / Company
+  |--------------------------------------------------------------------------
+  */
 
   "team",
   "testimonials",
   "clientLogos",
   "faqs",
-  "announcements",
 
+  /*
+  |--------------------------------------------------------------------------
+  | Global
+  |--------------------------------------------------------------------------
+  */
+
+  "announcements",
   "socialLinks",
+
+  /*
+  |--------------------------------------------------------------------------
+  | Communication
+  |--------------------------------------------------------------------------
+  */
 
   "inquiries",
   "newsletterSubscribers",
@@ -30,6 +80,7 @@ export type CmsCollection =
 export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
+  "heroSlides",
   "aboutContent",
 
   "services",
@@ -45,9 +96,10 @@ export const editorCollections:
   "testimonials",
   "clientLogos",
   "faqs",
-  "announcements",
 
+  "announcements",
   "socialLinks",
+
   "comments",
 ];
 
@@ -65,7 +117,9 @@ export function canEditCollection(
 ) {
   return (
     role === "SUPER_ADMIN" ||
-    editorCollections.includes(collection)
+    editorCollections.includes(
+      collection
+    )
   );
 }
 
@@ -73,53 +127,13 @@ export function canEditCollection(
 |--------------------------------------------------------------------------
 | CMS NAVIGATION
 |--------------------------------------------------------------------------
-|
-| The CMS now follows the public website structure.
-|
-| PUBLIC WEBSITE
-|
-| Home
-| ├── Homepage Content
-| ├── Testimonials
-| ├── Client Logos
-| ├── FAQs
-|
-| About
-| ├── About Content
-| └── Team
-|
-| Services
-| └── Services
-|
-| Projects
-| └── Projects
-|
-| Blog
-| ├── Posts
-| ├── Categories
-| └── Tags
-|
-| Careers
-| └── Job Openings
-|
-| Contact
-| ├── Site Settings
-| ├── Social Links
-| └── Inquiries
-|
-| GLOBAL
-| └── Announcements
-|
-| COMMUNICATION
-| ├── Newsletter
-| └── Comments
-|
 */
 
 export const cmsNavigation = [
   {
     title: "HOME",
     items: [
+      "heroSlides",
       "siteSettings",
       "testimonials",
       "clientLogos",
@@ -166,7 +180,7 @@ export const cmsNavigation = [
   },
 
   {
-    title: "CONTACT & COMPANY",
+    title: "CONTACT",
     items: [
       "socialLinks",
       "inquiries",
@@ -187,6 +201,9 @@ export const collectionLabels:
   Record<CmsCollection, string> = {
     siteSettings:
       "Homepage & Site Settings",
+
+    heroSlides:
+      "Hero Background Slides",
 
     aboutContent:
       "About Page Content",
@@ -237,20 +254,29 @@ export const collectionLabels:
       "Blog Comments",
   };
 
+const statuses = [
+  "draft",
+  "published",
+  "archived",
+];
+
 const isText = (
   value: unknown,
-  min = 1
+  minimum = 1
 ) =>
   typeof value === "string" &&
-  value.trim().length >= min;
+  value.trim().length >= minimum;
 
 const isOrder = (
   value: unknown
 ) =>
   value === undefined ||
-  (typeof value === "number" &&
+  value === "" ||
+  (
+    typeof value === "number" &&
     Number.isInteger(value) &&
-    value >= 0);
+    value >= 0
+  );
 
 const isUrl = (
   value: unknown
@@ -266,6 +292,18 @@ const isUrl = (
     typeof value !== "string"
   ) {
     return false;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Internal links are valid.
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    value.startsWith("/")
+  ) {
+    return true;
   }
 
   try {
@@ -284,18 +322,14 @@ const arrayOfStrings = (
   value: unknown
 ) =>
   value === undefined ||
-  (Array.isArray(value) &&
+  (
+    Array.isArray(value) &&
     value.every(
       (item) =>
         typeof item === "string" &&
         item.length <= 500
-    ));
-
-const statuses = [
-  "draft",
-  "published",
-  "archived",
-];
+    )
+  );
 
 export function validateCmsData(
   collection: CmsCollection,
@@ -303,19 +337,28 @@ export function validateCmsData(
 ) {
   const errors: string[] = [];
 
-  const require = (
+  const requireField = (
     key: string,
     label: string
   ) => {
-    if (!isText(data[key])) {
+    if (
+      !isText(data[key])
+    ) {
       errors.push(
         `${label} is required.`
       );
     }
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Display Order
+  |--------------------------------------------------------------------------
+  */
+
   if (
     [
+      "heroSlides",
       "services",
       "projects",
       "posts",
@@ -342,10 +385,54 @@ export function validateCmsData(
   if (
     collection === "siteSettings"
   ) {
-    require(
+    requireField(
       "companyName",
       "Company name"
     );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | HERO SLIDES
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    collection === "heroSlides"
+  ) {
+    requireField(
+      "title",
+      "Hero title"
+    );
+
+    requireField(
+      "image",
+      "Background image"
+    );
+
+    if (
+      !isUrl(data.image)
+    ) {
+      errors.push(
+        "Hero background image is invalid."
+      );
+    }
+
+    if (
+      !isUrl(data.primaryLink)
+    ) {
+      errors.push(
+        "Primary button link is invalid."
+      );
+    }
+
+    if (
+      !isUrl(data.secondaryLink)
+    ) {
+      errors.push(
+        "Secondary button link is invalid."
+      );
+    }
   }
 
   /*
@@ -357,7 +444,7 @@ export function validateCmsData(
   if (
     collection === "aboutContent"
   ) {
-    require(
+    requireField(
       "heroTitle",
       "Hero title"
     );
@@ -372,12 +459,12 @@ export function validateCmsData(
   if (
     collection === "services"
   ) {
-    require(
+    requireField(
       "title",
       "Service name"
     );
 
-    require(
+    requireField(
       "text",
       "Summary"
     );
@@ -392,27 +479,28 @@ export function validateCmsData(
   if (
     collection === "projects"
   ) {
-    require(
+    requireField(
       "name",
       "Project name"
     );
 
-    require(
+    requireField(
       "slug",
       "Slug"
     );
 
-    require(
+    requireField(
       "overview",
       "Overview"
     );
 
-    require(
+    requireField(
       "category",
       "Category"
     );
 
     if (
+      data.status &&
       !statuses.includes(
         String(data.status)
       )
@@ -426,7 +514,9 @@ export function validateCmsData(
       "coverImage",
       "liveLink",
     ].forEach((key) => {
-      if (!isUrl(data[key])) {
+      if (
+        !isUrl(data[key])
+      ) {
         errors.push(
           `${key} must be a valid URL.`
         );
@@ -459,32 +549,33 @@ export function validateCmsData(
   if (
     collection === "posts"
   ) {
-    require(
+    requireField(
       "title",
       "Title"
     );
 
-    require(
+    requireField(
       "slug",
       "Slug"
     );
 
-    require(
+    requireField(
       "excerpt",
       "Excerpt"
     );
 
-    require(
+    requireField(
       "content",
       "Content"
     );
 
-    require(
+    requireField(
       "category",
       "Category"
     );
 
     if (
+      data.status &&
       !statuses.includes(
         String(data.status)
       )
@@ -524,18 +615,20 @@ export function validateCmsData(
   if (
     collection === "team"
   ) {
-    require(
+    requireField(
       "name",
       "Name"
     );
 
-    require(
+    requireField(
       "role",
       "Role"
     );
 
     if (
-      !isUrl(data.image)
+      !isUrl(
+        data.image
+      )
     ) {
       errors.push(
         "Team image is invalid."
@@ -553,12 +646,12 @@ export function validateCmsData(
     collection ===
     "testimonials"
   ) {
-    require(
+    requireField(
       "clientName",
       "Client name"
     );
 
-    require(
+    requireField(
       "text",
       "Testimonial"
     );
@@ -573,12 +666,12 @@ export function validateCmsData(
   if (
     collection === "faqs"
   ) {
-    require(
+    requireField(
       "question",
       "Question"
     );
 
-    require(
+    requireField(
       "answer",
       "Answer"
     );
@@ -593,17 +686,18 @@ export function validateCmsData(
   if (
     collection === "jobs"
   ) {
-    require(
+    requireField(
       "title",
       "Job title"
     );
 
-    require(
+    requireField(
       "description",
       "Description"
     );
 
     if (
+      data.status &&
       ![
         "open",
         "closed",
@@ -627,7 +721,7 @@ export function validateCmsData(
     collection ===
     "clientLogos"
   ) {
-    require(
+    requireField(
       "name",
       "Client name"
     );
@@ -661,7 +755,7 @@ export function validateCmsData(
     !isUrl(data.url)
   ) {
     errors.push(
-      "Profile URL must be a valid URL."
+      "Profile URL must be valid."
     );
   }
 
@@ -675,12 +769,12 @@ export function validateCmsData(
     collection ===
     "announcements"
   ) {
-    require(
+    requireField(
       "title",
       "Title"
     );
 
-    require(
+    requireField(
       "content",
       "Content"
     );
@@ -697,14 +791,14 @@ export function validateCmsData(
       !isUrl(data.ctaLink)
     ) {
       errors.push(
-        "CTA link must be a valid URL."
+        "CTA link must be valid."
       );
     }
   }
 
   /*
   |--------------------------------------------------------------------------
-  | SLUGS
+  | Slugs
   |--------------------------------------------------------------------------
   */
 
@@ -716,6 +810,7 @@ export function validateCmsData(
       "tags",
     ].includes(collection) &&
     data.slug !== undefined &&
+    data.slug !== "" &&
     !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
       String(data.slug)
     )

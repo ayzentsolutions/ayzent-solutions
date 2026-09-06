@@ -15,7 +15,6 @@ return (
      text="We bring focused capabilities together around the work that will make the biggest difference to your business."
    />
 
-```
   <section className="py-20 sm:py-28">
     <Container>
       <div className="grid border-t border-line lg:grid-cols-2">
@@ -69,7 +68,6 @@ return (
     </Container>
   </section>
 </>
-```
 
 );
 }

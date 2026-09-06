@@ -14,9 +14,20 @@ export type AdminField = {
   name: string;
   label: string;
   type: FieldType;
+
   required?: boolean;
+
   options?: string[];
+
   hint?: string;
+
+  /*
+  |--------------------------------------------------------------------------
+  | CMS Visual Category
+  |--------------------------------------------------------------------------
+  */
+
+  group?: string;
 };
 
 const status = [
@@ -32,145 +43,82 @@ export const collectionFields:
   > = {
   /*
   |--------------------------------------------------------------------------
-  | SITE SETTINGS
+  | WEBSITE SETTINGS
   |--------------------------------------------------------------------------
   */
 
   siteSettings: [
+    /*
+    | Brand & Identity
+    */
+
     {
       name: "companyName",
       label: "Company Name",
       type: "text",
       required: true,
+      group:
+        "Brand & Identity",
     },
 
     {
-      name: "companyDescription",
-      label: "Company Description",
+      name:
+        "companyDescription",
+
+      label:
+        "Company Description",
+
       type: "textarea",
+
+      group:
+        "Brand & Identity",
     },
+
+    /*
+    | Contact Information
+    */
 
     {
       name: "email",
       label: "Business Email",
       type: "email",
+      group:
+        "Contact Information",
     },
 
     {
       name: "phone",
       label: "Phone Number",
       type: "text",
+      group:
+        "Contact Information",
     },
 
     {
       name: "whatsapp",
-      label: "WhatsApp Number",
+
+      label:
+        "WhatsApp Number",
+
       type: "text",
+
       hint:
-        "Enter numbers only with country code. Example: 919876543210",
+        "Numbers with country code. Example: 919876543210",
+
+      group:
+        "Contact Information",
     },
 
     {
       name: "location",
-      label: "Location / Working From",
-      type: "text",
-    },
 
-    {
-      name: "footerDescription",
-      label: "Footer Description",
-      type: "textarea",
-    },
-
-    /*
-    | Homepage Hero
-    */
-
-    {
-      name: "heroEyebrow",
-      label: "Homepage Hero Eyebrow",
-      type: "text",
-    },
-
-    {
-      name: "heroTitle",
-      label: "Homepage Hero Title",
-      type: "textarea",
-    },
-
-    {
-      name: "heroHighlight",
-      label: "Homepage Hero Highlight",
-      type: "text",
-      hint:
-        "This part will appear in gold italic styling.",
-    },
-
-    {
-      name: "heroText",
       label:
-        "Homepage Hero Description",
-      type: "textarea",
-    },
+        "Location / Working From",
 
-    {
-      name: "heroPrimaryText",
-      label:
-        "Primary Button Text",
       type: "text",
-    },
 
-    {
-      name: "heroPrimaryLink",
-      label:
-        "Primary Button Link",
-      type: "text",
-    },
-
-    {
-      name: "heroSecondaryText",
-      label:
-        "Secondary Button Text",
-      type: "text",
-    },
-
-    {
-      name: "heroSecondaryLink",
-      label:
-        "Secondary Button Link",
-      type: "text",
-    },
-
-    /*
-    | Homepage CTA
-    */
-
-    {
-      name: "homeCtaEyebrow",
-      label:
-        "Homepage CTA Eyebrow",
-      type: "text",
-    },
-
-    {
-      name: "homeCtaTitle",
-      label:
-        "Homepage CTA Title",
-      type: "textarea",
-    },
-
-    {
-      name: "homeCtaButtonText",
-      label:
-        "Homepage CTA Button Text",
-      type: "text",
-    },
-
-    {
-      name: "homeCtaButtonLink",
-      label:
-        "Homepage CTA Button Link",
-      type: "text",
+      group:
+        "Contact Information",
     },
 
     /*
@@ -178,17 +126,108 @@ export const collectionFields:
     */
 
     {
-      name: "headerButtonText",
+      name:
+        "headerButtonText",
+
       label:
         "Header Button Text",
+
       type: "text",
+
+      group:
+        "Header",
     },
 
     {
-      name: "headerButtonLink",
+      name:
+        "headerButtonLink",
+
       label:
         "Header Button Link",
+
       type: "text",
+
+      hint:
+        "Example: /contact",
+
+      group:
+        "Header",
+    },
+
+    /*
+    | Homepage CTA
+    */
+
+    {
+      name:
+        "homeCtaEyebrow",
+
+      label:
+        "CTA Eyebrow",
+
+      type: "text",
+
+      group:
+        "Homepage CTA",
+    },
+
+    {
+      name:
+        "homeCtaTitle",
+
+      label:
+        "CTA Title",
+
+      type: "textarea",
+
+      group:
+        "Homepage CTA",
+    },
+
+    {
+      name:
+        "homeCtaButtonText",
+
+      label:
+        "CTA Button Text",
+
+      type: "text",
+
+      group:
+        "Homepage CTA",
+    },
+
+    {
+      name:
+        "homeCtaButtonLink",
+
+      label:
+        "CTA Button Link",
+
+      type: "text",
+
+      hint:
+        "Example: /contact",
+
+      group:
+        "Homepage CTA",
+    },
+
+    /*
+    | Footer
+    */
+
+    {
+      name:
+        "footerDescription",
+
+      label:
+        "Footer Description",
+
+      type: "textarea",
+
+      group:
+        "Footer",
     },
 
     /*
@@ -196,24 +235,205 @@ export const collectionFields:
     */
 
     {
-      name: "contactEyebrow",
+      name:
+        "contactEyebrow",
+
       label:
-        "Contact Hero Eyebrow",
+        "Contact Eyebrow",
+
       type: "text",
+
+      group:
+        "Contact Page",
     },
 
     {
-      name: "contactTitle",
+      name:
+        "contactTitle",
+
       label:
-        "Contact Hero Title",
+        "Contact Page Title",
+
       type: "textarea",
+
+      group:
+        "Contact Page",
     },
 
     {
-      name: "contactText",
+      name:
+        "contactText",
+
       label:
-        "Contact Hero Description",
+        "Contact Page Description",
+
       type: "textarea",
+
+      group:
+        "Contact Page",
+    },
+  ],
+
+  /*
+  |--------------------------------------------------------------------------
+  | HERO SLIDES
+  |--------------------------------------------------------------------------
+  */
+
+  heroSlides: [
+    {
+      name: "eyebrow",
+      label: "Eyebrow",
+      type: "text",
+      hint:
+        "Small text above the main title.",
+      group:
+        "Slide Content",
+    },
+
+    {
+      name: "title",
+      label: "Hero Title",
+      type: "textarea",
+      required: true,
+      group:
+        "Slide Content",
+    },
+
+    {
+      name: "highlight",
+      label: "Highlighted Text",
+      type: "text",
+      hint:
+        "This exact part of the title will appear in gold.",
+      group:
+        "Slide Content",
+    },
+
+    {
+      name: "text",
+      label: "Description",
+      type: "textarea",
+      group:
+        "Slide Content",
+    },
+
+    {
+      name: "image",
+      label:
+        "Background Image",
+
+      type: "image",
+
+      required: true,
+
+      hint:
+        "Recommended: high-quality landscape image, minimum 1920px wide.",
+
+      group:
+        "Background",
+    },
+
+    {
+      name:
+        "overlayStrength",
+
+      label:
+        "Overlay Strength",
+
+      type: "select",
+
+      options: [
+        "light",
+        "medium",
+        "dark",
+      ],
+
+      group:
+        "Background",
+    },
+
+    {
+      name:
+        "primaryText",
+
+      label:
+        "Primary Button Text",
+
+      type: "text",
+
+      group:
+        "Primary Action",
+    },
+
+    {
+      name:
+        "primaryLink",
+
+      label:
+        "Primary Button Link",
+
+      type: "text",
+
+      hint:
+        "Example: /contact",
+
+      group:
+        "Primary Action",
+    },
+
+    {
+      name:
+        "secondaryText",
+
+      label:
+        "Secondary Button Text",
+
+      type: "text",
+
+      group:
+        "Secondary Action",
+    },
+
+    {
+      name:
+        "secondaryLink",
+
+      label:
+        "Secondary Button Link",
+
+      type: "text",
+
+      hint:
+        "Example: /projects",
+
+      group:
+        "Secondary Action",
+    },
+
+    {
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type: "number",
+
+      group:
+        "Publishing",
+    },
+
+    {
+      name: "active",
+
+      label:
+        "Active",
+
+      type: "checkbox",
+
+      group:
+        "Publishing",
     },
   ],
 
@@ -228,6 +448,7 @@ export const collectionFields:
       name: "heroEyebrow",
       label: "Hero Eyebrow",
       type: "text",
+      group: "Hero",
     },
 
     {
@@ -235,6 +456,7 @@ export const collectionFields:
       label: "Hero Title",
       type: "textarea",
       required: true,
+      group: "Hero",
     },
 
     {
@@ -242,156 +464,201 @@ export const collectionFields:
       label:
         "Hero Description",
       type: "textarea",
+      group: "Hero",
     },
-
-    /*
-    | Story
-    */
 
     {
       name: "storyEyebrow",
       label:
         "Story Section Eyebrow",
       type: "text",
+      group: "Our Story",
     },
 
     {
-      name: "storyParagraphOne",
+      name:
+        "storyParagraphOne",
+
       label:
         "Story Paragraph 1",
+
       type: "textarea",
+
+      group:
+        "Our Story",
     },
 
     {
-      name: "storyParagraphTwo",
+      name:
+        "storyParagraphTwo",
+
       label:
         "Story Paragraph 2",
+
       type: "textarea",
+
+      group:
+        "Our Story",
     },
 
-    /*
-    | Mission
-    */
-
     {
-      name: "missionEyebrow",
+      name:
+        "missionEyebrow",
+
       label:
         "Mission Eyebrow",
+
       type: "text",
+
+      group:
+        "Mission",
     },
 
     {
       name: "mission",
       label: "Mission",
       type: "textarea",
+      group: "Mission",
     },
 
-    /*
-    | Vision
-    */
-
     {
-      name: "visionEyebrow",
+      name:
+        "visionEyebrow",
+
       label:
         "Vision Eyebrow",
+
       type: "text",
+
+      group:
+        "Vision",
     },
 
     {
       name: "vision",
       label: "Vision",
       type: "textarea",
+      group: "Vision",
     },
 
-    /*
-    | Values
-    */
-
     {
-      name: "valuesEyebrow",
+      name:
+        "valuesEyebrow",
+
       label:
         "Values Eyebrow",
+
       type: "text",
+
+      group:
+        "Values",
     },
 
     {
       name: "values",
-      label: "Company Values",
+      label:
+        "Company Values",
       type: "tags",
       hint:
         "Separate values with commas.",
+      group: "Values",
     },
 
-    /*
-    | Team
-    */
-
     {
-      name: "teamEyebrow",
+      name:
+        "teamEyebrow",
+
       label:
         "Team Section Eyebrow",
+
       type: "text",
+
+      group:
+        "Team Section",
     },
 
     {
       name: "teamTitle",
+
       label:
         "Team Section Title",
+
       type: "textarea",
+
+      group:
+        "Team Section",
     },
 
     {
       name: "teamText",
+
       label:
         "Team Introduction",
-      type: "textarea",
-    },
 
-    /*
-    | Founder Quote
-    */
+      type: "textarea",
+
+      group:
+        "Team Section",
+    },
 
     {
       name: "quote",
       label: "Founder Quote",
       type: "textarea",
+      group: "Quote",
     },
 
     {
       name: "quoteAuthor",
+
       label:
         "Quote Author",
-      type: "text",
-    },
 
-    /*
-    | CTA
-    */
+      type: "text",
+
+      group:
+        "Quote",
+    },
 
     {
       name: "ctaTitle",
       label: "CTA Title",
       type: "text",
+      group: "CTA",
     },
 
     {
       name: "ctaText",
-      label: "CTA Description",
+      label:
+        "CTA Description",
       type: "textarea",
+      group: "CTA",
     },
 
     {
-      name: "ctaButtonText",
+      name:
+        "ctaButtonText",
+
       label:
         "CTA Button Text",
+
       type: "text",
+
+      group:
+        "CTA",
     },
 
     {
-      name: "ctaButtonLink",
+      name:
+        "ctaButtonLink",
+
       label:
         "CTA Button Link",
+
       type: "text",
+
+      group:
+        "CTA",
     },
   ],
 
@@ -401,6 +668,7 @@ export const collectionFields:
       label: "Title",
       type: "text",
       required: true,
+      group: "Content",
     },
 
     {
@@ -408,6 +676,7 @@ export const collectionFields:
       label: "Content",
       type: "textarea",
       required: true,
+      group: "Content",
     },
 
     {
@@ -415,30 +684,35 @@ export const collectionFields:
       label:
         "Announcement Image",
       type: "image",
+      group: "Media",
     },
 
     {
       name: "ctaText",
       label: "CTA Text",
       type: "text",
+      group: "Action",
     },
 
     {
       name: "ctaLink",
       label: "CTA Link",
       type: "url",
+      group: "Action",
     },
 
     {
       name: "displayOrder",
       label: "Display Order",
       type: "number",
+      group: "Publishing",
     },
 
     {
       name: "active",
       label: "Active",
       type: "checkbox",
+      group: "Publishing",
     },
   ],
 
@@ -448,6 +722,7 @@ export const collectionFields:
       label: "Service Name",
       type: "text",
       required: true,
+      group: "Service",
     },
 
     {
@@ -455,18 +730,21 @@ export const collectionFields:
       label: "Summary",
       type: "textarea",
       required: true,
+      group: "Service",
     },
 
     {
       name: "displayOrder",
       label: "Display Order",
       type: "number",
+      group: "Publishing",
     },
 
     {
       name: "published",
       label: "Published",
       type: "checkbox",
+      group: "Publishing",
     },
   ],
 
@@ -476,6 +754,7 @@ export const collectionFields:
       label: "Project Name",
       type: "text",
       required: true,
+      group: "Project",
     },
 
     {
@@ -483,6 +762,7 @@ export const collectionFields:
       label: "Slug",
       type: "text",
       required: true,
+      group: "Project",
     },
 
     {
@@ -490,6 +770,7 @@ export const collectionFields:
       label: "Overview",
       type: "textarea",
       required: true,
+      group: "Project",
     },
 
     {
@@ -497,54 +778,63 @@ export const collectionFields:
       label: "Category",
       type: "text",
       required: true,
+      group: "Project",
     },
 
     {
       name: "client",
       label: "Client",
       type: "text",
+      group: "Project",
     },
 
     {
       name: "coverImage",
       label: "Cover Image",
       type: "image",
+      group: "Media",
     },
 
     {
       name: "challenge",
       label: "Challenge",
       type: "textarea",
+      group: "Case Study",
     },
 
     {
       name: "solution",
       label: "Solution",
       type: "textarea",
+      group: "Case Study",
     },
 
     {
       name: "features",
       label: "Features",
       type: "tags",
+      group: "Case Study",
     },
 
     {
       name: "technologies",
       label: "Technologies",
       type: "tags",
+      group: "Case Study",
     },
 
     {
       name: "gallery",
       label: "Gallery Images",
       type: "tags",
+      group: "Media",
     },
 
     {
       name: "liveLink",
       label: "Live Link",
       type: "url",
+      group: "Links",
     },
 
     {
@@ -552,12 +842,14 @@ export const collectionFields:
       label: "Status",
       type: "select",
       options: status,
+      group: "Publishing",
     },
 
     {
       name: "outcomes",
       label: "Outcomes",
       type: "textarea",
+      group: "Case Study",
     },
 
     {
@@ -565,18 +857,21 @@ export const collectionFields:
       label:
         "Featured Project",
       type: "checkbox",
+      group: "Publishing",
     },
 
     {
       name: "displayOrder",
       label: "Display Order",
       type: "number",
+      group: "Publishing",
     },
 
     {
       name: "published",
       label: "Published",
       type: "checkbox",
+      group: "Publishing",
     },
   ],
 
@@ -586,6 +881,7 @@ export const collectionFields:
       label: "Title",
       type: "text",
       required: true,
+      group: "Article",
     },
 
     {
@@ -593,6 +889,7 @@ export const collectionFields:
       label: "Slug",
       type: "text",
       required: true,
+      group: "Article",
     },
 
     {
@@ -600,6 +897,7 @@ export const collectionFields:
       label: "Excerpt",
       type: "textarea",
       required: true,
+      group: "Article",
     },
 
     {
@@ -608,6 +906,7 @@ export const collectionFields:
         "Article Content",
       type: "markdown",
       required: true,
+      group: "Article",
     },
 
     {
@@ -615,31 +914,42 @@ export const collectionFields:
       label: "Category",
       type: "text",
       required: true,
+      group: "Classification",
     },
 
     {
       name: "tags",
       label: "Tags",
       type: "tags",
+      group: "Classification",
     },
 
     {
       name: "coverImage",
       label: "Cover Image",
       type: "image",
+      group: "Media",
     },
 
     {
       name: "seoTitle",
       label: "SEO Title",
       type: "text",
+      group: "SEO",
     },
 
     {
-      name: "seoDescription",
+      name:
+        "seoDescription",
+
       label:
         "SEO Description",
-      type: "textarea",
+
+      type:
+        "textarea",
+
+      group:
+        "SEO",
     },
 
     {
@@ -647,18 +957,27 @@ export const collectionFields:
       label: "Status",
       type: "select",
       options: status,
+      group: "Publishing",
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
       type: "number",
+
+      group:
+        "Publishing",
     },
 
     {
       name: "published",
       label: "Published",
       type: "checkbox",
+      group: "Publishing",
     },
   ],
 
@@ -678,9 +997,14 @@ export const collectionFields:
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
     },
   ],
 
@@ -706,6 +1030,7 @@ export const collectionFields:
       label: "Name",
       type: "text",
       required: true,
+      group: "Member",
     },
 
     {
@@ -713,71 +1038,131 @@ export const collectionFields:
       label: "Role",
       type: "text",
       required: true,
+      group: "Member",
     },
 
     {
       name: "shortBio",
       label: "Short Bio",
       type: "textarea",
+      group: "Member",
     },
 
     {
       name: "image",
       label: "Profile Image",
       type: "image",
+      group: "Media",
     },
 
     {
       name: "socialLinks",
       label: "Social Links",
       type: "tags",
+      group: "Links",
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
+
+      group:
+        "Publishing",
     },
 
     {
-      name: "published",
-      label: "Published",
-      type: "checkbox",
+      name:
+        "published",
+
+      label:
+        "Published",
+
+      type:
+        "checkbox",
+
+      group:
+        "Publishing",
     },
   ],
 
   testimonials: [
     {
-      name: "clientName",
-      label: "Client Name",
-      type: "text",
+      name:
+        "clientName",
+
+      label:
+        "Client Name",
+
+      type:
+        "text",
+
       required: true,
+
+      group:
+        "Client",
     },
 
     {
-      name: "roleCompany",
+      name:
+        "roleCompany",
+
       label:
         "Role / Company",
-      type: "text",
+
+      type:
+        "text",
+
+      group:
+        "Client",
     },
 
     {
       name: "text",
-      label: "Testimonial",
-      type: "textarea",
+
+      label:
+        "Testimonial",
+
+      type:
+        "textarea",
+
       required: true,
+
+      group:
+        "Testimonial",
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
+
+      group:
+        "Publishing",
     },
 
     {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
+      name:
+        "active",
+
+      label:
+        "Active",
+
+      type:
+        "checkbox",
+
+      group:
+        "Publishing",
     },
   ],
 
@@ -787,30 +1172,42 @@ export const collectionFields:
       label: "Client Name",
       type: "text",
       required: true,
+      group: "Client",
     },
 
     {
       name: "logo",
       label: "Client Logo",
       type: "image",
+      group: "Media",
     },
 
     {
       name: "link",
       label: "Website URL",
       type: "url",
+      group: "Links",
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
+
+      group:
+        "Publishing",
     },
 
     {
       name: "active",
       label: "Active",
       type: "checkbox",
+      group: "Publishing",
     },
   ],
 
@@ -830,9 +1227,14 @@ export const collectionFields:
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
     },
 
     {
@@ -848,40 +1250,78 @@ export const collectionFields:
       label: "Job Title",
       type: "text",
       required: true,
+      group: "Position",
     },
 
     {
-      name: "description",
-      label: "Description",
-      type: "markdown",
+      name:
+        "description",
+
+      label:
+        "Description",
+
+      type:
+        "markdown",
+
       required: true,
+
+      group:
+        "Position",
     },
 
     {
-      name: "requirements",
-      label: "Requirements",
-      type: "tags",
+      name:
+        "requirements",
+
+      label:
+        "Requirements",
+
+      type:
+        "tags",
+
+      group:
+        "Position",
     },
 
     {
-      name: "location",
-      label: "Location",
-      type: "text",
+      name:
+        "location",
+
+      label:
+        "Location",
+
+      type:
+        "text",
+
+      group:
+        "Position",
     },
 
     {
       name: "type",
+
       label:
         "Employment Type",
-      type: "text",
+
+      type:
+        "text",
+
+      group:
+        "Position",
     },
 
     {
       name:
         "applicationInstructions",
+
       label:
         "Application Instructions",
-      type: "textarea",
+
+      type:
+        "textarea",
+
+      group:
+        "Application",
     },
 
     {
@@ -892,12 +1332,21 @@ export const collectionFields:
         "open",
         "closed",
       ],
+      group: "Publishing",
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
+
+      group:
+        "Publishing",
     },
   ],
 
@@ -917,9 +1366,14 @@ export const collectionFields:
     },
 
     {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
+      name:
+        "displayOrder",
+
+      label:
+        "Display Order",
+
+      type:
+        "number",
     },
 
     {
@@ -932,9 +1386,13 @@ export const collectionFields:
   inquiries: [
     {
       name: "status",
+
       label:
         "Inquiry Status",
-      type: "select",
+
+      type:
+        "select",
+
       options: [
         "New",
         "Contacted",
@@ -942,6 +1400,7 @@ export const collectionFields:
         "Converted",
         "Closed",
       ],
+
       required: true,
     },
   ],
@@ -949,13 +1408,18 @@ export const collectionFields:
   newsletterSubscribers: [
     {
       name: "status",
+
       label:
         "Subscriber Status",
-      type: "select",
+
+      type:
+        "select",
+
       options: [
         "active",
         "unsubscribed",
       ],
+
       required: true,
     },
   ],
@@ -963,14 +1427,19 @@ export const collectionFields:
   comments: [
     {
       name: "status",
+
       label:
         "Moderation Status",
-      type: "select",
+
+      type:
+        "select",
+
       options: [
         "pending",
         "approved",
         "rejected",
       ],
+
       required: true,
     },
   ],

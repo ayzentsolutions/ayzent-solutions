@@ -8,51 +8,130 @@ import {
 
 export const runtime = "nodejs";
 
-const imageTypes = [
+const allowedImageTypes = [
   "image/jpeg",
+  "image/jpg",
   "image/png",
   "image/webp",
   "image/avif",
 ];
 
-cloudinary.config({
-  cloud_name:
-    process.env.CLOUDINARY_CLOUD_NAME,
-
-  api_key:
-    process.env.CLOUDINARY_API_KEY,
-
-  api_secret:
-    process.env.CLOUDINARY_API_SECRET,
-});
-
 export async function POST(
   request: NextRequest
 ) {
-  const user = await requireAdmin(request);
+  try {
+    console.log(
+      "=== CLOUDINARY UPLOAD STARTED ==="
+    );
 
-  if (!user) {
-    return NextResponse.json(
+    /*
+    |--------------------------------------------------------------------------
+    | Check authentication
+    |--------------------------------------------------------------------------
+    */
+
+    const user =
+      await requireAdmin(request);
+
+    if (!user) {
+      console.error(
+        "Media upload failed: Unauthorized"
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Check environment variables
+    |--------------------------------------------------------------------------
+    */
+
+    const cloudName =
+      process.env.CLOUDINARY_CLOUD_NAME;
+
+    const apiKey =
+      process.env.CLOUDINARY_API_KEY;
+
+    const apiSecret =
+      process.env.CLOUDINARY_API_SECRET;
+
+    console.log(
+      "Cloudinary configuration:",
       {
-        message: "Unauthorized",
-      },
-      {
-        status: 401,
+        cloudName: Boolean(cloudName),
+        apiKey: Boolean(apiKey),
+        apiSecret: Boolean(apiSecret),
+        environment:
+          process.env.VERCEL_ENV ||
+          process.env.NODE_ENV,
       }
     );
-  }
 
-  try {
+    if (
+      !cloudName ||
+      !apiKey ||
+      !apiSecret
+    ) {
+      console.error(
+        "Cloudinary environment variables are missing."
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Cloudinary configuration is missing on the server.",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configure Cloudinary
+    |--------------------------------------------------------------------------
+    */
+
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+      secure: true,
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get uploaded file
+    |--------------------------------------------------------------------------
+    */
+
     const formData =
       await request.formData();
 
-    const file = formData.get("file");
+    const file =
+      formData.get("file");
 
     if (!(file instanceof File)) {
+      console.error(
+        "Media upload failed: No file provided."
+      );
+
       return NextResponse.json(
         {
+          success: false,
           message:
-            "Please select an image.",
+            "No image file was provided.",
         },
         {
           status: 400,
@@ -60,24 +139,54 @@ export async function POST(
       );
     }
 
-    if (!imageTypes.includes(file.type)) {
-      return NextResponse.json(
-        {
-          message:
-            "Only JPG, PNG, WebP and AVIF images are supported.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+    console.log(
+      "File received:",
+      {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      }
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate image type
+    |--------------------------------------------------------------------------
+    */
 
     if (
-      file.size >
-      10 * 1024 * 1024
+      !allowedImageTypes.includes(
+        file.type
+      )
     ) {
       return NextResponse.json(
         {
+          success: false,
+          message:
+            "Only JPG, JPEG, PNG, WebP and AVIF images are allowed.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate size
+    |--------------------------------------------------------------------------
+    */
+
+    const maximumFileSize =
+      10 * 1024 * 1024;
+
+    if (
+      file.size >
+      maximumFileSize
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
           message:
             "Image must be smaller than 10MB.",
         },
@@ -87,61 +196,171 @@ export async function POST(
       );
     }
 
-    const bytes =
+    /*
+    |--------------------------------------------------------------------------
+    | Convert image to Buffer
+    |--------------------------------------------------------------------------
+    */
+
+    const arrayBuffer =
       await file.arrayBuffer();
 
     const buffer =
-      Buffer.from(bytes);
+      Buffer.from(
+        arrayBuffer
+      );
+
+    console.log(
+      "Uploading image to Cloudinary..."
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Upload to Cloudinary
+    |--------------------------------------------------------------------------
+    */
 
     const result =
       await new Promise<{
         secure_url: string;
         public_id: string;
-      }>((resolve, reject) => {
-        const uploadStream =
-          cloudinary.uploader.upload_stream(
-            {
-              folder:
-                "ayzent-solutions",
-              resource_type: "image",
-            },
+        width: number;
+        height: number;
+        format: string;
+      }>(
+        (
+          resolve,
+          reject
+        ) => {
+          const uploadStream =
+            cloudinary.uploader.upload_stream(
+              {
+                folder:
+                  "ayzent-solutions",
 
-            (error, result) => {
-              if (error || !result) {
-                reject(
-                  error ||
+                resource_type:
+                  "image",
+
+                use_filename:
+                  true,
+
+                unique_filename:
+                  true,
+
+                overwrite:
+                  false,
+              },
+
+              (
+                error,
+                uploadResult
+              ) => {
+                if (error) {
+                  console.error(
+                    "Cloudinary API error:",
+                    {
+                      message:
+                        error.message,
+
+                      name:
+                        error.name,
+                    }
+                  );
+
+                  reject(error);
+
+                  return;
+                }
+
+                if (
+                  !uploadResult
+                ) {
+                  reject(
                     new Error(
-                      "Cloudinary upload failed."
+                      "Cloudinary returned no upload result."
                     )
+                  );
+
+                  return;
+                }
+
+                console.log(
+                  "Cloudinary upload successful:",
+                  {
+                    publicId:
+                      uploadResult.public_id,
+
+                    format:
+                      uploadResult.format,
+                  }
                 );
 
-                return;
+                resolve({
+                  secure_url:
+                    uploadResult.secure_url,
+
+                  public_id:
+                    uploadResult.public_id,
+
+                  width:
+                    uploadResult.width,
+
+                  height:
+                    uploadResult.height,
+
+                  format:
+                    uploadResult.format,
+                });
               }
+            );
 
-              resolve({
-                secure_url:
-                  result.secure_url,
+          uploadStream.end(buffer);
+        }
+      );
 
-                public_id:
-                  result.public_id,
-              });
-            }
-          );
+    /*
+    |--------------------------------------------------------------------------
+    | Log activity
+    |--------------------------------------------------------------------------
+    */
 
-        uploadStream.end(buffer);
-      });
+    try {
+      await logActivity(
+        user,
+        "uploaded",
+        `Cloudinary image: ${file.name}`
+      );
+    } catch (error) {
+      console.error(
+        "Activity logging failed:",
+        error
+      );
+    }
 
-    await logActivity(
-      user,
-      "uploaded",
-      "Cloudinary media asset"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Success
+    |--------------------------------------------------------------------------
+    */
 
     return NextResponse.json(
       {
-        url: result.secure_url,
+        success: true,
+
+        url:
+          result.secure_url,
+
         publicId:
           result.public_id,
+
+        width:
+          result.width,
+
+        height:
+          result.height,
+
+        format:
+          result.format,
       },
       {
         status: 201,
@@ -149,14 +368,22 @@ export async function POST(
     );
   } catch (error) {
     console.error(
-      "Cloudinary upload failed:",
-      error
+      "=== CLOUDINARY UPLOAD FAILED ==="
     );
+
+    console.error(error);
+
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Unknown server error.";
 
     return NextResponse.json(
       {
+        success: false,
+
         message:
-          "Unable to upload image to Cloudinary.",
+          `Upload failed: ${errorMessage}`,
       },
       {
         status: 500,

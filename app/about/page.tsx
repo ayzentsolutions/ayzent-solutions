@@ -13,131 +13,79 @@ import {
 } from "@/components/sections/page-hero";
 
 import {
+  getAboutContent,
   getTeam,
 } from "@/lib/content";
-
-const values = [
-  "Curiosity before certainty",
-  "Clarity over clutter",
-  "Care in the details",
-  "Partnership over hand-off",
-];
 
 export const dynamic =
   "force-dynamic";
 
 export default async function AboutPage() {
-  const team =
-    await getTeam();
+  const [
+    content,
+    team,
+  ] = await Promise.all([
+    getAboutContent(),
+    getTeam(),
+  ]);
+
+  const values =
+    content.values || [];
 
   return (
     <>
+      {/* HERO */}
+
       <PageHero
-        eyebrow="About Ayzent"
-        title="The ideas behind more purposeful digital work."
-        text="Ayzent Solutions is a design and technology studio for organisations with a clear sense of where they are going."
+        eyebrow={
+          content.heroEyebrow ||
+          "About Ayzent"
+        }
+        title={
+          content.heroTitle ||
+          ""
+        }
+        text={
+          content.heroText ||
+          ""
+        }
       />
+
+      {/* STORY */}
 
       <section className="py-20 sm:py-28">
 
         <Container className="grid gap-12 lg:grid-cols-[.85fr_1.15fr]">
 
           <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-            Our story
+
+            {
+              content.storyEyebrow ||
+              "Our story"
+            }
+
           </p>
 
           <div className="space-y-6 text-lg leading-relaxed text-muted">
 
-            <p>
-              We started Ayzent with a
-              simple belief: the digital
-              work that matters most is
-              built with attention, not
-              noise.
-            </p>
+            {content.storyParagraphOne && (
 
-            <p>
-              Today, we work at the point
-              where strong ideas meet
-              practical delivery—bringing
-              strategy, design, and
-              engineering into one
-              considered process.
-            </p>
+              <p>
+                {
+                  content.storyParagraphOne
+                }
+              </p>
 
-          </div>
+            )}
 
-        </Container>
+            {content.storyParagraphTwo && (
 
-      </section>
+              <p>
+                {
+                  content.storyParagraphTwo
+                }
+              </p>
 
-      <section className="border-y border-line bg-surface py-20">
-
-        <Container className="grid gap-12 md:grid-cols-2">
-
-          <div>
-
-            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-              Mission
-            </p>
-
-            <h2 className="mt-4 font-display text-4xl leading-tight">
-              Help good businesses make a
-              stronger digital impression.
-            </h2>
-
-          </div>
-
-          <div>
-
-            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-              Vision
-            </p>
-
-            <h2 className="mt-4 font-display text-4xl leading-tight">
-              A more thoughtful internet,
-              shaped by teams that care
-              about the people they serve.
-            </h2>
-
-          </div>
-
-        </Container>
-
-      </section>
-
-      <section className="py-20 sm:py-28">
-
-        <Container>
-
-          <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-            What guides us
-          </p>
-
-          <div className="mt-10 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
-
-            {values.map(
-              (
-                value,
-                index
-              ) => (
-
-                <div
-                  key={value}
-                  className="bg-background p-7"
-                >
-
-                  <span className="text-xs text-gold">
-                    0{index + 1}
-                  </span>
-
-                  <h3 className="mt-8 text-lg">
-                    {value}
-                  </h3>
-
-                </div>
-
-              )
             )}
 
           </div>
@@ -146,25 +94,157 @@ export default async function AboutPage() {
 
       </section>
 
-      {/* TEAM */}
+      {/* MISSION + VISION */}
 
-      {team.length > 0 && (
+      <section className="border-y border-line bg-surface py-20">
 
-        <section className="border-t border-line py-20 sm:py-28">
+        <Container className="grid gap-12 md:grid-cols-2">
+
+          <div>
+
+            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
+
+              {
+                content.missionEyebrow ||
+                "Mission"
+              }
+
+            </p>
+
+            <h2 className="mt-4 font-display text-4xl leading-tight">
+
+              {
+                content.mission
+              }
+
+            </h2>
+
+          </div>
+
+          <div>
+
+            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
+
+              {
+                content.visionEyebrow ||
+                "Vision"
+              }
+
+            </p>
+
+            <h2 className="mt-4 font-display text-4xl leading-tight">
+
+              {
+                content.vision
+              }
+
+            </h2>
+
+          </div>
+
+        </Container>
+
+      </section>
+
+      {/* VALUES */}
+
+      {values.length > 0 && (
+
+        <section className="py-20 sm:py-28">
 
           <Container>
 
-            <div className="max-w-2xl">
+            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
 
-              <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-                The people
-              </p>
+              {
+                content.valuesEyebrow ||
+                "What guides us"
+              }
 
-              <h2 className="mt-4 font-display text-4xl sm:text-5xl">
-                The people behind the work.
-              </h2>
+            </p>
+
+            <div className="mt-10 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+
+              {values.map(
+                (
+                  value,
+                  index
+                ) => (
+
+                  <div
+                    key={value}
+                    className="bg-background p-7"
+                  >
+
+                    <span className="text-xs text-gold">
+
+                      {String(
+                        index + 1
+                      ).padStart(
+                        2,
+                        "0"
+                      )}
+
+                    </span>
+
+                    <h3 className="mt-8 text-lg">
+                      {value}
+                    </h3>
+
+                  </div>
+
+                )
+              )}
 
             </div>
+
+          </Container>
+
+        </section>
+
+      )}
+
+      {/* TEAM */}
+
+      <section className="border-t border-line py-20 sm:py-28">
+
+        <Container>
+
+          <div className="max-w-2xl">
+
+            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
+
+              {
+                content.teamEyebrow ||
+                "The people"
+              }
+
+            </p>
+
+            <h2 className="mt-4 font-display text-4xl sm:text-5xl">
+
+              {
+                content.teamTitle ||
+                "The people behind the work."
+              }
+
+            </h2>
+
+            {content.teamText && (
+
+              <p className="mt-5 leading-relaxed text-muted">
+
+                {
+                  content.teamText
+                }
+
+              </p>
+
+            )}
+
+          </div>
+
+          {team.length > 0 ? (
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
@@ -176,12 +256,12 @@ export default async function AboutPage() {
                       member._id ||
                       member.name
                     }
-                    className="border border-line"
+                    className="overflow-hidden border border-line"
                   >
 
                     {member.image && (
 
-                      <div className="relative aspect-[4/5] overflow-hidden bg-surface">
+                      <div className="relative aspect-[4/5] bg-surface">
 
                         <Image
                           src={
@@ -202,31 +282,36 @@ export default async function AboutPage() {
                     <div className="p-6">
 
                       <h3 className="font-display text-2xl">
+
                         {
                           member.name
                         }
+
                       </h3>
 
                       <p className="mt-2 text-sm text-gold">
+
                         {
                           member.role
                         }
+
                       </p>
 
                       {member.shortBio && (
 
                         <p className="mt-4 text-sm leading-relaxed text-muted">
+
                           {
                             member.shortBio
                           }
+
                         </p>
 
                       )}
 
                       {member.socialLinks &&
                         member.socialLinks
-                          .length >
-                          0 && (
+                          .length > 0 && (
 
                           <div className="mt-5 flex flex-wrap gap-3">
 
@@ -265,11 +350,78 @@ export default async function AboutPage() {
 
             </div>
 
-          </Container>
+          ) : content.quote ? (
 
-        </section>
+            <div className="mt-12 bg-ink p-8 text-paper sm:p-10">
 
-      )}
+              <p className="font-display text-3xl">
+
+                “{
+                  content.quote
+                }”
+
+              </p>
+
+              {content.quoteAuthor && (
+
+                <p className="mt-8 text-sm text-paper/60">
+
+                  {
+                    content.quoteAuthor
+                  }
+
+                </p>
+
+              )}
+
+            </div>
+
+          ) : null}
+
+        </Container>
+
+      </section>
+
+      {/* FOUNDER QUOTE */}
+
+      {team.length > 0 &&
+        content.quote && (
+
+          <section className="border-t border-line py-20">
+
+            <Container>
+
+              <div className="bg-ink p-8 text-paper sm:p-10">
+
+                <p className="font-display text-3xl">
+
+                  “{
+                    content.quote
+                  }”
+
+                </p>
+
+                {content.quoteAuthor && (
+
+                  <p className="mt-8 text-sm text-paper/60">
+
+                    {
+                      content.quoteAuthor
+                    }
+
+                  </p>
+
+                )}
+
+              </div>
+
+            </Container>
+
+          </section>
+
+        )}
+
+      {/* CTA */}
 
       <section className="pb-20">
 
@@ -280,19 +432,38 @@ export default async function AboutPage() {
             <div>
 
               <h2 className="font-display text-3xl">
-                Let’s build what’s next.
+
+                {
+                  content.ctaTitle ||
+                  "Let’s build what’s next."
+                }
+
               </h2>
 
-              <p className="mt-2 text-muted">
-                Bring us the opportunity,
-                challenge, or half-formed
-                idea.
-              </p>
+              {content.ctaText && (
+
+                <p className="mt-2 text-muted">
+
+                  {
+                    content.ctaText
+                  }
+
+                </p>
+
+              )}
 
             </div>
 
-            <ButtonLink href="/contact">
-              Start a Project
+            <ButtonLink
+              href={
+                content.ctaButtonLink ||
+                "/contact"
+              }
+            >
+              {
+                content.ctaButtonText ||
+                "Start a Project"
+              }
             </ButtonLink>
 
           </div>
@@ -300,7 +471,6 @@ export default async function AboutPage() {
         </Container>
 
       </section>
-
     </>
   );
 }

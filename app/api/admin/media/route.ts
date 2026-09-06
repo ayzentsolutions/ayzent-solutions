@@ -1,5 +1,166 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin, logActivity } from "@/lib/admin";
-import { getDb } from "@/lib/mongodb";
-const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-export async function POST(request: NextRequest) { const user = await requireAdmin(request); if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 }); try { const form = await request.formData(); const file = form.get("file"); if (!(file instanceof File) || !imageTypes.includes(file.type) || file.size > 5 * 1024 * 1024) return NextResponse.json({ message: "Upload a JPG, PNG, WebP, or AVIF image under 5MB." }, { status: 400 }); const id = (await (await getDb()).collection("media").insertOne({ filename: file.name.replace(/[^a-zA-Z0-9._-]/g, "-"), contentType: file.type, size: file.size, data: Buffer.from(await file.arrayBuffer()), createdAt: new Date(), uploadedBy: user.email })).insertedId; await logActivity(user, "uploaded", "media asset"); return NextResponse.json({ id, url: `/api/admin/media/${id}` }, { status: 201 }); } catch (error) { console.error("Media upload failed", error); return NextResponse.json({ message: "Upload failed." }, { status: 500 }); } }
+import { v2 as cloudinary } from "cloudinary";
+
+import {
+  logActivity,
+  requireAdmin,
+} from "@/lib/admin";
+
+export const runtime = "nodejs";
+
+const imageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+];
+
+cloudinary.config({
+  cloud_name:
+    process.env.CLOUDINARY_CLOUD_NAME,
+
+  api_key:
+    process.env.CLOUDINARY_API_KEY,
+
+  api_secret:
+    process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function POST(
+  request: NextRequest
+) {
+  const user = await requireAdmin(request);
+
+  if (!user) {
+    return NextResponse.json(
+      {
+        message: "Unauthorized",
+      },
+      {
+        status: 401,
+      }
+    );
+  }
+
+  try {
+    const formData =
+      await request.formData();
+
+    const file = formData.get("file");
+
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        {
+          message:
+            "Please select an image.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!imageTypes.includes(file.type)) {
+      return NextResponse.json(
+        {
+          message:
+            "Only JPG, PNG, WebP and AVIF images are supported.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      file.size >
+      10 * 1024 * 1024
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Image must be smaller than 10MB.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const bytes =
+      await file.arrayBuffer();
+
+    const buffer =
+      Buffer.from(bytes);
+
+    const result =
+      await new Promise<{
+        secure_url: string;
+        public_id: string;
+      }>((resolve, reject) => {
+        const uploadStream =
+          cloudinary.uploader.upload_stream(
+            {
+              folder:
+                "ayzent-solutions",
+              resource_type: "image",
+            },
+
+            (error, result) => {
+              if (error || !result) {
+                reject(
+                  error ||
+                    new Error(
+                      "Cloudinary upload failed."
+                    )
+                );
+
+                return;
+              }
+
+              resolve({
+                secure_url:
+                  result.secure_url,
+
+                public_id:
+                  result.public_id,
+              });
+            }
+          );
+
+        uploadStream.end(buffer);
+      });
+
+    await logActivity(
+      user,
+      "uploaded",
+      "Cloudinary media asset"
+    );
+
+    return NextResponse.json(
+      {
+        url: result.secure_url,
+        publicId:
+          result.public_id,
+      },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Cloudinary upload failed:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        message:
+          "Unable to upload image to Cloudinary.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}

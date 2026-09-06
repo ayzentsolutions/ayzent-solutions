@@ -18,6 +18,7 @@ import {
   getFaqs,
   getProjects,
   getServices,
+  getSiteSettings,
   getTestimonials,
 } from "@/lib/content";
 
@@ -31,27 +32,56 @@ export default async function Home() {
     services,
     testimonials,
     clientLogos,
+    settings,
   ] = await Promise.all([
     getFaqs(),
     getProjects(),
     getServices(),
     getTestimonials(),
     getClientLogos(),
+    getSiteSettings(),
   ]);
 
   const featuredProjects =
     projects.filter(
       (project) =>
         project.featured
-    ).length
+    ).length > 0
       ? projects.filter(
           (project) =>
             project.featured
         )
       : projects;
 
+  /*
+  |--------------------------------------------------------------------------
+  | Hero Title
+  |--------------------------------------------------------------------------
+  */
+
+  const title =
+    settings.heroTitle ||
+    "Digital work with real momentum.";
+
+  const highlight =
+    settings.heroHighlight;
+
+  let titleBefore = title;
+
+  if (
+    highlight &&
+    title.includes(highlight)
+  ) {
+    titleBefore = title.replace(
+      highlight,
+      ""
+    );
+  }
+
   return (
     <>
+      {/* HERO */}
+
       <section className="relative overflow-hidden border-b border-line">
 
         <Container className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-20 lg:grid-cols-[1.15fr_.85fr]">
@@ -59,35 +89,61 @@ export default async function Home() {
           <div>
 
             <p className="animate-fade-up text-xs font-medium uppercase tracking-[0.18em] text-gold">
-              Ayzent Solutions
+              {
+                settings.heroEyebrow
+              }
             </p>
 
             <h1 className="mt-5 max-w-3xl font-display text-5xl font-semibold leading-[.98] sm:text-7xl">
-              Digital work with{" "}
-              <em className="font-normal text-gold">
-                real momentum.
-              </em>
+
+              {highlight &&
+              title.includes(
+                highlight
+              ) ? (
+                <>
+                  {titleBefore}{" "}
+
+                  <em className="font-normal text-gold">
+                    {highlight}
+                  </em>
+                </>
+              ) : (
+                title
+              )}
+
             </h1>
 
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
-              We build thoughtful
-              websites, brands, and
-              digital products for
-              businesses ready to make
-              their next move count.
+              {
+                settings.heroText
+              }
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
 
-              <ButtonLink href="/contact">
-                Start a Project
+              <ButtonLink
+                href={
+                  settings.heroPrimaryLink ||
+                  "/contact"
+                }
+              >
+                {
+                  settings.heroPrimaryText ||
+                  "Start a Project"
+                }
               </ButtonLink>
 
               <ButtonLink
-                href="/projects"
+                href={
+                  settings.heroSecondaryLink ||
+                  "/projects"
+                }
                 variant="secondary"
               >
-                Explore Our Work
+                {
+                  settings.heroSecondaryText ||
+                  "Explore Our Work"
+                }
               </ButtonLink>
 
             </div>
@@ -111,6 +167,8 @@ export default async function Home() {
         </Container>
 
       </section>
+
+      {/* SERVICES */}
 
       <section className="py-20 sm:py-28">
 
@@ -155,12 +213,14 @@ export default async function Home() {
                 >
 
                   <span className="text-xs text-gold">
+
                     {String(
                       index + 1
                     ).padStart(
                       2,
                       "0"
                     )}
+
                   </span>
 
                   <h3 className="mt-5 text-lg">
@@ -185,6 +245,8 @@ export default async function Home() {
         </Container>
 
       </section>
+
+      {/* PROJECTS */}
 
       <section className="border-y border-line bg-surface py-20 sm:py-28">
 
@@ -244,8 +306,7 @@ export default async function Home() {
           <Container>
 
             <p className="text-center text-xs font-medium uppercase tracking-[.18em] text-muted">
-              Trusted by ambitious
-              teams
+              Trusted by ambitious teams
             </p>
 
             <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -295,9 +356,7 @@ export default async function Home() {
                       rel="noopener noreferrer"
                       className="grid place-items-center"
                     >
-                      {
-                        content
-                      }
+                      {content}
                     </a>
 
                   ) : (
@@ -308,9 +367,7 @@ export default async function Home() {
                       }
                       className="grid place-items-center"
                     >
-                      {
-                        content
-                      }
+                      {content}
                     </div>
 
                   );
@@ -324,6 +381,8 @@ export default async function Home() {
         </section>
 
       )}
+
+      {/* TESTIMONIALS */}
 
       {testimonials.length >
         0 && (
@@ -353,9 +412,11 @@ export default async function Home() {
                     >
 
                       <blockquote className="font-display text-2xl leading-relaxed">
+
                         “{
                           testimonial.text
                         }”
+
                       </blockquote>
 
                       <figcaption className="mt-6 text-sm text-muted">
@@ -382,6 +443,8 @@ export default async function Home() {
         </section>
 
       )}
+
+      {/* FAQ */}
 
       <section className="py-20 sm:py-28">
 
@@ -414,9 +477,7 @@ export default async function Home() {
 
                   <summary className="cursor-pointer list-none pr-8 text-lg marker:hidden">
 
-                    {
-                      question
-                    }
+                    {question}
 
                     <span className="float-right text-gold">
                       +
@@ -425,9 +486,7 @@ export default async function Home() {
                   </summary>
 
                   <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-                    {
-                      answer
-                    }
+                    {answer}
                   </p>
 
                 </details>
@@ -441,24 +500,35 @@ export default async function Home() {
 
       </section>
 
+      {/* CTA */}
+
       <section className="bg-ink py-20 text-paper sm:py-28">
 
         <Container className="text-center">
 
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
-            A good place to begin
+            {
+              settings.homeCtaEyebrow
+            }
           </p>
 
           <h2 className="mx-auto mt-5 max-w-3xl font-display text-4xl leading-tight sm:text-6xl">
-            Have something worthwhile
-            in mind?
+            {
+              settings.homeCtaTitle
+            }
           </h2>
 
           <ButtonLink
-            href="/contact"
+            href={
+              settings.homeCtaButtonLink ||
+              "/contact"
+            }
             className="mt-8 bg-gold text-ink hover:bg-paper"
           >
-            Discuss Your Requirements
+            {
+              settings.homeCtaButtonText ||
+              "Discuss Your Requirements"
+            }
           </ButtonLink>
 
         </Container>

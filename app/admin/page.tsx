@@ -15,6 +15,7 @@ import {
 
 export default function AdminPage() {
   return (
+
     <main className="min-h-screen bg-background">
 
       <header className="border-b border-line">
@@ -36,7 +37,7 @@ export default function AdminPage() {
 
       <div className="mx-auto grid max-w-[90rem] gap-10 px-5 py-10 lg:grid-cols-[17rem_1fr]">
 
-        <aside>
+        <aside className="lg:sticky lg:top-6 lg:h-fit">
 
           <nav className="space-y-8">
 
@@ -44,28 +45,24 @@ export default function AdminPage() {
               (group) => (
 
                 <div
-                  key={group.title}
+                  key={
+                    group.title
+                  }
                 >
 
                   <p className="mb-2 px-3 text-xs font-medium uppercase tracking-[.16em] text-muted">
 
-                    {
-                      group.title
-                    }
+                    {group.title}
 
                   </p>
 
                   <div className="space-y-1">
 
                     {group.items.map(
-                      (
-                        collection
-                      ) => (
+                      (collection) => (
 
                         <Link
-                          key={
-                            collection
-                          }
+                          key={collection}
                           href={`/admin/${collection}`}
                           className="block px-3 py-2 text-sm transition hover:bg-surface hover:text-gold"
                         >
@@ -95,12 +92,20 @@ export default function AdminPage() {
         <section>
 
           <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-            Overview
+            Dashboard
           </p>
 
           <h1 className="mt-3 font-display text-4xl">
             Good to see you.
           </h1>
+
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
+
+            Manage every public-facing part
+            of the Ayzent Solutions website
+            from one CMS.
+
+          </p>
 
           <div className="mt-10">
 
@@ -113,5 +118,6 @@ export default function AdminPage() {
       </div>
 
     </main>
+
   );
 }

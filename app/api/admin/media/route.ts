@@ -1,12 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+import {
+  v2 as cloudinary,
+} from "cloudinary";
 
 import {
   logActivity,
   requireAdmin,
 } from "@/lib/admin";
 
-export const runtime = "nodejs";
+export const runtime =
+  "nodejs";
 
 const allowedImageTypes = [
   "image/jpeg",
@@ -16,32 +23,55 @@ const allowedImageTypes = [
   "image/avif",
 ];
 
+const maximumFileSize =
+  10 * 1024 * 1024;
+
+function configureCloudinary() {
+  const cloudName =
+    process.env.CLOUDINARY_CLOUD_NAME;
+
+  const apiKey =
+    process.env.CLOUDINARY_API_KEY;
+
+  const apiSecret =
+    process.env.CLOUDINARY_API_SECRET;
+
+  if (
+    !cloudName ||
+    !apiKey ||
+    !apiSecret
+  ) {
+    throw new Error(
+      "Cloudinary environment variables are missing."
+    );
+  }
+
+  cloudinary.config({
+    cloud_name:
+      cloudName,
+
+    api_key:
+      apiKey,
+
+    api_secret:
+      apiSecret,
+
+    secure: true,
+  });
+}
+
 export async function POST(
   request: NextRequest
 ) {
   try {
-    console.log(
-      "=== CLOUDINARY UPLOAD STARTED ==="
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Check authentication
-    |--------------------------------------------------------------------------
-    */
-
     const user =
       await requireAdmin(request);
 
     if (!user) {
-      console.error(
-        "Media upload failed: Unauthorized"
-      );
-
       return NextResponse.json(
         {
-          success: false,
-          message: "Unauthorized",
+          message:
+            "Unauthorized.",
         },
         {
           status: 401,
@@ -49,72 +79,7 @@ export async function POST(
       );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Check environment variables
-    |--------------------------------------------------------------------------
-    */
-
-    const cloudName =
-      process.env.CLOUDINARY_CLOUD_NAME;
-
-    const apiKey =
-      process.env.CLOUDINARY_API_KEY;
-
-    const apiSecret =
-      process.env.CLOUDINARY_API_SECRET;
-
-    console.log(
-      "Cloudinary configuration:",
-      {
-        cloudName: Boolean(cloudName),
-        apiKey: Boolean(apiKey),
-        apiSecret: Boolean(apiSecret),
-        environment:
-          process.env.VERCEL_ENV ||
-          process.env.NODE_ENV,
-      }
-    );
-
-    if (
-      !cloudName ||
-      !apiKey ||
-      !apiSecret
-    ) {
-      console.error(
-        "Cloudinary environment variables are missing."
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Cloudinary configuration is missing on the server.",
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Configure Cloudinary
-    |--------------------------------------------------------------------------
-    */
-
-    cloudinary.config({
-      cloud_name: cloudName,
-      api_key: apiKey,
-      api_secret: apiSecret,
-      secure: true,
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Get uploaded file
-    |--------------------------------------------------------------------------
-    */
+    configureCloudinary();
 
     const formData =
       await request.formData();
@@ -122,14 +87,11 @@ export async function POST(
     const file =
       formData.get("file");
 
-    if (!(file instanceof File)) {
-      console.error(
-        "Media upload failed: No file provided."
-      );
-
+    if (
+      !(file instanceof File)
+    ) {
       return NextResponse.json(
         {
-          success: false,
           message:
             "No image file was provided.",
         },
@@ -139,21 +101,6 @@ export async function POST(
       );
     }
 
-    console.log(
-      "File received:",
-      {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      }
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Validate image type
-    |--------------------------------------------------------------------------
-    */
-
     if (
       !allowedImageTypes.includes(
         file.type
@@ -161,7 +108,6 @@ export async function POST(
     ) {
       return NextResponse.json(
         {
-          success: false,
           message:
             "Only JPG, JPEG, PNG, WebP and AVIF images are allowed.",
         },
@@ -171,22 +117,12 @@ export async function POST(
       );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Validate size
-    |--------------------------------------------------------------------------
-    */
-
-    const maximumFileSize =
-      10 * 1024 * 1024;
-
     if (
       file.size >
       maximumFileSize
     ) {
       return NextResponse.json(
         {
-          success: false,
           message:
             "Image must be smaller than 10MB.",
         },
@@ -196,12 +132,6 @@ export async function POST(
       );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Convert image to Buffer
-    |--------------------------------------------------------------------------
-    */
-
     const arrayBuffer =
       await file.arrayBuffer();
 
@@ -210,23 +140,13 @@ export async function POST(
         arrayBuffer
       );
 
-    console.log(
-      "Uploading image to Cloudinary..."
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Upload to Cloudinary
-    |--------------------------------------------------------------------------
-    */
-
-    const result =
+    const uploadResult =
       await new Promise<{
         secure_url: string;
         public_id: string;
-        width: number;
-        height: number;
-        format: string;
+        width?: number;
+        height?: number;
+        format?: string;
       }>(
         (
           resolve,
@@ -253,28 +173,14 @@ export async function POST(
 
               (
                 error,
-                uploadResult
+                result
               ) => {
                 if (error) {
-                  console.error(
-                    "Cloudinary API error:",
-                    {
-                      message:
-                        error.message,
-
-                      name:
-                        error.name,
-                    }
-                  );
-
                   reject(error);
-
                   return;
                 }
 
-                if (
-                  !uploadResult
-                ) {
+                if (!result) {
                   reject(
                     new Error(
                       "Cloudinary returned no upload result."
@@ -284,83 +190,64 @@ export async function POST(
                   return;
                 }
 
-                console.log(
-                  "Cloudinary upload successful:",
-                  {
-                    publicId:
-                      uploadResult.public_id,
-
-                    format:
-                      uploadResult.format,
-                  }
-                );
-
                 resolve({
                   secure_url:
-                    uploadResult.secure_url,
+                    result.secure_url,
 
                   public_id:
-                    uploadResult.public_id,
+                    result.public_id,
 
                   width:
-                    uploadResult.width,
+                    result.width,
 
                   height:
-                    uploadResult.height,
+                    result.height,
 
                   format:
-                    uploadResult.format,
+                    result.format,
                 });
               }
             );
 
-          uploadStream.end(buffer);
+          uploadStream.end(
+            buffer
+          );
         }
       );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Log activity
-    |--------------------------------------------------------------------------
-    */
 
     try {
       await logActivity(
         user,
         "uploaded",
-        `Cloudinary image: ${file.name}`
+        `image: ${file.name}`
       );
-    } catch (error) {
-      console.error(
-        "Activity logging failed:",
-        error
-      );
+    } catch {
+      /*
+      |--------------------------------------------------------------------------
+      | Activity logging must never
+      | break a successful upload.
+      |--------------------------------------------------------------------------
+      */
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Success
-    |--------------------------------------------------------------------------
-    */
 
     return NextResponse.json(
       {
         success: true,
 
         url:
-          result.secure_url,
+          uploadResult.secure_url,
 
         publicId:
-          result.public_id,
+          uploadResult.public_id,
 
         width:
-          result.width,
+          uploadResult.width,
 
         height:
-          result.height,
+          uploadResult.height,
 
         format:
-          result.format,
+          uploadResult.format,
       },
       {
         status: 201,
@@ -368,22 +255,16 @@ export async function POST(
     );
   } catch (error) {
     console.error(
-      "=== CLOUDINARY UPLOAD FAILED ==="
+      "Cloudinary upload error:",
+      error
     );
-
-    console.error(error);
-
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Unknown server error.";
 
     return NextResponse.json(
       {
-        success: false,
-
         message:
-          `Upload failed: ${errorMessage}`,
+          error instanceof Error
+            ? error.message
+            : "Unable to upload image.",
       },
       {
         status: 500,

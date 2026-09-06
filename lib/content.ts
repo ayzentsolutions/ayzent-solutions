@@ -130,7 +130,9 @@ export type SiteSettings = {
   _id?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Company
+  |--------------------------------------------------------------------------
   */
 
   companyName?: string;
@@ -148,7 +150,9 @@ export type SiteSettings = {
   footerDescription?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Homepage Hero
+  |--------------------------------------------------------------------------
   */
 
   heroEyebrow?: string;
@@ -168,7 +172,9 @@ export type SiteSettings = {
   heroSecondaryLink?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Homepage CTA
+  |--------------------------------------------------------------------------
   */
 
   homeCtaEyebrow?: string;
@@ -180,7 +186,9 @@ export type SiteSettings = {
   homeCtaButtonLink?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Header
+  |--------------------------------------------------------------------------
   */
 
   headerButtonText?: string;
@@ -188,7 +196,9 @@ export type SiteSettings = {
   headerButtonLink?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Contact
+  |--------------------------------------------------------------------------
   */
 
   contactEyebrow?: string;
@@ -202,7 +212,9 @@ export type AboutContent = {
   _id?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Hero
+  |--------------------------------------------------------------------------
   */
 
   heroEyebrow?: string;
@@ -212,7 +224,9 @@ export type AboutContent = {
   heroText?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Story
+  |--------------------------------------------------------------------------
   */
 
   storyEyebrow?: string;
@@ -222,7 +236,9 @@ export type AboutContent = {
   storyParagraphTwo?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Mission
+  |--------------------------------------------------------------------------
   */
 
   missionEyebrow?: string;
@@ -230,7 +246,9 @@ export type AboutContent = {
   mission?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Vision
+  |--------------------------------------------------------------------------
   */
 
   visionEyebrow?: string;
@@ -238,7 +256,9 @@ export type AboutContent = {
   vision?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Values
+  |--------------------------------------------------------------------------
   */
 
   valuesEyebrow?: string;
@@ -246,7 +266,9 @@ export type AboutContent = {
   values?: string[];
 
   /*
+  |--------------------------------------------------------------------------
   | Team
+  |--------------------------------------------------------------------------
   */
 
   teamEyebrow?: string;
@@ -256,7 +278,9 @@ export type AboutContent = {
   teamText?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | Quote
+  |--------------------------------------------------------------------------
   */
 
   quote?: string;
@@ -264,7 +288,9 @@ export type AboutContent = {
   quoteAuthor?: string;
 
   /*
+  |--------------------------------------------------------------------------
   | CTA
+  |--------------------------------------------------------------------------
   */
 
   ctaTitle?: string;
@@ -275,6 +301,12 @@ export type AboutContent = {
 
   ctaButtonLink?: string;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Database Reader
+|--------------------------------------------------------------------------
+*/
 
 async function read<T>(
   collection: string,
@@ -617,9 +649,26 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       return fallback;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Remove MongoDB _id
+    |--------------------------------------------------------------------------
+    |
+    | MongoDB returns _id as ObjectId.
+    | SiteSettings expects _id as string.
+    | We do not need _id on the public website,
+    | so remove it before returning the content.
+    |
+    */
+
+    const {
+      _id,
+      ...settings
+    } = document;
+
     return {
       ...fallback,
-      ...(document as SiteSettings),
+      ...(settings as SiteSettings),
     };
   } catch {
     return fallback;
@@ -721,9 +770,20 @@ export async function getAboutContent(): Promise<AboutContent> {
       return fallback;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Remove MongoDB _id
+    |--------------------------------------------------------------------------
+    */
+
+    const {
+      _id,
+      ...aboutContent
+    } = document;
+
     return {
       ...fallback,
-      ...(document as AboutContent),
+      ...(aboutContent as AboutContent),
     };
   } catch {
     return fallback;

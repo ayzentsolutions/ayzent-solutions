@@ -2,8 +2,6 @@ export const cmsCollections = [
   "siteSettings",
   "aboutContent",
 
-  "announcements",
-
   "services",
   "projects",
 
@@ -11,11 +9,13 @@ export const cmsCollections = [
   "categories",
   "tags",
 
+  "jobs",
+
   "team",
   "testimonials",
   "clientLogos",
   "faqs",
-  "jobs",
+  "announcements",
 
   "socialLinks",
 
@@ -32,8 +32,6 @@ export const editorCollections:
   "siteSettings",
   "aboutContent",
 
-  "announcements",
-
   "services",
   "projects",
 
@@ -41,11 +39,13 @@ export const editorCollections:
   "categories",
   "tags",
 
+  "jobs",
+
   "team",
   "testimonials",
   "clientLogos",
   "faqs",
-  "jobs",
+  "announcements",
 
   "socialLinks",
   "comments",
@@ -73,28 +73,84 @@ export function canEditCollection(
 |--------------------------------------------------------------------------
 | CMS NAVIGATION
 |--------------------------------------------------------------------------
+|
+| The CMS now follows the public website structure.
+|
+| PUBLIC WEBSITE
+|
+| Home
+| ├── Homepage Content
+| ├── Testimonials
+| ├── Client Logos
+| ├── FAQs
+|
+| About
+| ├── About Content
+| └── Team
+|
+| Services
+| └── Services
+|
+| Projects
+| └── Projects
+|
+| Blog
+| ├── Posts
+| ├── Categories
+| └── Tags
+|
+| Careers
+| └── Job Openings
+|
+| Contact
+| ├── Site Settings
+| ├── Social Links
+| └── Inquiries
+|
+| GLOBAL
+| └── Announcements
+|
+| COMMUNICATION
+| ├── Newsletter
+| └── Comments
+|
 */
 
 export const cmsNavigation = [
   {
-    title: "Website",
+    title: "HOME",
     items: [
       "siteSettings",
-      "aboutContent",
-      "announcements",
+      "testimonials",
+      "clientLogos",
+      "faqs",
     ],
   },
 
   {
-    title: "Services & Work",
+    title: "ABOUT",
+    items: [
+      "aboutContent",
+      "team",
+    ],
+  },
+
+  {
+    title: "SERVICES",
     items: [
       "services",
+    ],
+  },
+
+  {
+    title: "PROJECTS",
+    items: [
       "projects",
     ],
   },
 
   {
-    title: "Blog",
+    title: "BLOG",
     items: [
       "posts",
       "categories",
@@ -103,27 +159,24 @@ export const cmsNavigation = [
   },
 
   {
-    title: "Company",
+    title: "CAREERS",
     items: [
-      "team",
-      "testimonials",
-      "clientLogos",
-      "faqs",
       "jobs",
     ],
   },
 
   {
-    title: "Global",
+    title: "CONTACT & COMPANY",
     items: [
       "socialLinks",
+      "inquiries",
     ],
   },
 
   {
-    title: "Communication",
+    title: "WEBSITE GLOBAL",
     items: [
-      "inquiries",
+      "announcements",
       "newsletterSubscribers",
       "comments",
     ],
@@ -132,30 +185,56 @@ export const cmsNavigation = [
 
 export const collectionLabels:
   Record<CmsCollection, string> = {
-    siteSettings: "Site Settings",
-    aboutContent: "About Page",
+    siteSettings:
+      "Homepage & Site Settings",
 
-    announcements: "Announcements",
+    aboutContent:
+      "About Page Content",
 
-    services: "Services",
-    projects: "Projects",
+    services:
+      "Services",
 
-    posts: "Blog Posts",
-    categories: "Categories",
-    tags: "Tags",
+    projects:
+      "Projects",
 
-    team: "Team",
-    testimonials: "Testimonials",
-    clientLogos: "Client Logos",
-    faqs: "FAQs",
-    jobs: "Job Openings",
+    posts:
+      "Blog Posts",
 
-    socialLinks: "Social Links",
+    categories:
+      "Blog Categories",
 
-    inquiries: "Inquiries",
+    tags:
+      "Blog Tags",
+
+    jobs:
+      "Job Openings",
+
+    team:
+      "Team Members",
+
+    testimonials:
+      "Testimonials",
+
+    clientLogos:
+      "Client Logos",
+
+    faqs:
+      "Frequently Asked Questions",
+
+    announcements:
+      "Announcements",
+
+    socialLinks:
+      "Social Links",
+
+    inquiries:
+      "Contact Inquiries",
+
     newsletterSubscribers:
       "Newsletter Subscribers",
-    comments: "Comments",
+
+    comments:
+      "Blog Comments",
   };
 
 const isText = (
@@ -454,6 +533,14 @@ export function validateCmsData(
       "role",
       "Role"
     );
+
+    if (
+      !isUrl(data.image)
+    ) {
+      errors.push(
+        "Team image is invalid."
+      );
+    }
   }
 
   /*
@@ -549,7 +636,7 @@ export function validateCmsData(
       !isUrl(data.logo)
     ) {
       errors.push(
-        "Client logo must be a valid URL."
+        "Client logo is invalid."
       );
     }
 
@@ -602,7 +689,7 @@ export function validateCmsData(
       !isUrl(data.image)
     ) {
       errors.push(
-        "Announcement image must be a valid URL."
+        "Announcement image is invalid."
       );
     }
 

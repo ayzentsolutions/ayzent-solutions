@@ -1,41 +1,83 @@
-import { getDb } from "@/lib/mongodb";
+import {
+  unstable_cache,
+} from "next/cache";
+
+import {
+  getDb,
+} from "@/lib/mongodb";
 
 import {
   faqs,
   posts,
   projects,
   services,
+
   type Project,
 } from "@/lib/site-data";
+
+import type {
+  HeroSlide,
+} from "@/components/sections/home-hero-carousel";
+
+/*
+|--------------------------------------------------------------------------
+| Revalidation
+|--------------------------------------------------------------------------
+*/
+
+export const CONTENT_REVALIDATE =
+  60;
+
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
 export type Service = {
   title: string;
   text: string;
+
   displayOrder?: number;
+
+  published?: boolean;
 };
 
 export type Post = {
   slug: string;
+
   title: string;
+
   category: string;
+
   date?: string;
+
   excerpt: string;
+
   content?: string;
+
   tags?: string[];
+
   coverImage?: string;
+
   seoTitle?: string;
+
   seoDescription?: string;
+
   published?: boolean;
 };
 
 export type Category = {
   name: string;
+
   slug: string;
+
   displayOrder?: number;
 };
 
 export type Tag = {
   name: string;
+
   slug: string;
 };
 
@@ -43,6 +85,7 @@ export type TeamMember = {
   _id?: string;
 
   name: string;
+
   role: string;
 
   shortBio?: string;
@@ -124,6 +167,8 @@ export type SocialLink = {
   url: string;
 
   active?: boolean;
+
+  displayOrder?: number;
 };
 
 export type SiteSettings = {
@@ -131,13 +176,19 @@ export type SiteSettings = {
 
   /*
   |--------------------------------------------------------------------------
-  | Company
+  | Brand
   |--------------------------------------------------------------------------
   */
 
   companyName?: string;
 
   companyDescription?: string;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Contact
+  |--------------------------------------------------------------------------
+  */
 
   email?: string;
 
@@ -147,29 +198,23 @@ export type SiteSettings = {
 
   location?: string;
 
+  /*
+  |--------------------------------------------------------------------------
+  | Footer
+  |--------------------------------------------------------------------------
+  */
+
   footerDescription?: string;
 
   /*
   |--------------------------------------------------------------------------
-  | Homepage Hero
+  | Header
   |--------------------------------------------------------------------------
   */
 
-  heroEyebrow?: string;
+  headerButtonText?: string;
 
-  heroTitle?: string;
-
-  heroHighlight?: string;
-
-  heroText?: string;
-
-  heroPrimaryText?: string;
-
-  heroPrimaryLink?: string;
-
-  heroSecondaryText?: string;
-
-  heroSecondaryLink?: string;
+  headerButtonLink?: string;
 
   /*
   |--------------------------------------------------------------------------
@@ -187,17 +232,7 @@ export type SiteSettings = {
 
   /*
   |--------------------------------------------------------------------------
-  | Header
-  |--------------------------------------------------------------------------
-  */
-
-  headerButtonText?: string;
-
-  headerButtonLink?: string;
-
-  /*
-  |--------------------------------------------------------------------------
-  | Contact
+  | Contact Page
   |--------------------------------------------------------------------------
   */
 
@@ -211,23 +246,11 @@ export type SiteSettings = {
 export type AboutContent = {
   _id?: string;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Hero
-  |--------------------------------------------------------------------------
-  */
-
   heroEyebrow?: string;
 
   heroTitle?: string;
 
   heroText?: string;
-
-  /*
-  |--------------------------------------------------------------------------
-  | Story
-  |--------------------------------------------------------------------------
-  */
 
   storyEyebrow?: string;
 
@@ -235,41 +258,17 @@ export type AboutContent = {
 
   storyParagraphTwo?: string;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Mission
-  |--------------------------------------------------------------------------
-  */
-
   missionEyebrow?: string;
 
   mission?: string;
-
-  /*
-  |--------------------------------------------------------------------------
-  | Vision
-  |--------------------------------------------------------------------------
-  */
 
   visionEyebrow?: string;
 
   vision?: string;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Values
-  |--------------------------------------------------------------------------
-  */
-
   valuesEyebrow?: string;
 
   values?: string[];
-
-  /*
-  |--------------------------------------------------------------------------
-  | Team
-  |--------------------------------------------------------------------------
-  */
 
   teamEyebrow?: string;
 
@@ -277,21 +276,9 @@ export type AboutContent = {
 
   teamText?: string;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Quote
-  |--------------------------------------------------------------------------
-  */
-
   quote?: string;
 
   quoteAuthor?: string;
-
-  /*
-  |--------------------------------------------------------------------------
-  | CTA
-  |--------------------------------------------------------------------------
-  */
 
   ctaTitle?: string;
 
@@ -304,7 +291,7 @@ export type AboutContent = {
 
 /*
 |--------------------------------------------------------------------------
-| Database Reader
+| Generic Collection Reader
 |--------------------------------------------------------------------------
 */
 
@@ -313,24 +300,30 @@ async function read<T>(
   fallback: T[]
 ): Promise<T[]> {
   try {
-    const db = await getDb();
+    const db =
+      await getDb();
 
-    const documents = await db
-      .collection(collection)
-      .find({
-        published: {
-          $ne: false,
-        },
-      })
-      .sort({
-        displayOrder: 1,
-        createdAt: -1,
-      })
-      .toArray();
+    const documents =
+      await db
+        .collection(collection)
+        .find({
+          published: {
+            $ne: false,
+          },
+        })
+        .sort({
+          displayOrder: 1,
+          createdAt: -1,
+        })
+        .toArray();
 
-    return documents.length
-      ? (documents as unknown as T[])
-      : fallback;
+    if (
+      documents.length
+    ) {
+      return documents as unknown as T[];
+    }
+
+    return fallback;
   } catch {
     return fallback;
   }
@@ -338,48 +331,95 @@ async function read<T>(
 
 /*
 |--------------------------------------------------------------------------
-| Standard Content
+| Services
 |--------------------------------------------------------------------------
 */
 
-export function getServices() {
-  return read<Service>(
-    "services",
-    services
+const readServices =
+  unstable_cache(
+    async () =>
+      read<Service>(
+        "services",
+        services
+      ),
+    ["ayzent-services"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getServices() {
+  return readServices();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Projects
+|--------------------------------------------------------------------------
+*/
+
+const readProjects =
+  unstable_cache(
+    async () =>
+      read<Project>(
+        "projects",
+        projects
+      ),
+    ["ayzent-projects"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
+  );
 
 export function getProjects() {
-  return read<Project>(
-    "projects",
-    projects
-  );
-}
-
-export function getPosts() {
-  return read<Post>(
-    "posts",
-    posts
-  );
+  return readProjects();
 }
 
 export async function getProject(
   slug: string
 ) {
-  return (
-    await getProjects()
-  ).find(
+  const items =
+    await getProjects();
+
+  return items.find(
     (project) =>
       project.slug === slug
   );
 }
 
+/*
+|--------------------------------------------------------------------------
+| Blog Posts
+|--------------------------------------------------------------------------
+*/
+
+const readPosts =
+  unstable_cache(
+    async () =>
+      read<Post>(
+        "posts",
+        posts
+      ),
+    ["ayzent-posts"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
+  );
+
+export function getPosts() {
+  return readPosts();
+}
+
 export async function getPost(
   slug: string
 ) {
-  return (
-    await getPosts()
-  ).find(
+  const items =
+    await getPosts();
+
+  return items.find(
     (post) =>
       post.slug === slug
   );
@@ -391,18 +431,179 @@ export async function getPost(
 |--------------------------------------------------------------------------
 */
 
-export function getCategories() {
-  return read<Category>(
-    "categories",
-    []
+const readCategories =
+  unstable_cache(
+    async () =>
+      read<Category>(
+        "categories",
+        []
+      ),
+    ["ayzent-categories"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getCategories() {
+  return readCategories();
 }
 
-export function getTags() {
-  return read<Tag>(
-    "tags",
-    []
+/*
+|--------------------------------------------------------------------------
+| Tags
+|--------------------------------------------------------------------------
+*/
+
+const readTags =
+  unstable_cache(
+    async () =>
+      read<Tag>(
+        "tags",
+        []
+      ),
+    ["ayzent-tags"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getTags() {
+  return readTags();
+}
+
+/*
+|--------------------------------------------------------------------------
+| Hero Slides
+|--------------------------------------------------------------------------
+*/
+
+const fallbackHeroSlides:
+  HeroSlide[] = [
+  {
+    eyebrow:
+      "Ayzent Solutions",
+
+    title:
+      "Digital work with real momentum.",
+
+    highlight:
+      "real momentum.",
+
+    text:
+      "We build thoughtful websites, digital products, and technology solutions for businesses ready to make their next move count.",
+
+    image:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=85",
+
+    overlayStrength:
+      "dark",
+
+    primaryText:
+      "Start a Project",
+
+    primaryLink:
+      "/contact",
+
+    secondaryText:
+      "Explore Our Work",
+
+    secondaryLink:
+      "/projects",
+
+    active: true,
+
+    displayOrder: 1,
+  },
+];
+
+const readHeroSlides =
+  unstable_cache(
+    async (): Promise<
+      HeroSlide[]
+    > => {
+      try {
+        const db =
+          await getDb();
+
+        const documents =
+          await db
+            .collection(
+              "heroSlides"
+            )
+            .find({
+              active: {
+                $ne: false,
+              },
+            })
+            .sort({
+              displayOrder: 1,
+              createdAt: -1,
+            })
+            .toArray();
+
+        if (
+          documents.length
+        ) {
+          return documents.map(
+            (document) => ({
+              _id:
+                document._id.toString(),
+
+              eyebrow:
+                document.eyebrow,
+
+              title:
+                document.title,
+
+              highlight:
+                document.highlight,
+
+              text:
+                document.text,
+
+              image:
+                document.image,
+
+              overlayStrength:
+                document.overlayStrength,
+
+              primaryText:
+                document.primaryText,
+
+              primaryLink:
+                document.primaryLink,
+
+              secondaryText:
+                document.secondaryText,
+
+              secondaryLink:
+                document.secondaryLink,
+
+              active:
+                document.active,
+
+              displayOrder:
+                document.displayOrder,
+            })
+          ) as HeroSlide[];
+        }
+
+        return fallbackHeroSlides;
+      } catch {
+        return fallbackHeroSlides;
+      }
+    },
+    ["ayzent-hero-slides"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
+  );
+
+export function getHeroSlides() {
+  return readHeroSlides();
 }
 
 /*
@@ -411,54 +612,84 @@ export function getTags() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTeam() {
-  return read<TeamMember>(
-    "team",
-    []
+const readTeam =
+  unstable_cache(
+    async () =>
+      read<TeamMember>(
+        "team",
+        []
+      ),
+    ["ayzent-team"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getTeam() {
+  return readTeam();
 }
 
 /*
 |--------------------------------------------------------------------------
-| FAQ
+| FAQs
 |--------------------------------------------------------------------------
 */
 
-export async function getFaqs() {
-  const items =
-    await read<
-      Record<string, unknown>
-    >(
-      "faqs",
-      []
-    );
+const readFaqs =
+  unstable_cache(
+    async () => {
+      const items =
+        await read<
+          Record<string, unknown>
+        >(
+          "faqs",
+          []
+        );
 
-  if (!items.length) {
-    return faqs;
-  }
+      if (!items.length) {
+        return faqs;
+      }
 
-  return items
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .map(
-      (item) =>
-        [
-          String(
-            item.question || ""
-          ),
+      return items
+        .filter(
+          (item) =>
+            item.active !== false
+        )
+        .map(
+          (item) =>
+            [
+              String(
+                item.question ||
+                  ""
+              ),
 
-          String(
-            item.answer || ""
-          ),
-        ] as [string, string]
-    )
-    .filter(
-      ([question, answer]) =>
-        question &&
-        answer
-    );
+              String(
+                item.answer ||
+                  ""
+              ),
+            ] as [
+              string,
+              string
+            ]
+        )
+        .filter(
+          (
+            [question, answer]
+          ) =>
+            question &&
+            answer
+        );
+    },
+    ["ayzent-faqs"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
+  );
+
+export function getFaqs() {
+  return readFaqs();
 }
 
 /*
@@ -467,16 +698,29 @@ export async function getFaqs() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTestimonials() {
-  return (
-    await read<Testimonial>(
-      "testimonials",
-      []
-    )
-  ).filter(
-    (item) =>
-      item.active !== false
+const readTestimonials =
+  unstable_cache(
+    async () =>
+      (
+        await read<
+          Testimonial
+        >(
+          "testimonials",
+          []
+        )
+      ).filter(
+        (item) =>
+          item.active !== false
+      ),
+    ["ayzent-testimonials"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getTestimonials() {
+  return readTestimonials();
 }
 
 /*
@@ -485,16 +729,29 @@ export async function getTestimonials() {
 |--------------------------------------------------------------------------
 */
 
-export async function getClientLogos() {
-  return (
-    await read<ClientLogo>(
-      "clientLogos",
-      []
-    )
-  ).filter(
-    (item) =>
-      item.active !== false
+const readClientLogos =
+  unstable_cache(
+    async () =>
+      (
+        await read<
+          ClientLogo
+        >(
+          "clientLogos",
+          []
+        )
+      ).filter(
+        (item) =>
+          item.active !== false
+      ),
+    ["ayzent-client-logos"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getClientLogos() {
+  return readClientLogos();
 }
 
 /*
@@ -503,35 +760,60 @@ export async function getClientLogos() {
 |--------------------------------------------------------------------------
 */
 
-export async function getJobs() {
-  return (
-    await read<Job>(
-      "jobs",
-      []
-    )
-  ).filter(
-    (job) =>
-      job.status === "open"
+const readJobs =
+  unstable_cache(
+    async () =>
+      (
+        await read<Job>(
+          "jobs",
+          []
+        )
+      ).filter(
+        (job) =>
+          job.status === "open"
+      ),
+    ["ayzent-jobs"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getJobs() {
+  return readJobs();
 }
 
 /*
 |--------------------------------------------------------------------------
-| Announcement
+| Active Announcement
 |--------------------------------------------------------------------------
 */
 
-export async function getActiveAnnouncement() {
-  const announcements =
-    await read<Announcement>(
-      "announcements",
-      []
-    );
+const readActiveAnnouncement =
+  unstable_cache(
+    async () => {
+      const items =
+        await read<
+          Announcement
+        >(
+          "announcements",
+          []
+        );
 
-  return announcements.find(
-    (item) =>
-      item.active
+      return items.find(
+        (item) =>
+          item.active
+      );
+    },
+    ["ayzent-announcement"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getActiveAnnouncement() {
+  return readActiveAnnouncement();
 }
 
 /*
@@ -540,16 +822,29 @@ export async function getActiveAnnouncement() {
 |--------------------------------------------------------------------------
 */
 
-export async function getSocialLinks() {
-  return (
-    await read<SocialLink>(
-      "socialLinks",
-      []
-    )
-  ).filter(
-    (item) =>
-      item.active !== false
+const readSocialLinks =
+  unstable_cache(
+    async () =>
+      (
+        await read<
+          SocialLink
+        >(
+          "socialLinks",
+          []
+        )
+      ).filter(
+        (item) =>
+          item.active !== false
+      ),
+    ["ayzent-social-links"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
+    }
   );
+
+export function getSocialLinks() {
+  return readSocialLinks();
 }
 
 /*
@@ -558,49 +853,28 @@ export async function getSocialLinks() {
 |--------------------------------------------------------------------------
 */
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  const fallback: SiteSettings = {
+const fallbackSettings:
+  SiteSettings = {
     companyName:
       "Ayzent Solutions",
 
     companyDescription:
-      "A design and engineering studio building websites, brands, and digital products for companies ready to move faster.",
+      "A design and engineering studio building websites and digital products.",
 
     email:
       "hello@ayzent.com",
 
-    whatsapp:
-      "00000000000",
-
     location:
-      "Remote-first · Serving clients worldwide",
+      "India · Serving clients worldwide",
 
     footerDescription:
-      "A design and engineering studio building websites, brands, and digital products for companies ready to move faster.",
+      "Ideas. Engineered.",
 
-    heroEyebrow:
-      "Ayzent Solutions",
+    headerButtonText:
+      "Get a Quote",
 
-    heroTitle:
-      "Digital work with real momentum.",
-
-    heroHighlight:
-      "real momentum.",
-
-    heroText:
-      "We build thoughtful websites, brands, and digital products for businesses ready to make their next move count.",
-
-    heroPrimaryText:
-      "Start a Project",
-
-    heroPrimaryLink:
+    headerButtonLink:
       "/contact",
-
-    heroSecondaryText:
-      "Explore Our Work",
-
-    heroSecondaryLink:
-      "/projects",
 
     homeCtaEyebrow:
       "A good place to begin",
@@ -614,12 +888,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     homeCtaButtonLink:
       "/contact",
 
-    headerButtonText:
-      "Get a Quote",
-
-    headerButtonLink:
-      "/contact",
-
     contactEyebrow:
       "Contact",
 
@@ -627,62 +895,66 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       "Tell us what you’re working towards.",
 
     contactText:
-      "A little context goes a long way. Tell us about the opportunity, and we’ll come back with a practical next step.",
+      "Tell us about your requirements and we will help you find the right next step.",
   };
 
-  try {
-    const db = await getDb();
+const readSiteSettings =
+  unstable_cache(
+    async (): Promise<
+      SiteSettings
+    > => {
+      try {
+        const db =
+          await getDb();
 
-    const document =
-      await db
-        .collection(
-          "siteSettings"
-        )
-        .find()
-        .sort({
-          createdAt: 1,
-        })
-        .limit(1)
-        .next();
+        const document =
+          await db
+            .collection(
+              "siteSettings"
+            )
+            .find()
+            .sort({
+              createdAt: 1,
+            })
+            .limit(1)
+            .next();
 
-    if (!document) {
-      return fallback;
+        if (!document) {
+          return fallbackSettings;
+        }
+
+        const {
+          _id,
+          ...settings
+        } = document;
+
+        return {
+          ...fallbackSettings,
+          ...(settings as SiteSettings),
+        };
+      } catch {
+        return fallbackSettings;
+      }
+    },
+    ["ayzent-site-settings"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
     }
+  );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove MongoDB _id
-    |--------------------------------------------------------------------------
-    |
-    | MongoDB returns _id as ObjectId.
-    | SiteSettings expects _id as string.
-    | We do not need _id on the public website,
-    | so remove it before returning the content.
-    |
-    */
-
-    const {
-      _id,
-      ...settings
-    } = document;
-
-    return {
-      ...fallback,
-      ...(settings as SiteSettings),
-    };
-  } catch {
-    return fallback;
-  }
+export function getSiteSettings() {
+  return readSiteSettings();
 }
 
 /*
 |--------------------------------------------------------------------------
-| About Page Content
+| About Content
 |--------------------------------------------------------------------------
 */
 
-export async function getAboutContent(): Promise<AboutContent> {
-  const fallback: AboutContent = {
+const fallbackAbout:
+  AboutContent = {
     heroEyebrow:
       "About Ayzent",
 
@@ -690,37 +962,37 @@ export async function getAboutContent(): Promise<AboutContent> {
       "The ideas behind more purposeful digital work.",
 
     heroText:
-      "Ayzent Solutions is a design and technology studio for organisations with a clear sense of where they are going.",
+      "Ayzent Solutions combines design, engineering, and practical thinking to build digital experiences that move businesses forward.",
 
     storyEyebrow:
       "Our story",
 
     storyParagraphOne:
-      "We started Ayzent with a simple belief: the digital work that matters most is built with attention, not noise. It should make a business easier to understand, easier to choose, and easier to grow.",
+      "We believe digital work should solve real business problems instead of simply adding noise.",
 
     storyParagraphTwo:
-      "Today, we work at the point where strong ideas meet practical delivery—bringing strategy, design, and engineering into one considered process.",
+      "Our approach brings strategy, design, development, and dependable delivery together.",
 
     missionEyebrow:
       "Mission",
 
     mission:
-      "Help good businesses make a stronger digital impression.",
+      "Build digital solutions that create practical value.",
 
     visionEyebrow:
       "Vision",
 
     vision:
-      "A more thoughtful internet, shaped by teams that care about the people they serve.",
+      "Make technology more useful, accessible, and purposeful.",
 
     valuesEyebrow:
       "What guides us",
 
     values: [
-      "Curiosity before certainty",
-      "Clarity over clutter",
-      "Care in the details",
-      "Partnership over hand-off",
+      "Clarity",
+      "Curiosity",
+      "Craft",
+      "Accountability",
     ],
 
     teamEyebrow:
@@ -730,19 +1002,19 @@ export async function getAboutContent(): Promise<AboutContent> {
       "The people behind the work.",
 
     teamText:
-      "Ayzent is led by people who care about the balance of ideas, craft, and dependable execution.",
+      "A team focused on ideas, execution, and meaningful digital outcomes.",
 
     quote:
-      "The best work happens when ambition is met with honesty and care.",
+      "Good technology should make progress easier.",
 
     quoteAuthor:
-      "Founder, Ayzent Solutions",
+      "Ayzent Solutions",
 
     ctaTitle:
       "Let’s build what’s next.",
 
     ctaText:
-      "Bring us the opportunity, challenge, or half-formed idea.",
+      "Bring us your challenge, opportunity, or idea.",
 
     ctaButtonText:
       "Start a Project",
@@ -751,41 +1023,51 @@ export async function getAboutContent(): Promise<AboutContent> {
       "/contact",
   };
 
-  try {
-    const db = await getDb();
+const readAboutContent =
+  unstable_cache(
+    async (): Promise<
+      AboutContent
+    > => {
+      try {
+        const db =
+          await getDb();
 
-    const document =
-      await db
-        .collection(
-          "aboutContent"
-        )
-        .find()
-        .sort({
-          createdAt: 1,
-        })
-        .limit(1)
-        .next();
+        const document =
+          await db
+            .collection(
+              "aboutContent"
+            )
+            .find()
+            .sort({
+              createdAt: 1,
+            })
+            .limit(1)
+            .next();
 
-    if (!document) {
-      return fallback;
+        if (!document) {
+          return fallbackAbout;
+        }
+
+        const {
+          _id,
+          ...content
+        } = document;
+
+        return {
+          ...fallbackAbout,
+          ...(content as AboutContent),
+        };
+      } catch {
+        return fallbackAbout;
+      }
+    },
+    ["ayzent-about-content"],
+    {
+      revalidate:
+        CONTENT_REVALIDATE,
     }
+  );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove MongoDB _id
-    |--------------------------------------------------------------------------
-    */
-
-    const {
-      _id,
-      ...aboutContent
-    } = document;
-
-    return {
-      ...fallback,
-      ...(aboutContent as AboutContent),
-    };
-  } catch {
-    return fallback;
-  }
+export function getAboutContent() {
+  return readAboutContent();
 }

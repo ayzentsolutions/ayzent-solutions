@@ -1,0 +1,5 @@
+import { Container } from "@/components/ui/container";
+import { SearchBrowser } from "@/components/search/search-browser";
+import { getFaqs, getPosts, getProjects, getServices } from "@/lib/content";
+export const dynamic = "force-dynamic";
+export default async function SearchPage() { const [projects, posts, services, faqs] = await Promise.all([getProjects(), getPosts(), getServices(), getFaqs()]); const items = [...projects.map((item) => ({ title: item.name, text: item.summary || item.overview || "", href: `/projects/${item.slug}`, type: "Project" })), ...posts.map((item) => ({ title: item.title, text: item.excerpt, href: `/blog/${item.slug}`, type: "Article" })), ...services.map((item) => ({ title: item.title, text: item.text, href: "/services", type: "Service" })), ...faqs.map(([title, text]) => ({ title, text, href: "/services#faq", type: "FAQ" }))]; return <section className="py-16 sm:py-24"><Container className="max-w-4xl"><p className="text-xs font-medium uppercase tracking-[.18em] text-gold">Search</p><h1 className="mt-5 font-display text-5xl">Find something useful.</h1><SearchBrowser items={items} /></Container></section> }

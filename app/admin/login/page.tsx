@@ -1,0 +1,2 @@
+import { LoginForm } from "@/components/admin/login-form";
+export default function AdminLogin() { return <main className="grid min-h-screen place-items-center bg-surface px-5"><div className="w-full max-w-md border border-line bg-background p-8 sm:p-10"><p className="text-xs font-medium uppercase tracking-[.18em] text-gold">Ayzent Solutions</p><h1 className="mt-4 font-display text-4xl">Admin sign in</h1><p className="mt-3 text-sm text-muted">Use your administrator credentials to continue.</p><div className="mt-8"><LoginForm /></div></div></main>; }

@@ -1,0 +1,3 @@
+import { ButtonLink } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
+export default function NotFound() { return <Container className="grid min-h-[65vh] place-items-center py-16 text-center"><div><p className="font-display text-[8rem] leading-none text-gold sm:text-[12rem]">404</p><h1 className="mt-2 font-display text-4xl">This page took a different direction.</h1><p className="mx-auto mt-4 max-w-md text-muted">The destination you were looking for is not here, but there is plenty worth exploring.</p><ButtonLink href="/" className="mt-8">Return home</ButtonLink></div></Container> }

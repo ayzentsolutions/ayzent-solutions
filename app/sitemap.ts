@@ -1,0 +1,3 @@
+import type { MetadataRoute } from "next";
+import { posts, projects } from "@/lib/site-data";
+export default function sitemap(): MetadataRoute.Sitemap { const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"; const pages = ["", "/about", "/services", "/projects", "/blog", "/careers", "/contact"]; return [...pages.map((path) => ({ url: `${base}${path}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: path === "" ? 1 : .7 })), ...projects.map((project) => ({ url: `${base}/projects/${project.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: .8 })), ...posts.map((post) => ({ url: `${base}/blog/${post.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: .7 }))]; }

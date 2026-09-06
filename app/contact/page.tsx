@@ -1,0 +1,5 @@
+import { Container } from "@/components/ui/container";
+import { PageHero } from "@/components/sections/page-hero";
+import { ContactForm } from "@/components/forms/contact-form";
+import { SocialLinks } from "@/components/social/social-links";
+export default function ContactPage() { return <><PageHero eyebrow="Contact" title="Tell us what you’re working towards." text="A little context goes a long way. Tell us about the opportunity, and we’ll come back with a practical next step." /><section className="py-16 sm:py-24"><Container className="grid gap-14 lg:grid-cols-[.7fr_1.3fr]"><aside className="space-y-7 text-sm"><div><p className="text-muted">Email</p><a className="mt-1 block hover:text-gold" href="mailto:hello@ayzent.com">hello@ayzent.com</a></div><div><p className="text-muted">WhatsApp</p><a className="mt-1 block hover:text-gold" target="_blank" rel="noreferrer" href="https://wa.me/00000000000">Chat on WhatsApp</a></div><div><p className="text-muted">Working from</p><p className="mt-1">Remote-first · Serving clients worldwide</p></div><SocialLinks /></aside><ContactForm /></Container></section></> }

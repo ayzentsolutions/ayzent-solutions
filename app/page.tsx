@@ -1,4 +1,5 @@
 import Image from "next/image";
+
 import Link from "next/link";
 
 import {
@@ -10,23 +11,34 @@ import {
 } from "@/components/ui/container";
 
 import {
+  HomeHeroCarousel,
+} from "@/components/sections/home-hero-carousel";
+
+import {
   ProjectCard,
 } from "@/components/sections/project-card";
 
 import {
   getClientLogos,
   getFaqs,
+  getHeroSlides,
   getProjects,
   getServices,
   getSiteSettings,
   getTestimonials,
 } from "@/lib/content";
 
-export const dynamic =
-  "force-dynamic";
+/*
+|--------------------------------------------------------------------------
+| ISR
+|--------------------------------------------------------------------------
+*/
+
+export const revalidate = 60;
 
 export default async function Home() {
   const [
+    heroSlides,
     faqs,
     projects,
     services,
@@ -34,6 +46,7 @@ export default async function Home() {
     clientLogos,
     settings,
   ] = await Promise.all([
+    getHeroSlides(),
     getFaqs(),
     getProjects(),
     getServices(),
@@ -43,130 +56,23 @@ export default async function Home() {
   ]);
 
   const featuredProjects =
-    projects.filter(
+    projects.some(
       (project) =>
         project.featured
-    ).length > 0
+    )
       ? projects.filter(
           (project) =>
             project.featured
         )
       : projects;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Hero Title
-  |--------------------------------------------------------------------------
-  */
-
-  const title =
-    settings.heroTitle ||
-    "Digital work with real momentum.";
-
-  const highlight =
-    settings.heroHighlight;
-
-  let titleBefore = title;
-
-  if (
-    highlight &&
-    title.includes(highlight)
-  ) {
-    titleBefore = title.replace(
-      highlight,
-      ""
-    );
-  }
-
   return (
     <>
       {/* HERO */}
 
-      <section className="relative overflow-hidden border-b border-line">
-
-        <Container className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-20 lg:grid-cols-[1.15fr_.85fr]">
-
-          <div>
-
-            <p className="animate-fade-up text-xs font-medium uppercase tracking-[0.18em] text-gold">
-              {
-                settings.heroEyebrow
-              }
-            </p>
-
-            <h1 className="mt-5 max-w-3xl font-display text-5xl font-semibold leading-[.98] sm:text-7xl">
-
-              {highlight &&
-              title.includes(
-                highlight
-              ) ? (
-                <>
-                  {titleBefore}{" "}
-
-                  <em className="font-normal text-gold">
-                    {highlight}
-                  </em>
-                </>
-              ) : (
-                title
-              )}
-
-            </h1>
-
-            <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
-              {
-                settings.heroText
-              }
-            </p>
-
-            <div className="mt-9 flex flex-wrap gap-3">
-
-              <ButtonLink
-                href={
-                  settings.heroPrimaryLink ||
-                  "/contact"
-                }
-              >
-                {
-                  settings.heroPrimaryText ||
-                  "Start a Project"
-                }
-              </ButtonLink>
-
-              <ButtonLink
-                href={
-                  settings.heroSecondaryLink ||
-                  "/projects"
-                }
-                variant="secondary"
-              >
-                {
-                  settings.heroSecondaryText ||
-                  "Explore Our Work"
-                }
-              </ButtonLink>
-
-            </div>
-
-          </div>
-
-          <div className="relative hidden aspect-square bg-ink p-8 lg:block">
-
-            <div className="absolute inset-8 border border-gold/60" />
-
-            <div className="absolute inset-0 grid place-items-center">
-
-              <span className="font-display text-6xl text-paper">
-                A.
-              </span>
-
-            </div>
-
-          </div>
-
-        </Container>
-
-      </section>
+      <HomeHeroCarousel
+        slides={heroSlides}
+      />
 
       {/* SERVICES */}
 
@@ -190,7 +96,7 @@ export default async function Home() {
 
             <Link
               href="/services"
-              className="hidden text-sm sm:block hover:text-gold"
+              className="hidden text-sm transition hover:text-gold sm:block"
             >
               All services →
             </Link>
@@ -206,9 +112,7 @@ export default async function Home() {
               ) => (
 
                 <div
-                  key={
-                    service.title
-                  }
+                  key={`${service.title}-${index}`}
                   className="border-b border-line py-7 sm:pr-8 lg:pr-10"
                 >
 
@@ -224,15 +128,19 @@ export default async function Home() {
                   </span>
 
                   <h3 className="mt-5 text-lg">
+
                     {
                       service.title
                     }
+
                   </h3>
 
                   <p className="mt-3 text-sm leading-relaxed text-muted">
+
                     {
                       service.text
                     }
+
                   </p>
 
                 </div>
@@ -259,12 +167,13 @@ export default async function Home() {
           <div className="mt-4 flex items-end justify-between gap-4">
 
             <h2 className="font-display text-4xl sm:text-5xl">
-              Work that carries weight.
+              Work built around
+              what matters.
             </h2>
 
             <Link
               href="/projects"
-              className="text-sm hover:text-gold"
+              className="hidden text-sm transition hover:text-gold sm:block"
             >
               All projects →
             </Link>
@@ -274,7 +183,7 @@ export default async function Home() {
           <div className="mt-12 grid gap-10 md:grid-cols-2">
 
             {featuredProjects
-              .slice(0, 2)
+              .slice(0, 4)
               .map(
                 (project) => (
 
@@ -296,49 +205,125 @@ export default async function Home() {
 
       </section>
 
-      {/* CLIENT LOGOS */}
+      {/* TESTIMONIALS */}
 
-      {clientLogos.length >
-        0 && (
+      {testimonials.length > 0 && (
 
-        <section className="border-y border-line py-16">
+        <section className="py-20 sm:py-28">
 
           <Container>
 
-            <p className="text-center text-xs font-medium uppercase tracking-[.18em] text-muted">
-              Trusted by ambitious teams
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
+              Client perspective
             </p>
 
-            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
+            <h2 className="mt-4 max-w-3xl font-display text-4xl sm:text-5xl">
+              Good work should leave
+              a useful impression.
+            </h2>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+              {testimonials.map(
+                (
+                  testimonial,
+                  index
+                ) => (
+
+                  <article
+                    key={`${testimonial.clientName}-${index}`}
+                    className="border border-line p-7"
+                  >
+
+                    <p className="font-display text-xl leading-relaxed">
+
+                      “{
+                        testimonial.text
+                      }”
+
+                    </p>
+
+                    <div className="mt-8">
+
+                      <p className="text-sm font-medium">
+
+                        {
+                          testimonial.clientName
+                        }
+
+                      </p>
+
+                      {testimonial.roleCompany && (
+
+                        <p className="mt-1 text-xs text-muted">
+
+                          {
+                            testimonial.roleCompany
+                          }
+
+                        </p>
+
+                      )}
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
+
+            </div>
+
+          </Container>
+
+        </section>
+
+      )}
+
+      {/* CLIENT LOGOS */}
+
+      {clientLogos.length > 0 && (
+
+        <section className="border-y border-line bg-surface py-14">
+
+          <Container>
+
+            <p className="text-center text-xs font-medium uppercase tracking-[0.18em] text-muted">
+              Organisations and brands
+            </p>
+
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
 
               {clientLogos.map(
-                (client) => {
+                (
+                  client,
+                  index
+                ) => {
 
                   const content =
                     client.logo ? (
 
-                      <div className="relative mx-auto h-16 w-full max-w-[180px]">
-
-                        <Image
-                          src={
-                            client.logo
-                          }
-                          alt={
-                            client.name
-                          }
-                          fill
-                          unoptimized
-                          className="object-contain"
-                        />
-
-                      </div>
+                      <Image
+                        src={
+                          client.logo
+                        }
+                        alt={
+                          client.name
+                        }
+                        width={220}
+                        height={100}
+                        sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw"
+                        className="h-16 w-full object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0"
+                      />
 
                     ) : (
 
-                      <span className="font-display text-xl text-muted">
+                      <span className="text-sm text-muted">
+
                         {
                           client.name
                         }
+
                       </span>
 
                     );
@@ -346,28 +331,28 @@ export default async function Home() {
                   return client.link ? (
 
                     <a
-                      key={
-                        client.name
-                      }
+                      key={`${client.name}-${index}`}
                       href={
                         client.link
                       }
                       target="_blank"
-                      rel="noopener noreferrer"
-                      className="grid place-items-center"
+                      rel="noreferrer"
+                      className="flex min-h-24 items-center justify-center border border-line bg-background p-4"
                     >
+
                       {content}
+
                     </a>
 
                   ) : (
 
                     <div
-                      key={
-                        client.name
-                      }
-                      className="grid place-items-center"
+                      key={`${client.name}-${index}`}
+                      className="flex min-h-24 items-center justify-center border border-line bg-background p-4"
                     >
+
                       {content}
+
                     </div>
 
                   );
@@ -382,59 +367,59 @@ export default async function Home() {
 
       )}
 
-      {/* TESTIMONIALS */}
+      {/* FAQ */}
 
-      {testimonials.length >
-        0 && (
+      {faqs.length > 0 && (
 
         <section className="py-20 sm:py-28">
 
           <Container>
 
-            <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
-              Client perspectives
-            </p>
+            <div className="max-w-3xl">
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
+                Questions
+              </p>
 
-              {testimonials
-                .slice(0, 2)
-                .map(
-                  (
-                    testimonial
-                  ) => (
+              <h2 className="mt-4 font-display text-4xl sm:text-5xl">
+                A few useful answers.
+              </h2>
 
-                    <figure
-                      className="border border-line p-7"
-                      key={
-                        testimonial.clientName
-                      }
-                    >
+            </div>
 
-                      <blockquote className="font-display text-2xl leading-relaxed">
+            <div className="mt-12 divide-y border-y border-line">
 
-                        “{
-                          testimonial.text
-                        }”
+              {faqs.map(
+                (
+                  [question, answer],
+                  index
+                ) => (
 
-                      </blockquote>
+                  <details
+                    key={`${question}-${index}`}
+                    className="group py-6"
+                  >
 
-                      <figcaption className="mt-6 text-sm text-muted">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-lg">
 
-                        {
-                          testimonial.clientName
-                        }
+                      {question}
 
-                        {testimonial.roleCompany
-                          ? ` · ${testimonial.roleCompany}`
-                          : ""}
+                      <span className="text-gold transition group-open:rotate-45">
+                        +
+                      </span>
 
-                      </figcaption>
+                    </summary>
 
-                    </figure>
+                    <p className="max-w-3xl pt-5 text-sm leading-relaxed text-muted">
 
-                  )
-                )}
+                      {answer}
+
+                    </p>
+
+                  </details>
+
+                )
+              )}
 
             </div>
 
@@ -444,96 +429,54 @@ export default async function Home() {
 
       )}
 
-      {/* FAQ */}
-
-      <section className="py-20 sm:py-28">
-
-        <Container className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
-
-          <div>
-
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
-              Common questions
-            </p>
-
-            <h2 className="mt-4 font-display text-4xl sm:text-5xl">
-              Let’s make it clear.
-            </h2>
-
-          </div>
-
-          <div>
-
-            {faqs.map(
-              ([
-                question,
-                answer,
-              ]) => (
-
-                <details
-                  key={question}
-                  className="border-t border-line py-5 last:border-b"
-                >
-
-                  <summary className="cursor-pointer list-none pr-8 text-lg marker:hidden">
-
-                    {question}
-
-                    <span className="float-right text-gold">
-                      +
-                    </span>
-
-                  </summary>
-
-                  <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-                    {answer}
-                  </p>
-
-                </details>
-
-              )
-            )}
-
-          </div>
-
-        </Container>
-
-      </section>
-
       {/* CTA */}
 
-      <section className="bg-ink py-20 text-paper sm:py-28">
+      <section className="border-t border-line bg-ink py-20 text-paper sm:py-28">
 
-        <Container className="text-center">
+        <Container>
 
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
-            {
-              settings.homeCtaEyebrow
-            }
-          </p>
+          <div className="max-w-4xl">
 
-          <h2 className="mx-auto mt-5 max-w-3xl font-display text-4xl leading-tight sm:text-6xl">
-            {
-              settings.homeCtaTitle
-            }
-          </h2>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
 
-          <ButtonLink
-            href={
-              settings.homeCtaButtonLink ||
-              "/contact"
-            }
-            className="mt-8 bg-gold text-ink hover:bg-paper"
-          >
-            {
-              settings.homeCtaButtonText ||
-              "Discuss Your Requirements"
-            }
-          </ButtonLink>
+              {
+                settings.homeCtaEyebrow
+              }
+
+            </p>
+
+            <h2 className="mt-5 font-display text-5xl leading-[.98] sm:text-7xl">
+
+              {
+                settings.homeCtaTitle
+              }
+
+            </h2>
+
+            <div className="mt-9">
+
+              <ButtonLink
+                href={
+                  settings.homeCtaButtonLink ||
+                  "/contact"
+                }
+              >
+
+                {
+                  settings.homeCtaButtonText ||
+                  "Discuss Your Requirements"
+                }
+
+              </ButtonLink>
+
+            </div>
+
+          </div>
 
         </Container>
 
       </section>
+
     </>
   );
 }

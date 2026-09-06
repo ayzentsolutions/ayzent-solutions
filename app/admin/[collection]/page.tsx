@@ -1,6 +1,153 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ContentManager } from "@/components/admin/content-manager";
-import { LogoutButton } from "@/components/admin/logout-button";
-import { collectionLabels, isCmsCollection } from "@/lib/cms";
-export default function CollectionPage({ params }: { params: { collection: string } }) { if (!isCmsCollection(params.collection)) notFound(); return <main className="min-h-screen bg-background"><header className="border-b border-line"><div className="mx-auto flex max-w-[90rem] items-center justify-between px-5 py-5"><Link href="/admin" className="font-display text-xl">AYZENT / ADMIN</Link><LogoutButton /></div></header><div className="mx-auto max-w-[90rem] px-5 py-10"><Link className="text-sm text-muted hover:text-gold" href="/admin">← Dashboard</Link><div className="mt-8"><ContentManager collection={params.collection} label={collectionLabels[params.collection]} /></div></div></main>; }
+
+import {
+  notFound,
+} from "next/navigation";
+
+import {
+  ContentManager,
+} from "@/components/admin/content-manager";
+
+import {
+  LogoutButton,
+} from "@/components/admin/logout-button";
+
+import {
+  cmsNavigation,
+  collectionLabels,
+  isCmsCollection,
+} from "@/lib/cms";
+
+export default function CollectionPage({
+  params,
+}: {
+  params: {
+    collection: string;
+  };
+}) {
+  if (
+    !isCmsCollection(
+      params.collection
+    )
+  ) {
+    notFound();
+  }
+
+  return (
+
+    <main className="min-h-screen bg-background">
+
+      <header className="border-b border-line">
+
+        <div className="mx-auto flex max-w-[90rem] items-center justify-between px-5 py-5">
+
+          <Link
+            href="/admin"
+            className="font-display text-xl"
+          >
+            AYZENT / ADMIN
+          </Link>
+
+          <LogoutButton />
+
+        </div>
+
+      </header>
+
+      <div className="mx-auto grid max-w-[90rem] gap-10 px-5 py-10 lg:grid-cols-[17rem_1fr]">
+
+        <aside className="lg:sticky lg:top-6 lg:h-fit">
+
+          <nav className="space-y-8">
+
+            {cmsNavigation.map(
+              (group) => (
+
+                <div
+                  key={
+                    group.title
+                  }
+                >
+
+                  <p className="mb-2 px-3 text-xs font-medium uppercase tracking-[.16em] text-muted">
+
+                    {group.title}
+
+                  </p>
+
+                  <div className="space-y-1">
+
+                    {group.items.map(
+                      (collection) => {
+
+                        const active =
+                          collection ===
+                          params.collection;
+
+                        return (
+
+                          <Link
+                            key={collection}
+                            href={`/admin/${collection}`}
+                            className={`block px-3 py-2 text-sm transition ${
+                              active
+                                ? "border-l-2 border-gold bg-surface text-gold"
+                                : "hover:bg-surface hover:text-gold"
+                            }`}
+                          >
+
+                            {
+                              collectionLabels[
+                                collection
+                              ]
+                            }
+
+                          </Link>
+
+                        );
+                      }
+                    )}
+
+                  </div>
+
+                </div>
+
+              )
+            )}
+
+          </nav>
+
+        </aside>
+
+        <section>
+
+          <div className="mb-8">
+
+            <Link
+              className="text-sm text-muted transition hover:text-gold"
+              href="/admin"
+            >
+              ← Dashboard
+            </Link>
+
+          </div>
+
+          <ContentManager
+            collection={
+              params.collection
+            }
+            label={
+              collectionLabels[
+                params.collection
+              ]
+            }
+          />
+
+        </section>
+
+      </div>
+
+    </main>
+
+  );
+}

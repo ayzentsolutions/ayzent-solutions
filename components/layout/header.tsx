@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -98,6 +99,10 @@ export function Header({
     };
   }, [open]);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   if (
     pathname.startsWith(
       "/admin"
@@ -108,40 +113,33 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur">
-
       <Container className="flex h-20 items-center justify-between">
+        {/* LOGO */}
 
         <Logo
-  logo={logo}
-  companyName={companyName}
-/>
+          logo={logo}
+          companyName={companyName}
+        />
 
-        {/* DESKTOP */}
+        {/* DESKTOP NAVIGATION */}
 
         <nav className="hidden items-center gap-8 lg:flex">
-
           {navLinks.map(
             (link) => (
-
               <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm text-foreground transition-colors hover:text-gold"
               >
-
-                {
-                  link.label
-                }
-
+                {link.label}
               </Link>
-
             )
           )}
-
         </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        {/* DESKTOP ACTIONS */}
 
+        <div className="hidden items-center gap-4 lg:flex">
           <ThemeToggle />
 
           <ButtonLink
@@ -150,13 +148,11 @@ export function Header({
           >
             {buttonText}
           </ButtonLink>
-
         </div>
 
-        {/* MOBILE */}
+        {/* MOBILE ACTIONS */}
 
         <div className="flex items-center gap-3 lg:hidden">
-
           <ThemeToggle />
 
           <button
@@ -175,7 +171,6 @@ export function Header({
             aria-expanded={open}
             className="relative flex h-9 w-9 flex-col items-center justify-center gap-1.5"
           >
-
             <span
               className={`h-px w-6 bg-foreground transition-transform duration-300 ${
                 open
@@ -199,11 +194,8 @@ export function Header({
                   : ""
               }`}
             />
-
           </button>
-
         </div>
-
       </Container>
 
       {/* MOBILE MENU */}
@@ -215,12 +207,9 @@ export function Header({
             : "max-h-0 border-t-0"
         }`}
       >
-
         <Container className="flex flex-col gap-1 py-6">
-
           {navLinks.map(
             (link) => (
-
               <Link
                 key={link.href}
                 href={link.href}
@@ -229,13 +218,8 @@ export function Header({
                 }
                 className="border-b border-line py-3 text-base text-foreground last:border-b-0"
               >
-
-                {
-                  link.label
-                }
-
+                {link.label}
               </Link>
-
             )
           )}
 
@@ -246,11 +230,9 @@ export function Header({
           >
             {buttonText}
           </ButtonLink>
-
         </Container>
-
       </div>
-
     </header>
   );
 }
+

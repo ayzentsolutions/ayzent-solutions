@@ -43,6 +43,20 @@ function isSingleton(
   );
 }
 
+function getItemId(
+  item: Item
+) {
+  const id = item._id;
+
+  if (
+    typeof id === "string"
+  ) {
+    return id;
+  }
+
+  return String(id);
+}
+
 const titleOf = (
   item: Item
 ) =>
@@ -77,7 +91,8 @@ function toValues(
       }
 
       if (
-        field.type === "tags"
+        field.type ===
+        "tags"
       ) {
         return [
           field.name,
@@ -124,22 +139,36 @@ function toData(
           field.type ===
           "number"
         ) {
+          if (
+            value === "" ||
+            value === undefined
+          ) {
+            return [
+              field.name,
+              undefined,
+            ];
+          }
+
+          const number =
+            Number(value);
+
           return [
             field.name,
 
-            value === ""
+            Number.isNaN(number)
               ? undefined
-              : Number(value),
+              : number,
           ];
         }
 
         if (
-          field.type === "tags"
+          field.type ===
+          "tags"
         ) {
           return [
             field.name,
 
-            String(value)
+            String(value || "")
               .split(",")
               .map((item) =>
                 item.trim()
@@ -150,7 +179,9 @@ function toData(
 
         return [
           field.name,
-          String(value).trim(),
+          String(
+            value || ""
+          ).trim(),
         ];
       })
       .filter(
@@ -188,9 +219,9 @@ function groupFields(
   return Array.from(
     groups.entries()
   ).map(
-    ([title, fields]) => ({
+    ([title, grouped]) => ({
       title,
-      fields,
+      fields: grouped,
     })
   );
 }
@@ -238,8 +269,31 @@ export function ContentManager({
   const [pending, setPending] =
     useState(false);
 
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  /*
+  |--------------------------------------------------------------------------
+  | LOAD COLLECTION
+  |--------------------------------------------------------------------------
+  |
+  | For singleton collections:
+  |
+  | - Existing data automatically fills the form.
+  | - The first document becomes the editable singleton.
+  |
+  | For normal collections:
+  |
+  | - Entries are loaded into the list.
+  |--------------------------------------------------------------------------
+  */
+
   const load = useCallback(
     async () => {
+      setLoading(true);
+
       try {
         const response =
           await fetch(
@@ -259,29 +313,40 @@ export function ContentManager({
           );
         }
 
-        const loadedItems =
-          result.items || [];
+        const loadedItems:
+          Item[] =
+          Array.isArray(
+            result.items
+          )
+            ? result.items
+            : [];
 
-        setItems(loadedItems);
-
-        /*
-        |--------------------------------------------------------------------------
-        | SINGLETON AUTO-LOAD
-        |--------------------------------------------------------------------------
-        */
+        setItems(
+          loadedItems
+        );
 
         if (
           isSingleton(collection)
         ) {
-          const existing =
-            loadedItems[0] || null;
+          /*
+          |--------------------------------------------------------------------------
+          | SINGLETON AUTO LOAD
+          |--------------------------------------------------------------------------
+          */
 
-          setEditing(existing);
+          const existing =
+            loadedItems[0] ||
+            null;
+
+          setEditing(
+            existing
+          );
 
           setValues(
             toValues(
               fields,
-              existing || undefined
+              existing ||
+                undefined
             )
           );
         }
@@ -291,6 +356,8 @@ export function ContentManager({
             ? error.message
             : "Unable to load entries."
         );
+      } finally {
+        setLoading(false);
       }
     },
     [
@@ -324,33 +391,65 @@ export function ContentManager({
       | HTMLSelectElement
     >
   ) {
-    setValues((current) => ({
-      ...current,
+    const target =
+      event.target;
 
-      [field.name]:
-        field.type ===
-          "checkbox" &&
-        event.target instanceof
-          HTMLInputElement
-          ? event.target.checked
-          : event.target.value,
-    }));
+    const nextValue =
+      field.type ===
+        "checkbox" &&
+      target instanceof
+        HTMLInputElement
+        ? target.checked
+        : target.value;
+
+    setValues(
+      (current) => ({
+        ...current,
+
+        [field.name]:
+          nextValue,
+      })
+    );
   }
 
   function setValue(
     name: string,
     value: string | boolean
   ) {
-    setValues((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setValues(
+      (current) => ({
+        ...current,
+        [name]: value,
+      })
+    );
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | SAVE
+  |--------------------------------------------------------------------------
+  |
+  | Singleton:
+  |
+  | Existing document:
+  | PATCH
+  |
+  | No document:
+  | POST
+  |
+  | This prevents the CMS UI from intentionally creating a new
+  | Site Settings document when one already exists.
+  |--------------------------------------------------------------------------
+  */
 
   async function save(
     event: FormEvent
   ) {
     event.preventDefault();
+
+    if (pending) {
+      return;
+    }
 
     setPending(true);
 
@@ -363,17 +462,20 @@ export function ContentManager({
           values
         );
 
-      /*
-      |--------------------------------------------------------------------------
-      | SINGLETON
-      |
-      | Existing document → PATCH
-      | No document → POST
-      |--------------------------------------------------------------------------
-      */
-
       const shouldUpdate =
         Boolean(editing);
+
+      const body =
+        shouldUpdate
+          ? {
+              id: getItemId(
+                editing!
+              ),
+              data,
+            }
+          : {
+              data,
+            };
 
       const response =
         await fetch(
@@ -389,18 +491,10 @@ export function ContentManager({
                 "application/json",
             },
 
-            body: JSON.stringify(
-              shouldUpdate
-                ? {
-                    id:
-                      editing!._id,
-
-                    data,
-                  }
-                : {
-                    data,
-                  }
-            ),
+            body:
+              JSON.stringify(
+                body
+              ),
           }
         );
 
@@ -476,7 +570,7 @@ export function ContentManager({
     }
 
     if (
-      !confirm(
+      !window.confirm(
         "Delete this entry? This cannot be undone."
       )
     ) {
@@ -486,7 +580,9 @@ export function ContentManager({
     try {
       const response =
         await fetch(
-          `/api/admin/${collection}?id=${id}`,
+          `/api/admin/${collection}?id=${encodeURIComponent(
+            id
+          )}`,
           {
             method: "DELETE",
           }
@@ -503,7 +599,10 @@ export function ContentManager({
       }
 
       if (
-        editing?._id === id
+        editing &&
+        getItemId(
+          editing
+        ) === id
       ) {
         cancelEditing();
       }
@@ -524,161 +623,143 @@ export function ContentManager({
 
   return (
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
-
       <section>
-
         <h1 className="font-display text-4xl">
           {label}
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-muted">
-
           {singleton
-            ? editing
-              ? "Your current website settings are loaded below. Edit anything you want and save."
-              : "No settings entry exists yet. You can fill only the fields you want."
+            ? loading
+              ? "Loading your current website settings..."
+              : editing
+                ? "Your current website settings are loaded below. Edit anything you want and save."
+                : "No settings entry exists yet. You can fill only the fields you want."
             : editing
               ? "Update the selected entry."
               : "Create a new entry."}
-
         </p>
 
-        <form
-          onSubmit={save}
-          className="mt-8 grid gap-7"
-        >
-
-          {groupedFields.map(
-            (group) => (
-
-              <fieldset
-                key={group.title}
-                className="border border-line bg-surface/40"
-              >
-
-                <legend className="ml-4 px-2 text-xs font-medium uppercase tracking-[0.18em] text-gold">
-
-                  {group.title}
-
-                </legend>
-
-                <div className="grid gap-5 p-5">
-
-                  {group.fields.map(
-                    (field) => (
-
-                      <Field
-                        key={field.name}
-                        field={field}
-                        value={
-                          values[
-                            field.name
-                          ]
-                        }
-                        onChange={
-                          change
-                        }
-                        onValueChange={
-                          setValue
-                        }
-                      />
-
-                    )
-                  )}
-
-                </div>
-
-              </fieldset>
-
-            )
-          )}
-
-          <div className="flex flex-wrap gap-3">
-
-            <Button
-              disabled={pending}
-              type="submit"
-            >
-
-              {pending
-                ? "Saving…"
-                : singleton
-                  ? "Save Settings"
-                  : editing
-                    ? "Save changes"
-                    : "Create entry"}
-
-            </Button>
-
-            {editing &&
-              !singleton && (
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={
-                    cancelEditing
-                  }
-                >
-                  Cancel
-                </Button>
-
-              )}
-
-          </div>
-
-          {message && (
-
-            <p
-              role="status"
-              className="text-sm text-muted"
-            >
-              {message}
+        {loading ? (
+          <div className="mt-8 border border-line bg-surface/40 p-6">
+            <p className="text-sm text-muted">
+              Loading...
             </p>
+          </div>
+        ) : (
+          <form
+            onSubmit={save}
+            className="mt-8 grid gap-7"
+          >
+            {groupedFields.map(
+              (group) => (
+                <fieldset
+                  key={group.title}
+                  className="border border-line bg-surface/40"
+                >
+                  <legend className="ml-4 px-2 text-xs font-medium uppercase tracking-[0.18em] text-gold">
+                    {group.title}
+                  </legend>
 
-          )}
+                  <div className="grid gap-5 p-5">
+                    {group.fields.map(
+                      (field) => (
+                        <Field
+                          key={
+                            field.name
+                          }
+                          field={field}
+                          value={
+                            values[
+                              field.name
+                            ]
+                          }
+                          onChange={
+                            change
+                          }
+                          onValueChange={
+                            setValue
+                          }
+                        />
+                      )
+                    )}
+                  </div>
+                </fieldset>
+              )
+            )}
 
-        </form>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                disabled={pending}
+                type="submit"
+              >
+                {pending
+                  ? "Saving..."
+                  : singleton
+                    ? "Save Settings"
+                    : editing
+                      ? "Save Changes"
+                      : "Create Entry"}
+              </Button>
 
+              {editing &&
+                !singleton && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={
+                      cancelEditing
+                    }
+                  >
+                    Cancel
+                  </Button>
+                )}
+            </div>
+
+            {message && (
+              <p
+                role="status"
+                className="text-sm text-muted"
+              >
+                {message}
+              </p>
+            )}
+          </form>
+        )}
       </section>
 
       {!singleton && (
-
         <section className="xl:sticky xl:top-6 xl:h-fit">
-
           <h2 className="font-display text-2xl">
             Entries
           </h2>
 
           <div className="mt-5 divide-y border-y border-line">
-
             {items.length ? (
-
               items.map(
                 (item) => (
-
                   <article
-                    key={item._id}
+                    key={getItemId(
+                      item
+                    )}
                     className="flex items-start justify-between gap-4 py-4"
                   >
-
                     <div className="min-w-0">
-
                       <h3 className="font-medium">
-
-                        {titleOf(item)}
-
+                        {titleOf(
+                          item
+                        )}
                       </h3>
-
                     </div>
 
                     <div className="flex shrink-0 gap-3 text-sm">
-
                       <button
                         type="button"
                         className="hover:text-gold"
                         onClick={() =>
-                          edit(item)
+                          edit(
+                            item
+                          )
                         }
                       >
                         Edit
@@ -689,34 +770,26 @@ export function ContentManager({
                         className="text-muted hover:text-red-600"
                         onClick={() =>
                           void remove(
-                            item._id
+                            getItemId(
+                              item
+                            )
                           )
                         }
                       >
                         Delete
                       </button>
-
                     </div>
-
                   </article>
-
                 )
               )
-
             ) : (
-
               <p className="py-5 text-sm text-muted">
                 No entries yet.
               </p>
-
             )}
-
           </div>
-
         </section>
-
       )}
-
     </div>
   );
 }
@@ -755,7 +828,9 @@ function Field({
     name: field.name,
 
     required:
-      field.required,
+      Boolean(
+        field.required
+      ),
 
     value:
       typeof value ===
@@ -785,10 +860,11 @@ function Field({
   ) {
     return (
       <label className="flex items-center gap-3 text-sm">
-
         <input
           type="checkbox"
-          checked={Boolean(value)}
+          checked={Boolean(
+            value
+          )}
           onChange={(event) =>
             onChange(
               field,
@@ -798,7 +874,6 @@ function Field({
         />
 
         {field.label}
-
       </label>
     );
   }
@@ -809,14 +884,13 @@ function Field({
   ) {
     return (
       <label className="grid gap-2 text-sm">
-
         {field.label}
 
         <MarkdownEditor
           id={field.name}
-          required={
+          required={Boolean(
             field.required
-          }
+          )}
           value={String(
             value || ""
           )}
@@ -833,7 +907,6 @@ function Field({
             {field.hint}
           </span>
         )}
-
       </label>
     );
   }
@@ -859,49 +932,38 @@ function Field({
 
   return (
     <label className="grid gap-2 text-sm">
-
       {field.label}
 
       {field.type ===
       "select" ? (
-
         <select {...common}>
-
           <option value="">
             Select...
           </option>
 
           {field.options?.map(
             (option) => (
-
               <option
                 key={option}
                 value={option}
               >
                 {option}
               </option>
-
             )
           )}
-
         </select>
-
       ) : field.type ===
         "textarea" ? (
-
         <textarea
           {...common}
           rows={5}
           className={`${common.className} resize-y`}
         />
-
       ) : (
-
         <input
           {...common}
           type={field.type}
         />
-
       )}
 
       {field.hint && (
@@ -909,7 +971,6 @@ function Field({
           {field.hint}
         </span>
       )}
-
     </label>
   );
 }
@@ -964,6 +1025,9 @@ function ImageField({
         "Only JPG, JPEG, PNG, WebP and AVIF images are allowed."
       );
 
+      event.target.value =
+        "";
+
       return;
     }
 
@@ -974,6 +1038,9 @@ function ImageField({
       setError(
         "Image must be smaller than 10MB."
       );
+
+      event.target.value =
+        "";
 
       return;
     }
@@ -1017,7 +1084,9 @@ function ImageField({
       }
 
       onChange(
-        result.url
+        String(
+          result.url
+        )
       );
     } catch (
       uploadError
@@ -1030,48 +1099,60 @@ function ImageField({
     } finally {
       setUploading(false);
 
-      event.target.value = "";
+      event.target.value =
+        "";
     }
+  }
+
+  function removeImage() {
+    if (
+      !window.confirm(
+        "Remove this image?"
+      )
+    ) {
+      return;
+    }
+
+    setError("");
+
+    onChange("");
   }
 
   return (
     <div className="grid gap-3">
-
       <div>
-
         <p className="text-sm font-medium">
           {field.label}
         </p>
 
-        <p className="mt-1 text-xs text-muted">
-          Upload directly to Cloudinary.
-          The image URL is saved automatically.
-        </p>
-
+        {field.hint ? (
+          <p className="mt-1 text-xs text-muted">
+            {field.hint}
+          </p>
+        ) : (
+          <p className="mt-1 text-xs text-muted">
+            Upload an image directly to Cloudinary.
+          </p>
+        )}
       </div>
 
       {value ? (
-
         <div className="overflow-hidden border border-line bg-background p-4">
-
           <img
             src={value}
-            alt={field.label}
+            alt={
+              field.label
+            }
             className="max-h-64 w-full object-contain"
           />
-
         </div>
-
       ) : (
-
         <div className="flex min-h-32 items-center justify-center border border-dashed border-line text-sm text-muted">
           No image uploaded.
         </div>
-
       )}
 
-      <div className="flex flex-wrap gap-3">
-
+      <div className="flex flex-wrap items-center gap-3">
         <label
           className={`inline-flex cursor-pointer border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
             uploading
@@ -1079,37 +1160,36 @@ function ImageField({
               : ""
           }`}
         >
-
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            onChange={upload}
-            disabled={uploading}
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+            onChange={
+              upload
+            }
+            disabled={
+              uploading
+            }
             className="hidden"
           />
 
           {uploading
-            ? "Uploading…"
+            ? "Uploading..."
             : value
-              ? "Replace image"
-              : "Upload image"}
-
+              ? "Replace Image"
+              : "Upload Image"}
         </label>
 
         {value && (
-
           <button
             type="button"
-            className="text-sm text-red-600"
-            onClick={() =>
-              onChange("")
+            className="text-sm text-red-600 transition hover:opacity-70"
+            onClick={
+              removeImage
             }
           >
-            Remove image
+            Remove Image
           </button>
-
         )}
-
       </div>
 
       {error && (
@@ -1117,7 +1197,6 @@ function ImageField({
           {error}
         </p>
       )}
-
     </div>
   );
 }

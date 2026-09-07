@@ -1,3 +1,10 @@
+
+/*
+|--------------------------------------------------------------------------
+| CMS COLLECTIONS
+|--------------------------------------------------------------------------
+*/
+
 export const cmsCollections = [
   /*
   |--------------------------------------------------------------------------
@@ -45,7 +52,7 @@ export const cmsCollections = [
 
   /*
   |--------------------------------------------------------------------------
-  | Homepage / Company
+  | Company
   |--------------------------------------------------------------------------
   */
 
@@ -56,7 +63,7 @@ export const cmsCollections = [
 
   /*
   |--------------------------------------------------------------------------
-  | Global
+  | Global Website Content
   |--------------------------------------------------------------------------
   */
 
@@ -77,10 +84,17 @@ export const cmsCollections = [
 export type CmsCollection =
   (typeof cmsCollections)[number];
 
+/*
+|--------------------------------------------------------------------------
+| EDITOR PERMISSIONS
+|--------------------------------------------------------------------------
+*/
+
 export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+
   "aboutContent",
 
   "services",
@@ -102,6 +116,12 @@ export const editorCollections:
 
   "comments",
 ];
+
+/*
+|--------------------------------------------------------------------------
+| COLLECTION HELPERS
+|--------------------------------------------------------------------------
+*/
 
 export function isCmsCollection(
   value: string
@@ -125,16 +145,46 @@ export function canEditCollection(
 
 /*
 |--------------------------------------------------------------------------
+| SINGLETON COLLECTIONS
+|--------------------------------------------------------------------------
+|
+| These collections should only have one primary content document.
+|
+| The API must also enforce this rule.
+|--------------------------------------------------------------------------
+*/
+
+export const singletonCollections:
+  CmsCollection[] = [
+  "siteSettings",
+  "aboutContent",
+];
+
+export function isSingletonCollection(
+  collection: CmsCollection
+) {
+  return singletonCollections.includes(
+    collection
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
 | CMS NAVIGATION
+|--------------------------------------------------------------------------
+|
+| The CMS menu follows the public website structure instead of
+| grouping unrelated features together.
 |--------------------------------------------------------------------------
 */
 
 export const cmsNavigation = [
   {
     title: "HOME",
+
     items: [
-      "heroSlides",
       "siteSettings",
+      "heroSlides",
       "testimonials",
       "clientLogos",
       "faqs",
@@ -143,6 +193,7 @@ export const cmsNavigation = [
 
   {
     title: "ABOUT",
+
     items: [
       "aboutContent",
       "team",
@@ -151,6 +202,7 @@ export const cmsNavigation = [
 
   {
     title: "SERVICES",
+
     items: [
       "services",
     ],
@@ -158,6 +210,7 @@ export const cmsNavigation = [
 
   {
     title: "PROJECTS",
+
     items: [
       "projects",
     ],
@@ -165,15 +218,18 @@ export const cmsNavigation = [
 
   {
     title: "BLOG",
+
     items: [
       "posts",
       "categories",
       "tags",
+      "comments",
     ],
   },
 
   {
     title: "CAREERS",
+
     items: [
       "jobs",
     ],
@@ -181,6 +237,7 @@ export const cmsNavigation = [
 
   {
     title: "CONTACT",
+
     items: [
       "socialLinks",
       "inquiries",
@@ -188,77 +245,98 @@ export const cmsNavigation = [
   },
 
   {
-    title: "WEBSITE GLOBAL",
+    title: "GLOBAL",
+
     items: [
       "announcements",
       "newsletterSubscribers",
-      "comments",
     ],
   },
 ] as const;
 
+/*
+|--------------------------------------------------------------------------
+| COLLECTION LABELS
+|--------------------------------------------------------------------------
+*/
+
 export const collectionLabels:
-  Record<CmsCollection, string> = {
-    siteSettings:
-      "Homepage & Site Settings",
+  Record<
+    CmsCollection,
+    string
+  > = {
+  siteSettings:
+    "Homepage & Site Settings",
 
-    heroSlides:
-      "Hero Background Slides",
+  heroSlides:
+    "Hero Background Slides",
 
-    aboutContent:
-      "About Page Content",
+  aboutContent:
+    "About Page Content",
 
-    services:
-      "Services",
+  services:
+    "Services",
 
-    projects:
-      "Projects",
+  projects:
+    "Projects",
 
-    posts:
-      "Blog Posts",
+  posts:
+    "Blog Posts",
 
-    categories:
-      "Blog Categories",
+  categories:
+    "Blog Categories",
 
-    tags:
-      "Blog Tags",
+  tags:
+    "Blog Tags",
 
-    jobs:
-      "Job Openings",
+  jobs:
+    "Job Openings",
 
-    team:
-      "Team Members",
+  team:
+    "Team Members",
 
-    testimonials:
-      "Testimonials",
+  testimonials:
+    "Testimonials",
 
-    clientLogos:
-      "Client Logos",
+  clientLogos:
+    "Client Logos",
 
-    faqs:
-      "Frequently Asked Questions",
+  faqs:
+    "Frequently Asked Questions",
 
-    announcements:
-      "Announcements",
+  announcements:
+    "Announcements",
 
-    socialLinks:
-      "Social Links",
+  socialLinks:
+    "Social Links",
 
-    inquiries:
-      "Contact Inquiries",
+  inquiries:
+    "Contact Inquiries",
 
-    newsletterSubscribers:
-      "Newsletter Subscribers",
+  newsletterSubscribers:
+    "Newsletter Subscribers",
 
-    comments:
-      "Blog Comments",
-  };
+  comments:
+    "Blog Comments",
+};
+
+/*
+|--------------------------------------------------------------------------
+| VALIDATION CONSTANTS
+|--------------------------------------------------------------------------
+*/
 
 const statuses = [
   "draft",
   "published",
   "archived",
 ];
+
+/*
+|--------------------------------------------------------------------------
+| VALIDATION HELPERS
+|--------------------------------------------------------------------------
+*/
 
 const isText = (
   value: unknown,
@@ -267,10 +345,19 @@ const isText = (
   typeof value === "string" &&
   value.trim().length >= minimum;
 
+const isOptionalText = (
+  value: unknown
+) =>
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  typeof value === "string";
+
 const isOrder = (
   value: unknown
 ) =>
   value === undefined ||
+  value === null ||
   value === "" ||
   (
     typeof value === "number" &&
@@ -281,8 +368,17 @@ const isOrder = (
 const isUrl = (
   value: unknown
 ) => {
+  /*
+  |--------------------------------------------------------------------------
+  | Empty URLs are valid.
+  |
+  | CMS fields are optional.
+  |--------------------------------------------------------------------------
+  */
+
   if (
     value === undefined ||
+    value === null ||
     value === ""
   ) {
     return true;
@@ -296,7 +392,7 @@ const isUrl = (
 
   /*
   |--------------------------------------------------------------------------
-  | Internal links are valid.
+  | Internal URLs
   |--------------------------------------------------------------------------
   */
 
@@ -306,8 +402,27 @@ const isUrl = (
     return true;
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  | Hash URLs
+  |--------------------------------------------------------------------------
+  */
+
+  if (
+    value.startsWith("#")
+  ) {
+    return true;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | External URLs
+  |--------------------------------------------------------------------------
+  */
+
   try {
-    const url = new URL(value);
+    const url =
+      new URL(value);
 
     return (
       url.protocol === "https:" ||
@@ -322,6 +437,7 @@ const arrayOfStrings = (
   value: unknown
 ) =>
   value === undefined ||
+  value === null ||
   (
     Array.isArray(value) &&
     value.every(
@@ -331,11 +447,26 @@ const arrayOfStrings = (
     )
   );
 
+/*
+|--------------------------------------------------------------------------
+| CMS VALIDATION
+|--------------------------------------------------------------------------
+*/
+
 export function validateCmsData(
   collection: CmsCollection,
-  data: Record<string, unknown>
+  data: Record<
+    string,
+    unknown
+  >
 ) {
   const errors: string[] = [];
+
+  /*
+  |--------------------------------------------------------------------------
+  | Helper
+  |--------------------------------------------------------------------------
+  */
 
   const requireField = (
     key: string,
@@ -352,7 +483,10 @@ export function validateCmsData(
 
   /*
   |--------------------------------------------------------------------------
-  | Display Order
+  | DISPLAY ORDER
+  |--------------------------------------------------------------------------
+  |
+  | Supports both older displayOrder data and future optional usage.
   |--------------------------------------------------------------------------
   */
 
@@ -368,58 +502,165 @@ export function validateCmsData(
       "testimonials",
       "clientLogos",
       "faqs",
-    ].includes(collection) &&
-    !isOrder(data.displayOrder)
+    ].includes(collection)
   ) {
-    errors.push(
-      "Display order must be a non-negative whole number."
-    );
+    if (
+      !isOrder(
+        data.displayOrder
+      )
+    ) {
+      errors.push(
+        "Display order must be a non-negative whole number."
+      );
+    }
   }
 
   /*
   |--------------------------------------------------------------------------
   | SITE SETTINGS
   |--------------------------------------------------------------------------
+  |
+  | IMPORTANT:
+  |
+  | Nothing in Site Settings is mandatory.
+  |
+  | Existing website defaults are allowed to continue working when
+  | the database has no value.
+  |
+  | companyDescription has intentionally been removed.
+  |
+  | companyLogo is an optional Cloudinary image URL.
+  |--------------------------------------------------------------------------
   */
 
   if (
-    collection === "siteSettings"
+    collection ===
+    "siteSettings"
   ) {
-    requireField(
+    const optionalTextFields = [
       "companyName",
-      "Company name"
+
+      "companyLogo",
+
+      "email",
+      "phone",
+      "whatsapp",
+      "location",
+
+      "headerButtonText",
+      "headerButtonLink",
+
+      "ctaEyebrow",
+      "ctaTitle",
+      "ctaButtonText",
+      "ctaButtonLink",
+
+      "footerDescription",
+
+      "contactEyebrow",
+      "contactTitle",
+      "contactDescription",
+    ];
+
+    optionalTextFields.forEach(
+      (field) => {
+        if (
+          !isOptionalText(
+            data[field]
+          )
+        ) {
+          errors.push(
+            `${field} must be text.`
+          );
+        }
+      }
     );
+
+    if (
+      !isUrl(
+        data.companyLogo
+      )
+    ) {
+      errors.push(
+        "Company logo must be a valid image URL."
+      );
+    }
+
+    if (
+      !isUrl(
+        data.headerButtonLink
+      )
+    ) {
+      errors.push(
+        "Header button link must be valid."
+      );
+    }
+
+    if (
+      !isUrl(
+        data.ctaButtonLink
+      )
+    ) {
+      errors.push(
+        "CTA button link must be valid."
+      );
+    }
   }
 
   /*
   |--------------------------------------------------------------------------
   | HERO SLIDES
   |--------------------------------------------------------------------------
+  |
+  | Hero content remains optional.
+  |
+  | The public website can use the first active slide as the fixed
+  | content source and rotate all available images in the background.
+  |--------------------------------------------------------------------------
   */
 
   if (
-    collection === "heroSlides"
+    collection ===
+    "heroSlides"
   ) {
-    requireField(
-      "title",
-      "Hero title"
-    );
-
-    requireField(
-      "image",
-      "Background image"
-    );
+    if (
+      !isOptionalText(
+        data.title
+      )
+    ) {
+      errors.push(
+        "Hero title must be text."
+      );
+    }
 
     if (
-      !isUrl(data.image)
+      !isUrl(
+        data.image
+      )
     ) {
       errors.push(
         "Hero background image is invalid."
       );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Support both old and new field names.
+    |--------------------------------------------------------------------------
+    */
+
+    const primaryLink =
+      data.primaryLink ??
+      data.primaryButtonLink;
+
+    const secondaryLink =
+      data.secondaryLink ??
+      data.secondaryButtonLink;
+
     if (
-      !isUrl(data.primaryLink)
+      !isUrl(
+        primaryLink
+      )
     ) {
       errors.push(
         "Primary button link is invalid."
@@ -427,7 +668,9 @@ export function validateCmsData(
     }
 
     if (
-      !isUrl(data.secondaryLink)
+      !isUrl(
+        secondaryLink
+      )
     ) {
       errors.push(
         "Secondary button link is invalid."
@@ -437,17 +680,29 @@ export function validateCmsData(
 
   /*
   |--------------------------------------------------------------------------
-  | ABOUT
+  | ABOUT CONTENT
   |--------------------------------------------------------------------------
   */
 
   if (
-    collection === "aboutContent"
+    collection ===
+    "aboutContent"
   ) {
-    requireField(
-      "heroTitle",
-      "Hero title"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | About content is intentionally optional.
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+      !isOptionalText(
+        data.heroTitle
+      )
+    ) {
+      errors.push(
+        "Hero title must be text."
+      );
+    }
   }
 
   /*
@@ -457,17 +712,34 @@ export function validateCmsData(
   */
 
   if (
-    collection === "services"
+    collection ===
+    "services"
   ) {
     requireField(
       "title",
       "Service name"
     );
 
-    requireField(
-      "text",
-      "Summary"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Support old and newer content structures.
+    |--------------------------------------------------------------------------
+    */
+
+    const text =
+      data.text ??
+      data.shortDescription ??
+      data.description;
+
+    if (
+      text !== undefined &&
+      text !== null &&
+      typeof text !== "string"
+    ) {
+      errors.push(
+        "Service content must be text."
+      );
+    }
   }
 
   /*
@@ -477,7 +749,8 @@ export function validateCmsData(
   */
 
   if (
-    collection === "projects"
+    collection ===
+    "projects"
   ) {
     requireField(
       "name",
@@ -489,15 +762,33 @@ export function validateCmsData(
       "Slug"
     );
 
-    requireField(
-      "overview",
-      "Overview"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Existing projects use overview.
+    |--------------------------------------------------------------------------
+    */
 
-    requireField(
-      "category",
-      "Category"
-    );
+    if (
+      data.overview !== undefined &&
+      !isOptionalText(
+        data.overview
+      )
+    ) {
+      errors.push(
+        "Overview must be text."
+      );
+    }
+
+    if (
+      data.category !== undefined &&
+      !isOptionalText(
+        data.category
+      )
+    ) {
+      errors.push(
+        "Category must be text."
+      );
+    }
 
     if (
       data.status &&
@@ -513,31 +804,37 @@ export function validateCmsData(
     [
       "coverImage",
       "liveLink",
-    ].forEach((key) => {
-      if (
-        !isUrl(data[key])
-      ) {
-        errors.push(
-          `${key} must be a valid URL.`
-        );
+    ].forEach(
+      (key) => {
+        if (
+          !isUrl(
+            data[key]
+          )
+        ) {
+          errors.push(
+            `${key} must be a valid URL.`
+          );
+        }
       }
-    });
+    );
 
     [
       "features",
       "technologies",
       "gallery",
-    ].forEach((key) => {
-      if (
-        !arrayOfStrings(
-          data[key]
-        )
-      ) {
-        errors.push(
-          `${key} must contain only text values.`
-        );
+    ].forEach(
+      (key) => {
+        if (
+          !arrayOfStrings(
+            data[key]
+          )
+        ) {
+          errors.push(
+            `${key} must contain only text values.`
+          );
+        }
       }
-    });
+    );
   }
 
   /*
@@ -547,7 +844,8 @@ export function validateCmsData(
   */
 
   if (
-    collection === "posts"
+    collection ===
+    "posts"
   ) {
     requireField(
       "title",
@@ -613,7 +911,8 @@ export function validateCmsData(
   */
 
   if (
-    collection === "team"
+    collection ===
+    "team"
   ) {
     requireField(
       "name",
@@ -651,10 +950,26 @@ export function validateCmsData(
       "Client name"
     );
 
-    requireField(
-      "text",
-      "Testimonial"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Supports old "text" and newer "quote".
+    |--------------------------------------------------------------------------
+    */
+
+    const testimonial =
+      data.text ??
+      data.quote;
+
+    if (
+      testimonial !== undefined &&
+      !isText(
+        testimonial
+      )
+    ) {
+      errors.push(
+        "Testimonial must contain text."
+      );
+    }
   }
 
   /*
@@ -664,7 +979,8 @@ export function validateCmsData(
   */
 
   if (
-    collection === "faqs"
+    collection ===
+    "faqs"
   ) {
     requireField(
       "question",
@@ -684,7 +1000,8 @@ export function validateCmsData(
   */
 
   if (
-    collection === "jobs"
+    collection ===
+    "jobs"
   ) {
     requireField(
       "title",
@@ -727,7 +1044,9 @@ export function validateCmsData(
     );
 
     if (
-      !isUrl(data.logo)
+      !isUrl(
+        data.logo
+      )
     ) {
       errors.push(
         "Client logo is invalid."
@@ -735,7 +1054,9 @@ export function validateCmsData(
     }
 
     if (
-      !isUrl(data.link)
+      !isUrl(
+        data.link
+      )
     ) {
       errors.push(
         "Client website must be a valid URL."
@@ -751,12 +1072,17 @@ export function validateCmsData(
 
   if (
     collection ===
-      "socialLinks" &&
-    !isUrl(data.url)
+    "socialLinks"
   ) {
-    errors.push(
-      "Profile URL must be valid."
-    );
+    if (
+      !isUrl(
+        data.url
+      )
+    ) {
+      errors.push(
+        "Profile URL must be valid."
+      );
+    }
   }
 
   /*
@@ -774,21 +1100,43 @@ export function validateCmsData(
       "Title"
     );
 
-    requireField(
-      "content",
-      "Content"
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Support old content and newer description fields.
+    |--------------------------------------------------------------------------
+    */
+
+    const content =
+      data.content ??
+      data.description;
 
     if (
-      !isUrl(data.image)
+      content !== undefined &&
+      !isText(content)
+    ) {
+      errors.push(
+        "Announcement content must contain text."
+      );
+    }
+
+    if (
+      !isUrl(
+        data.image
+      )
     ) {
       errors.push(
         "Announcement image is invalid."
       );
     }
 
+    const ctaLink =
+      data.ctaLink ??
+      data.link;
+
     if (
-      !isUrl(data.ctaLink)
+      !isUrl(
+        ctaLink
+      )
     ) {
       errors.push(
         "CTA link must be valid."
@@ -798,7 +1146,7 @@ export function validateCmsData(
 
   /*
   |--------------------------------------------------------------------------
-  | Slugs
+  | SLUG VALIDATION
   |--------------------------------------------------------------------------
   */
 
@@ -810,15 +1158,22 @@ export function validateCmsData(
       "tags",
     ].includes(collection) &&
     data.slug !== undefined &&
-    data.slug !== "" &&
-    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
-      String(data.slug)
-    )
+    data.slug !== ""
   ) {
-    errors.push(
-      "Slug must use lowercase letters, numbers, and hyphens only."
-    );
+    const slug =
+      String(data.slug);
+
+    if (
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
+        slug
+      )
+    ) {
+      errors.push(
+        "Slug must use lowercase letters, numbers, and hyphens only."
+      );
+    }
   }
 
   return errors;
 }
+

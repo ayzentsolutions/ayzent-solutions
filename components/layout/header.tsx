@@ -29,7 +29,12 @@ import {
 
 type HeaderProps = {
   buttonText?: string;
+
   buttonLink?: string;
+
+  logo?: string;
+
+  companyName?: string;
 };
 
 const navLinks = [
@@ -66,7 +71,12 @@ const navLinks = [
 
 export function Header({
   buttonText = "Get a Quote",
+
   buttonLink = "/contact",
+
+  logo,
+
+  companyName = "Ayzent Solutions",
 }: HeaderProps) {
   const pathname =
     usePathname();
@@ -101,7 +111,10 @@ export function Header({
 
       <Container className="flex h-20 items-center justify-between">
 
-        <Logo />
+        <Logo
+  logo={logo}
+  companyName={companyName}
+/>
 
         {/* DESKTOP */}
 

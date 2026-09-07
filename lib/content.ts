@@ -1,4 +1,3 @@
-
 import { getDb } from "@/lib/mongodb";
 
 import {
@@ -210,11 +209,28 @@ export type HeroSlide = {
 
   eyebrow?: string;
 
-  title: string;
+  /*
+  |--------------------------------------------------------------------------
+  | Optional intentionally
+  |
+  | CMS entries may be incomplete.
+  | The public component handles missing values safely.
+  |--------------------------------------------------------------------------
+  */
+
+  title?: string;
 
   highlight?: string;
 
   text?: string;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Optional intentionally
+  |
+  | Some old Hero entries may not have an image.
+  |--------------------------------------------------------------------------
+  */
 
   image?: string;
 
@@ -284,9 +300,17 @@ export type SiteSettings = {
   /*
   |--------------------------------------------------------------------------
   | Homepage Hero
+  |--------------------------------------------------------------------------
   |
   | Kept for backward compatibility.
-  | Hero slides can now control Hero content/background.
+  |
+  | The new Hero system uses HeroSlide entries.
+  |
+  | First active HeroSlide:
+  | → Hero content
+  |
+  | All active HeroSlides:
+  | → Background carousel
   |--------------------------------------------------------------------------
   */
 
@@ -446,9 +470,9 @@ export type AboutContent = {
 | Generic Database Reader
 |--------------------------------------------------------------------------
 |
-| This is used for collections containing multiple entries.
+| Used for collections containing multiple entries.
 |
-| Public-side content automatically excludes entries where:
+| Public-side content automatically excludes:
 |
 | published === false
 |
@@ -583,10 +607,16 @@ export async function getTeam() {
       "team",
       []
     )
-  ).filter(
-    (member) =>
-      member.published !== false
-  );
+  )
+    .filter(
+      (member) =>
+        member.published !== false
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
+    );
 }
 
 /*
@@ -650,10 +680,16 @@ export async function getTestimonials() {
       "testimonials",
       []
     )
-  ).filter(
-    (item) =>
-      item.active !== false
-  );
+  )
+    .filter(
+      (item) =>
+        item.active !== false
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
+    );
 }
 
 /*
@@ -691,6 +727,11 @@ export async function getClientLogos() {
           item.link ||
           item.url,
       })
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
     );
 }
 
@@ -706,10 +747,16 @@ export async function getJobs() {
       "jobs",
       []
     )
-  ).filter(
-    (job) =>
-      job.status === "open"
-  );
+  )
+    .filter(
+      (job) =>
+        job.status === "open"
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
+    );
 }
 
 /*
@@ -724,10 +771,16 @@ export async function getAnnouncements() {
       "announcements",
       []
     )
-  ).filter(
-    (item) =>
-      item.active !== false
-  );
+  )
+    .filter(
+      (item) =>
+        item.active !== false
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
+    );
 }
 
 /*
@@ -762,10 +815,16 @@ export async function getSocialLinks() {
       "socialLinks",
       []
     )
-  ).filter(
-    (item) =>
-      item.active !== false
-  );
+  )
+    .filter(
+      (item) =>
+        item.active !== false
+    )
+    .sort(
+      (a, b) =>
+        (a.displayOrder ?? 999) -
+        (b.displayOrder ?? 999)
+    );
 }
 
 /*
@@ -775,15 +834,18 @@ export async function getSocialLinks() {
 |
 | Hero slides are separate CMS entries.
 |
-| The public Hero component can use:
+| Public Hero behavior:
 |
-| 1. First active slide -> fixed Hero content
-| 2. All active slides -> background carousel
+| First active slide:
+| → Fixed Hero content
+|
+| All active slides with images:
+| → Background carousel
 |
 |--------------------------------------------------------------------------
 */
 
-export async function getHeroSlides() {
+export async function getHeroSlides(): Promise<HeroSlide[]> {
   return (
     await read<HeroSlide>(
       "heroSlides",
@@ -815,6 +877,7 @@ export async function getHeroSlides() {
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   const fallback: SiteSettings = {
+
     /*
     |--------------------------------------------------------------------------
     | Brand & Identity
@@ -861,7 +924,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     |--------------------------------------------------------------------------
     | Homepage Hero
     |
-    | Backward compatibility fallback.
+    | Backward compatibility only.
     |--------------------------------------------------------------------------
     */
 
@@ -966,13 +1029,14 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 | About Page Content
 |--------------------------------------------------------------------------
 |
-| About Content is also a singleton collection.
+| About Content is a singleton collection.
 |
 |--------------------------------------------------------------------------
 */
 
 export async function getAboutContent(): Promise<AboutContent> {
   const fallback: AboutContent = {
+
     /*
     |--------------------------------------------------------------------------
     | Hero
@@ -1117,3 +1181,4 @@ export async function getAboutContent(): Promise<AboutContent> {
     return fallback;
   }
 }
+

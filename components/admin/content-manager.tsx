@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -16,7 +15,7 @@ import {
 
 import {
   collectionFields,
-  type CmsField,
+  type AdminField,
 } from "@/components/admin/collection-fields";
 
 import {
@@ -29,20 +28,17 @@ type Item =
   };
 
 type Values =
-  Record<
-    string,
-    string | boolean
-  >;
+  Record<string, string | boolean>;
 
-const singletonCollections = new Set([
+const singletonCollections = [
   "siteSettings",
   "aboutContent",
-]);
+];
 
 function isSingleton(
   collection: string
 ) {
-  return singletonCollections.has(
+  return singletonCollections.includes(
     collection
   );
 }
@@ -62,7 +58,7 @@ const titleOf = (
   );
 
 function toValues(
-  fields: CmsField[],
+  fields: AdminField[],
   item?: Item
 ): Values {
   return Object.fromEntries(
@@ -85,6 +81,7 @@ function toValues(
       ) {
         return [
           field.name,
+
           Array.isArray(value)
             ? value.join(", ")
             : "",
@@ -93,6 +90,7 @@ function toValues(
 
       return [
         field.name,
+
         value === undefined ||
         value === null
           ? ""
@@ -103,98 +101,96 @@ function toValues(
 }
 
 function toData(
-  fields: CmsField[],
+  fields: AdminField[],
   values: Values
 ) {
   return Object.fromEntries(
-    fields.map((field) => {
-      const value =
-        values[field.name];
+    fields
+      .map((field) => {
+        const value =
+          values[field.name];
 
-      if (
-        field.type ===
-        "checkbox"
-      ) {
+        if (
+          field.type ===
+          "checkbox"
+        ) {
+          return [
+            field.name,
+            Boolean(value),
+          ];
+        }
+
+        if (
+          field.type ===
+          "number"
+        ) {
+          return [
+            field.name,
+
+            value === ""
+              ? undefined
+              : Number(value),
+          ];
+        }
+
+        if (
+          field.type === "tags"
+        ) {
+          return [
+            field.name,
+
+            String(value)
+              .split(",")
+              .map((item) =>
+                item.trim()
+              )
+              .filter(Boolean),
+          ];
+        }
+
         return [
           field.name,
-          Boolean(value),
+          String(value).trim(),
         ];
-      }
-
-      if (
-        field.type ===
-        "number"
-      ) {
-        return [
-          field.name,
-          value === ""
-            ? undefined
-            : Number(value),
-        ];
-      }
-
-      if (
-        field.type ===
-        "tags"
-      ) {
-        const tags =
-          typeof value === "string"
-            ? value
-                .split(",")
-                .map(
-                  (item) =>
-                    item.trim()
-                )
-                .filter(Boolean)
-            : [];
-
-        return [
-          field.name,
-          tags,
-        ];
-      }
-
-      return [
-        field.name,
-        value,
-      ];
-    })
+      })
+      .filter(
+        ([, value]) =>
+          value !== "" &&
+          value !== undefined
+      )
   );
 }
 
 function groupFields(
-  fields: CmsField[]
+  fields: AdminField[]
 ) {
-  const groups =
-    new Map<
-      string,
-      CmsField[]
-    >();
+  const groups = new Map<
+    string,
+    AdminField[]
+  >();
 
-  fields.forEach(
-    (field) => {
-      const group =
-        field.group ||
-        "General";
+  fields.forEach((field) => {
+    const group =
+      field.group || "Content";
 
-      const current =
-        groups.get(group) || [];
+    const existing =
+      groups.get(group) || [];
 
-      current.push(field);
-
-      groups.set(
-        group,
-        current
-      );
-    }
-  );
+    groups.set(
+      group,
+      [
+        ...existing,
+        field,
+      ]
+    );
+  });
 
   return Array.from(
     groups.entries()
   ).map(
-    ([title, grouped]) => ({
+    ([title, fields]) => ({
       title,
-      fields: grouped,
+      fields,
     })
   );
 }
@@ -216,42 +212,31 @@ export function ContentManager({
 
   const groupedFields =
     useMemo(
-      () =>
-        groupFields(fields),
+      () => groupFields(fields),
       [fields]
     );
 
   const singleton =
     isSingleton(collection);
 
-  const [
-    items,
-    setItems,
-  ] = useState<Item[]>([]);
+  const [items, setItems] =
+    useState<Item[]>([]);
 
-  const [
-    editing,
-    setEditing,
-  ] = useState<Item | null>(
-    null
-  );
+  const [editing, setEditing] =
+    useState<Item | null>(
+      null
+    );
 
-  const [
-    values,
-    setValues,
-  ] = useState<Values>(() =>
-    toValues(fields)
-  );
+  const [values, setValues] =
+    useState<Values>(() =>
+      toValues(fields)
+    );
 
-  const [
-    message,
-    setMessage,
-  ] = useState("");
+  const [message, setMessage] =
+    useState("");
 
-  const [
-    pending,
-    setPending,
-  ] = useState(false);
+  const [pending, setPending] =
+    useState(false);
 
   const load = useCallback(
     async () => {
@@ -274,42 +259,30 @@ export function ContentManager({
           );
         }
 
-        const loadedItems:
-          Item[] =
+        const loadedItems =
           result.items || [];
 
-        setItems(
-          loadedItems
-        );
+        setItems(loadedItems);
 
         /*
         |--------------------------------------------------------------------------
-        | Automatically populate singleton CMS forms
+        | SINGLETON AUTO-LOAD
         |--------------------------------------------------------------------------
         */
 
         if (
-          singleton &&
-          loadedItems.length
+          isSingleton(collection)
         ) {
-          const item =
-            loadedItems[0];
+          const existing =
+            loadedItems[0] || null;
 
-          setEditing(item);
+          setEditing(existing);
 
           setValues(
             toValues(
               fields,
-              item
+              existing || undefined
             )
-          );
-        } else if (
-          singleton
-        ) {
-          setEditing(null);
-
-          setValues(
-            toValues(fields)
           );
         }
       } catch (error) {
@@ -323,63 +296,55 @@ export function ContentManager({
     [
       collection,
       fields,
-      singleton,
     ]
   );
 
   useEffect(() => {
-    void load();
+    setEditing(null);
 
-    if (!singleton) {
-      setEditing(null);
-
-      setValues(
-        toValues(fields)
-      );
-    }
+    setValues(
+      toValues(fields)
+    );
 
     setMessage("");
+
+    void load();
   }, [
+    collection,
     fields,
     load,
-    singleton,
   ]);
 
   function change(
-    field: CmsField,
+    field: AdminField,
+
     event: ChangeEvent<
       | HTMLInputElement
       | HTMLTextAreaElement
       | HTMLSelectElement
     >
   ) {
-    setValues(
-      (current) => ({
-        ...current,
+    setValues((current) => ({
+      ...current,
 
-        [field.name]:
-          field.type ===
-            "checkbox" &&
-          event.target instanceof
-            HTMLInputElement
-            ? event.target.checked
-            : event.target.value,
-      })
-    );
+      [field.name]:
+        field.type ===
+          "checkbox" &&
+        event.target instanceof
+          HTMLInputElement
+          ? event.target.checked
+          : event.target.value,
+    }));
   }
 
   function setValue(
     name: string,
-    value:
-      | string
-      | boolean
+    value: string | boolean
   ) {
-    setValues(
-      (current) => ({
-        ...current,
-        [name]: value,
-      })
-    );
+    setValues((current) => ({
+      ...current,
+      [name]: value,
+    }));
   }
 
   async function save(
@@ -392,18 +357,30 @@ export function ContentManager({
     setMessage("");
 
     try {
-      const payload =
+      const data =
         toData(
           fields,
           values
         );
+
+      /*
+      |--------------------------------------------------------------------------
+      | SINGLETON
+      |
+      | Existing document → PATCH
+      | No document → POST
+      |--------------------------------------------------------------------------
+      */
+
+      const shouldUpdate =
+        Boolean(editing);
 
       const response =
         await fetch(
           `/api/admin/${collection}`,
           {
             method:
-              editing
+              shouldUpdate
                 ? "PATCH"
                 : "POST",
 
@@ -412,20 +389,18 @@ export function ContentManager({
                 "application/json",
             },
 
-            body:
-              JSON.stringify(
-                editing
-                  ? {
-                      id:
-                        editing._id,
-                      data:
-                        payload,
-                    }
-                  : {
-                      data:
-                        payload,
-                    }
-              ),
+            body: JSON.stringify(
+              shouldUpdate
+                ? {
+                    id:
+                      editing!._id,
+
+                    data,
+                  }
+                : {
+                    data,
+                  }
+            ),
           }
         );
 
@@ -442,7 +417,7 @@ export function ContentManager({
       setMessage(
         singleton
           ? "Settings saved successfully."
-          : editing
+          : shouldUpdate
             ? "Changes saved successfully."
             : "Entry created successfully."
       );
@@ -481,10 +456,6 @@ export function ContentManager({
 
   function cancelEditing() {
     if (singleton) {
-      if (items[0]) {
-        edit(items[0]);
-      }
-
       return;
     }
 
@@ -500,9 +471,7 @@ export function ContentManager({
   async function remove(
     id: string
   ) {
-    if (
-      singleton
-    ) {
+    if (singleton) {
       return;
     }
 
@@ -529,15 +498,21 @@ export function ContentManager({
       if (!response.ok) {
         throw new Error(
           result.message ||
-            "Unable to delete this entry."
+            "Unable to delete entry."
         );
       }
+
+      if (
+        editing?._id === id
+      ) {
+        cancelEditing();
+      }
+
+      await load();
 
       setMessage(
         "Entry deleted successfully."
       );
-
-      await load();
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -548,31 +523,25 @@ export function ContentManager({
   }
 
   return (
-    <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
 
       <section>
 
-        <div className="border-b border-line pb-6">
+        <h1 className="font-display text-4xl">
+          {label}
+        </h1>
 
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">
-            CMS
-          </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
 
-          <h1 className="mt-3 font-display text-4xl">
-            {label}
-          </h1>
+          {singleton
+            ? editing
+              ? "Your current website settings are loaded below. Edit anything you want and save."
+              : "No settings entry exists yet. You can fill only the fields you want."
+            : editing
+              ? "Update the selected entry."
+              : "Create a new entry."}
 
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-
-            {singleton
-              ? "These settings are already populated with your current saved data. Change only what you need."
-              : editing
-                ? "Update the selected entry."
-                : "Create a new entry."}
-
-          </p>
-
-        </div>
+        </p>
 
         <form
           onSubmit={save}
@@ -636,13 +605,13 @@ export function ContentManager({
                 : singleton
                   ? "Save Settings"
                   : editing
-                    ? "Save Changes"
-                    : "Create Entry"}
+                    ? "Save changes"
+                    : "Create entry"}
 
             </Button>
 
-            {!singleton &&
-              editing && (
+            {editing &&
+              !singleton && (
 
                 <Button
                   type="button"
@@ -673,53 +642,35 @@ export function ContentManager({
 
       </section>
 
-      <section className="xl:sticky xl:top-6 xl:h-fit">
+      {!singleton && (
 
-        <h2 className="font-display text-2xl">
+        <section className="xl:sticky xl:top-6 xl:h-fit">
 
-          {singleton
-            ? "Current Settings"
-            : "Entries"}
+          <h2 className="font-display text-2xl">
+            Entries
+          </h2>
 
-        </h2>
+          <div className="mt-5 divide-y border-y border-line">
 
-        <div className="mt-5 divide-y border-y border-line">
+            {items.length ? (
 
-          {items.length ? (
+              items.map(
+                (item) => (
 
-            items.map(
-              (item) => (
+                  <article
+                    key={item._id}
+                    className="flex items-start justify-between gap-4 py-4"
+                  >
 
-                <article
-                  key={item._id}
-                  className="flex items-start justify-between gap-4 py-4"
-                >
+                    <div className="min-w-0">
 
-                  <div className="min-w-0">
+                      <h3 className="font-medium">
 
-                    <h3 className="font-medium">
+                        {titleOf(item)}
 
-                      {titleOf(item)}
+                      </h3>
 
-                    </h3>
-
-                    <p className="mt-1 line-clamp-2 text-sm text-muted">
-
-                      {String(
-                        item.excerpt ||
-                          item.text ||
-                          item.answer ||
-                          item.description ||
-                          item.email ||
-                          item.status ||
-                          ""
-                      )}
-
-                    </p>
-
-                  </div>
-
-                  {!singleton && (
+                    </div>
 
                     <div className="flex shrink-0 gap-3 text-sm">
 
@@ -747,28 +698,24 @@ export function ContentManager({
 
                     </div>
 
-                  )}
+                  </article>
 
-                </article>
-
+                )
               )
-            )
 
-          ) : (
+            ) : (
 
-            <p className="py-5 text-sm text-muted">
+              <p className="py-5 text-sm text-muted">
+                No entries yet.
+              </p>
 
-              {singleton
-                ? "No saved settings yet. You can create them using the form."
-                : "No entries yet."}
+            )}
 
-            </p>
+          </div>
 
-          )}
+        </section>
 
-        </div>
-
-      </section>
+      )}
 
     </div>
   );
@@ -780,7 +727,7 @@ function Field({
   onChange,
   onValueChange,
 }: {
-  field: CmsField;
+  field: AdminField;
 
   value:
     | string
@@ -788,7 +735,8 @@ function Field({
     | undefined;
 
   onChange: (
-    field: CmsField,
+    field: AdminField,
+
     event: ChangeEvent<
       | HTMLInputElement
       | HTMLTextAreaElement
@@ -798,9 +746,7 @@ function Field({
 
   onValueChange: (
     name: string,
-    value:
-      | string
-      | boolean
+    value: string | boolean
   ) => void;
 }) {
   const common = {
@@ -809,7 +755,7 @@ function Field({
     name: field.name,
 
     required:
-      Boolean(field.required),
+      field.required,
 
     value:
       typeof value ===
@@ -838,14 +784,11 @@ function Field({
     "checkbox"
   ) {
     return (
-
       <label className="flex items-center gap-3 text-sm">
 
         <input
           type="checkbox"
-          checked={
-            Boolean(value)
-          }
+          checked={Boolean(value)}
           onChange={(event) =>
             onChange(
               field,
@@ -857,7 +800,6 @@ function Field({
         {field.label}
 
       </label>
-
     );
   }
 
@@ -866,7 +808,6 @@ function Field({
     "markdown"
   ) {
     return (
-
       <label className="grid gap-2 text-sm">
 
         {field.label}
@@ -874,9 +815,7 @@ function Field({
         <MarkdownEditor
           id={field.name}
           required={
-            Boolean(
-              field.required
-            )
+            field.required
           }
           value={String(
             value || ""
@@ -890,26 +829,19 @@ function Field({
         />
 
         {field.hint && (
-
           <span className="text-xs text-muted">
-
             {field.hint}
-
           </span>
-
         )}
 
       </label>
-
     );
   }
 
   if (
-    field.type ===
-    "image"
+    field.type === "image"
   ) {
     return (
-
       <ImageField
         field={field}
         value={String(
@@ -922,12 +854,10 @@ function Field({
           )
         }
       />
-
     );
   }
 
   return (
-
     <label className="grid gap-2 text-sm">
 
       {field.label}
@@ -975,17 +905,12 @@ function Field({
       )}
 
       {field.hint && (
-
         <span className="text-xs text-muted">
-
           {field.hint}
-
         </span>
-
       )}
 
     </label>
-
   );
 }
 
@@ -994,7 +919,7 @@ function ImageField({
   value,
   onChange,
 }: {
-  field: CmsField;
+  field: AdminField;
 
   value: string;
 
@@ -1013,9 +938,7 @@ function ImageField({
   ] = useState("");
 
   async function upload(
-    event: ChangeEvent<
-      HTMLInputElement
-    >
+    event: ChangeEvent<HTMLInputElement>
   ) {
     const file =
       event.target.files?.[0];
@@ -1107,28 +1030,22 @@ function ImageField({
     } finally {
       setUploading(false);
 
-      event.target.value =
-        "";
+      event.target.value = "";
     }
   }
 
   return (
-
     <div className="grid gap-3">
 
       <div>
 
         <p className="text-sm font-medium">
-
           {field.label}
-
         </p>
 
         <p className="mt-1 text-xs text-muted">
-
           Upload directly to Cloudinary.
-          The image URL is automatically saved.
-
+          The image URL is saved automatically.
         </p>
 
       </div>
@@ -1140,7 +1057,7 @@ function ImageField({
           <img
             src={value}
             alt={field.label}
-            className="max-h-80 w-full object-contain"
+            className="max-h-64 w-full object-contain"
           />
 
         </div>
@@ -1148,9 +1065,7 @@ function ImageField({
       ) : (
 
         <div className="flex min-h-32 items-center justify-center border border-dashed border-line text-sm text-muted">
-
           No image uploaded.
-
         </div>
 
       )}
@@ -1198,27 +1113,11 @@ function ImageField({
       </div>
 
       {error && (
-
         <p className="text-sm text-red-600">
-
           {error}
-
         </p>
-
-      )}
-
-      {field.hint && (
-
-        <p className="text-xs text-muted">
-
-          {field.hint}
-
-        </p>
-
       )}
 
     </div>
-
   );
 }
-

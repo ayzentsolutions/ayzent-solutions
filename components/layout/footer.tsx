@@ -75,13 +75,11 @@ export async function Footer() {
 
           <Logo />
 
-          <p className="max-w-xs text-sm leading-relaxed text-muted">
-
-            {
-              settings.footerDescription ||
-              settings.companyDescription
-            }
-
+        <p className="max-w-md text-sm leading-relaxed text-white/60">
+        {
+          settings.footerDescription ||
+          "Ideas. Engineered."
+  }
           </p>
 
           <SocialLinks />

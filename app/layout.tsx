@@ -1,150 +1,88 @@
-import type {
-  Metadata,
-} from "next";
 
-import {
-  Playfair_Display,
-  Inter,
-} from "next/font/google";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
 import "./globals.css";
 
-import {
-  ThemeProvider,
-} from "@/components/theme/theme-provider";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { getSiteSettings } from "@/lib/content";
 
-import {
-  Header,
-} from "@/components/layout/header";
-
-import {
-  Footer,
-} from "@/components/layout/footer";
-
-import {
-  GoogleAnalytics,
-} from "@/components/analytics/google-analytics";
-
-import {
-  AnnouncementPopup,
-} from "@/components/announcements/announcement-popup";
-
-import {
-  getActiveAnnouncement,
-  getSiteSettings,
-} from "@/lib/content";
-
-const display =
-  Playfair_Display({
-    subsets: ["latin"],
-    variable:
-      "--font-display",
-    weight: [
-      "600",
-      "700",
-      "800",
-    ],
-  });
-
-const sans = Inter({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
-  weight: [
-    "400",
-    "500",
-    "600",
-  ],
+  variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env
-      .NEXT_PUBLIC_SITE_URL ||
-      "http://localhost:3000"
-  ),
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
 
-  title: {
-    default:
-      "Ayzent Solutions",
+  const companyName =
+    settings.companyName ||
+    "Ayzent Solutions";
 
-    template:
-      "%s | Ayzent Solutions",
-  },
+  const description =
+    settings.footerDescription ||
+    "Ideas. Engineered.";
 
-  description:
-    "Ayzent Solutions builds websites, brands, and digital products for companies ready to move faster.",
+  return {
+    title: {
+      default: companyName,
+      template: `%s | ${companyName}`,
+    },
 
-  openGraph: {
-    type: "website",
+    description,
 
-    siteName:
-      "Ayzent Solutions",
-
-    title:
-      "Ayzent Solutions",
-
-    description:
-      "Ayzent Solutions builds websites, brands, and digital products for companies ready to move faster.",
-  },
-
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    icons: {
+      icon:
+        settings.companyLogo ||
+        "/favicon.ico",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  const [
-    announcement,
-    settings,
-  ] = await Promise.all([
-    getActiveAnnouncement(),
-    getSiteSettings(),
-  ]);
+}>) {
+  const settings =
+    await getSiteSettings();
+
+  const companyName =
+    settings.companyName ||
+    "Ayzent Solutions";
+
+  const headerButtonText =
+    settings.headerButtonText ||
+    "Start a Project";
+
+  const headerButtonLink =
+    settings.headerButtonLink ||
+    "/contact";
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
     >
-
       <body
-        className={`${display.variable} ${sans.variable} font-sans`}
+        className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
       >
-
-        <ThemeProvider>
-
+        <div className="flex min-h-screen flex-col">
           <Header
-            buttonText={
-              settings.headerButtonText
-            }
-            buttonLink={
-              settings.headerButtonLink
-            }
+            companyName={companyName}
+            logo={settings.companyLogo}
+            buttonText={headerButtonText}
+            buttonLink={headerButtonLink}
           />
 
-          <main>
+          <main className="flex-1">
             {children}
           </main>
 
           <Footer />
-
-          <AnnouncementPopup
-            announcement={
-              announcement
-            }
-          />
-
-        </ThemeProvider>
-
-        <GoogleAnalytics />
-
+        </div>
       </body>
-
     </html>
   );
 }

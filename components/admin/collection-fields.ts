@@ -1,4 +1,3 @@
-
 export type FieldType =
   | "text"
   | "textarea"
@@ -18,18 +17,30 @@ export type AdminField = {
   type: FieldType;
 
   required?: boolean;
-
   hint?: string;
-
   group?: string;
-
   options?: string[];
 };
 
-export const collectionFields: Record<
-  string,
-  AdminField[]
-> = {
+/*
+|--------------------------------------------------------------------------
+| BACKWARD COMPATIBILITY
+|--------------------------------------------------------------------------
+|
+| Existing CMS components may import CmsField.
+| Keep CmsField as an alias of AdminField.
+|
+*/
+
+export type CmsField = AdminField;
+
+/*
+|--------------------------------------------------------------------------
+| COLLECTION FIELDS
+|--------------------------------------------------------------------------
+*/
+
+export const collectionFields: Record<string, CmsField[]> = {
   /*
   |--------------------------------------------------------------------------
   | SITE SETTINGS
@@ -37,12 +48,6 @@ export const collectionFields: Record<
   */
 
   siteSettings: [
-    /*
-    |--------------------------------------------------------------------------
-    | Brand & Identity
-    |--------------------------------------------------------------------------
-    */
-
     {
       name: "companyName",
       label: "Company Name",
@@ -55,15 +60,9 @@ export const collectionFields: Record<
       label: "Company Logo",
       type: "image",
       hint:
-        "Upload your company logo. PNG or WebP with a transparent background is recommended.",
+        "Upload your company logo. PNG or WebP with transparent background is recommended.",
       group: "Brand & Identity",
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Contact Information
-    |--------------------------------------------------------------------------
-    */
 
     {
       name: "email",
@@ -95,12 +94,6 @@ export const collectionFields: Record<
       group: "Contact Information",
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
-
     {
       name: "headerButtonText",
       label: "Header Button Text",
@@ -115,12 +108,6 @@ export const collectionFields: Record<
       hint: "Example: /contact",
       group: "Header",
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Homepage CTA
-    |--------------------------------------------------------------------------
-    */
 
     {
       name: "homeCtaEyebrow",
@@ -151,24 +138,12 @@ export const collectionFields: Record<
       group: "Homepage CTA",
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Footer
-    |--------------------------------------------------------------------------
-    */
-
     {
       name: "footerDescription",
       label: "Footer Description",
       type: "textarea",
       group: "Footer",
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Contact Page
-    |--------------------------------------------------------------------------
-    */
 
     {
       name: "contactEyebrow",
@@ -217,8 +192,6 @@ export const collectionFields: Record<
       name: "highlight",
       label: "Highlighted Text",
       type: "text",
-      hint:
-        "Optional text from the title to visually highlight.",
       group: "Content",
     },
 
@@ -240,7 +213,6 @@ export const collectionFields: Record<
       name: "primaryLink",
       label: "Primary Button Link",
       type: "text",
-      hint: "Example: /contact",
       group: "Buttons",
     },
 
@@ -255,7 +227,6 @@ export const collectionFields: Record<
       name: "secondaryLink",
       label: "Secondary Button Link",
       type: "text",
-      hint: "Example: /projects",
       group: "Buttons",
     },
 
@@ -263,20 +234,6 @@ export const collectionFields: Record<
       name: "image",
       label: "Background Image",
       type: "image",
-      hint:
-        "This image is used in the homepage background carousel.",
-      group: "Background",
-    },
-
-    {
-      name: "overlayStrength",
-      label: "Overlay Strength",
-      type: "select",
-      options: [
-        "light",
-        "medium",
-        "dark",
-      ],
       group: "Background",
     },
 
@@ -313,8 +270,6 @@ export const collectionFields: Record<
       name: "slug",
       label: "Slug",
       type: "text",
-      hint:
-        "Example: web-development",
       group: "Content",
     },
 
@@ -485,8 +440,6 @@ export const collectionFields: Record<
       name: "tags",
       label: "Tags",
       type: "tags",
-      hint:
-        "Separate tags with commas.",
       group: "Content",
     },
 
@@ -571,42 +524,6 @@ export const collectionFields: Record<
 
   /*
   |--------------------------------------------------------------------------
-  | TAGS
-  |--------------------------------------------------------------------------
-  */
-
-  tags: [
-    {
-      name: "name",
-      label: "Tag Name",
-      type: "text",
-      group: "Content",
-    },
-
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      group: "Content",
-    },
-
-    {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
-      group: "Publishing",
-    },
-
-    {
-      name: "published",
-      label: "Published",
-      type: "checkbox",
-      group: "Publishing",
-    },
-  ],
-
-  /*
-  |--------------------------------------------------------------------------
   | TEAM
   |--------------------------------------------------------------------------
   */
@@ -638,15 +555,6 @@ export const collectionFields: Record<
       label: "Profile Photo",
       type: "image",
       group: "Media",
-    },
-
-    {
-      name: "socialLinks",
-      label: "Social Links",
-      type: "tags",
-      hint:
-        "Separate URLs with commas.",
-      group: "Links",
     },
 
     {
@@ -686,20 +594,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "role",
-      label: "Role",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "company",
-      label: "Company",
-      type: "text",
-      group: "Client",
-    },
-
-    {
       name: "text",
       label: "Testimonial",
       type: "textarea",
@@ -716,63 +610,6 @@ export const collectionFields: Record<
     {
       name: "active",
       label: "Active",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
-      name: "published",
-      label: "Published",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
-      group: "Publishing",
-    },
-  ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | CLIENT LOGOS
-  |--------------------------------------------------------------------------
-  */
-
-  clientLogos: [
-    {
-      name: "name",
-      label: "Client Name",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "logo",
-      label: "Client Logo",
-      type: "image",
-      group: "Media",
-    },
-
-    {
-      name: "link",
-      label: "Website Link",
-      type: "url",
-      group: "Links",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
-      name: "published",
-      label: "Published",
       type: "checkbox",
       group: "Publishing",
     },
@@ -860,105 +697,12 @@ export const collectionFields: Record<
       name: "ctaLink",
       label: "CTA Button Link",
       type: "text",
-      hint:
-        "Example: /contact or https://example.com",
       group: "Call To Action",
     },
 
     {
       name: "active",
       label: "Active",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
-      name: "published",
-      label: "Published",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
-      name: "displayOrder",
-      label: "Display Order",
-      type: "number",
-      group: "Publishing",
-    },
-  ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | JOBS
-  |--------------------------------------------------------------------------
-  */
-
-  jobs: [
-    {
-      name: "title",
-      label: "Job Title",
-      type: "text",
-      group: "Position",
-    },
-
-    {
-      name: "location",
-      label: "Location",
-      type: "text",
-      group: "Position",
-    },
-
-    {
-      name: "type",
-      label: "Employment Type",
-      type: "select",
-      options: [
-        "Full-time",
-        "Part-time",
-        "Contract",
-        "Internship",
-        "Remote",
-      ],
-      group: "Position",
-    },
-
-    {
-      name: "description",
-      label: "Job Description",
-      type: "markdown",
-      group: "Content",
-    },
-
-    {
-      name: "requirements",
-      label: "Requirements",
-      type: "tags",
-      hint:
-        "Separate requirements with commas.",
-      group: "Content",
-    },
-
-    {
-      name: "applicationInstructions",
-      label: "Application Instructions",
-      type: "textarea",
-      group: "Application",
-    },
-
-    {
-      name: "status",
-      label: "Status",
-      type: "select",
-      options: [
-        "open",
-        "closed",
-      ],
-      group: "Publishing",
-    },
-
-    {
-      name: "published",
-      label: "Published",
       type: "checkbox",
       group: "Publishing",
     },
@@ -982,8 +726,6 @@ export const collectionFields: Record<
       name: "label",
       label: "Platform / Label",
       type: "text",
-      hint:
-        "Example: Instagram, LinkedIn, Facebook",
       group: "Social Link",
     },
 
@@ -1002,223 +744,10 @@ export const collectionFields: Record<
     },
 
     {
-      name: "published",
-      label: "Published",
-      type: "checkbox",
-      group: "Publishing",
-    },
-
-    {
       name: "displayOrder",
       label: "Display Order",
       type: "number",
       group: "Publishing",
-    },
-  ],
-
-  /*
-  |--------------------------------------------------------------------------
-  | ABOUT PAGE CONTENT
-  |--------------------------------------------------------------------------
-  */
-
-  aboutContent: [
-    /*
-    |--------------------------------------------------------------------------
-    | Hero
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "heroEyebrow",
-      label: "Hero Eyebrow",
-      type: "text",
-      group: "Hero",
-    },
-
-    {
-      name: "heroTitle",
-      label: "Hero Title",
-      type: "textarea",
-      group: "Hero",
-    },
-
-    {
-      name: "heroText",
-      label: "Hero Description",
-      type: "textarea",
-      group: "Hero",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Story
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "storyEyebrow",
-      label: "Story Eyebrow",
-      type: "text",
-      group: "Our Story",
-    },
-
-    {
-      name: "storyParagraphOne",
-      label: "Story Paragraph One",
-      type: "textarea",
-      group: "Our Story",
-    },
-
-    {
-      name: "storyParagraphTwo",
-      label: "Story Paragraph Two",
-      type: "textarea",
-      group: "Our Story",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mission
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "missionEyebrow",
-      label: "Mission Eyebrow",
-      type: "text",
-      group: "Mission",
-    },
-
-    {
-      name: "mission",
-      label: "Mission",
-      type: "textarea",
-      group: "Mission",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Vision
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "visionEyebrow",
-      label: "Vision Eyebrow",
-      type: "text",
-      group: "Vision",
-    },
-
-    {
-      name: "vision",
-      label: "Vision",
-      type: "textarea",
-      group: "Vision",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Values
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "valuesEyebrow",
-      label: "Values Eyebrow",
-      type: "text",
-      group: "Values",
-    },
-
-    {
-      name: "values",
-      label: "Values",
-      type: "tags",
-      hint:
-        "Separate values with commas.",
-      group: "Values",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Team
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "teamEyebrow",
-      label: "Team Eyebrow",
-      type: "text",
-      group: "Team",
-    },
-
-    {
-      name: "teamTitle",
-      label: "Team Title",
-      type: "textarea",
-      group: "Team",
-    },
-
-    {
-      name: "teamText",
-      label: "Team Description",
-      type: "textarea",
-      group: "Team",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Quote
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "quote",
-      label: "Quote",
-      type: "textarea",
-      group: "Quote",
-    },
-
-    {
-      name: "quoteAuthor",
-      label: "Quote Author",
-      type: "text",
-      group: "Quote",
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | CTA
-    |--------------------------------------------------------------------------
-    */
-
-    {
-      name: "ctaTitle",
-      label: "CTA Title",
-      type: "textarea",
-      group: "Call To Action",
-    },
-
-    {
-      name: "ctaText",
-      label: "CTA Description",
-      type: "textarea",
-      group: "Call To Action",
-    },
-
-    {
-      name: "ctaButtonText",
-      label: "CTA Button Text",
-      type: "text",
-      group: "Call To Action",
-    },
-
-    {
-      name: "ctaButtonLink",
-      label: "CTA Button Link",
-      type: "text",
-      hint: "Example: /contact",
-      group: "Call To Action",
     },
   ],
 };

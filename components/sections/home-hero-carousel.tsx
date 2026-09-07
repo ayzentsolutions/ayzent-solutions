@@ -1,574 +1,486 @@
+
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Container } from "@/components/ui/container";
+import { ButtonLink } from "@/components/ui/button";
 
-import {
-  ButtonLink,
-} from "@/components/ui/button";
-
-export type HeroSlide = {
+export interface HeroSlide {
+  id?: string;
   _id?: string;
 
   eyebrow?: string;
-
   title?: string;
+  description?: string;
 
-  highlight?: string;
+  primaryButtonText?: string;
+  primaryButtonLink?: string;
 
-  text?: string;
-
-  /*
-  |--------------------------------------------------------------------------
-  | IMPORTANT
-  |--------------------------------------------------------------------------
-  |
-  | This must remain optional because lib/content.ts defines HeroSlide.image
-  | as string | undefined.
-  |
-  */
+  secondaryButtonText?: string;
+  secondaryButtonLink?: string;
 
   image?: string;
-
-  overlayStrength?:
-    | "light"
-    | "medium"
-    | "dark";
-
-  primaryText?: string;
-
-  primaryLink?: string;
-
-  secondaryText?: string;
-
-  secondaryLink?: string;
+  alt?: string;
 
   active?: boolean;
-
+  order?: number;
   displayOrder?: number;
+}
+
+interface HomeHeroCarouselProps {
+  slides?: HeroSlide[];
+}
+
+const FALLBACK_CONTENT = {
+  eyebrow: "AYZENT SOLUTIONS",
+  title: "Ideas. Engineered.",
+  description:
+    "We design, build and scale modern digital solutions for ambitious businesses and ideas.",
+
+  primaryButtonText: "Start a Project",
+  primaryButtonLink: "/contact",
+
+  secondaryButtonText: "Explore Our Work",
+  secondaryButtonLink: "/projects",
 };
 
-function overlayClass(
-  strength?: HeroSlide["overlayStrength"]
-) {
-  switch (strength) {
-    case "light":
-      return "bg-black/35";
-
-    case "medium":
-      return "bg-black/50";
-
-    case "dark":
-    default:
-      return "bg-black/65";
-  }
-}
-
-function renderTitle(
-  slide: HeroSlide
-) {
-  const title =
-    slide.title || "";
-
-  if (
-    !slide.highlight ||
-    !title.includes(
-      slide.highlight
-    )
-  ) {
-    return title;
-  }
-
-  const index =
-    title.indexOf(
-      slide.highlight
-    );
-
-  const before =
-    title.slice(
-      0,
-      index
-    );
-
-  const after =
-    title.slice(
-      index +
-        slide.highlight.length
-    );
-
-  return (
-    <>
-      {before}
-
-      <em className="font-normal text-gold">
-
-        {slide.highlight}
-
-      </em>
-
-      {after}
-    </>
-  );
-}
-
 export function HomeHeroCarousel({
-  slides,
-}: {
-  slides: HeroSlide[];
-}) {
-
+  slides = [],
+}: HomeHeroCarouselProps) {
   /*
   |--------------------------------------------------------------------------
-  | ACTIVE BACKGROUND SLIDES
+  | ACTIVE SLIDES
   |--------------------------------------------------------------------------
   |
-  | Only slides with an image are used as backgrounds.
+  | Only active slides are used.
   |
+  | If older CMS data does not contain `active`, it is still accepted.
+  |--------------------------------------------------------------------------
   */
 
-  const activeSlides =
-    useMemo(
-      () =>
-        slides.filter(
-          (
-            slide
-          ): slide is HeroSlide & {
-            image: string;
-          } =>
-            slide.active !==
-              false &&
-            Boolean(
-              slide.image
-            )
-        ),
-      [slides]
-    );
+  const activeSlides = useMemo(() => {
+    return [...slides]
+      .filter(
+        (slide) =>
+          slide.active !== false
+      )
+      .sort((a, b) => {
+        const aOrder =
+          a.order ??
+          a.displayOrder ??
+          0;
 
-  const [
-    activeIndex,
-    setActiveIndex,
-  ] = useState(0);
+        const bOrder =
+          b.order ??
+          b.displayOrder ??
+          0;
 
-  const [
-    paused,
-    setPaused,
-  ] = useState(false);
-
-  const total =
-    activeSlides.length;
+        return (
+          aOrder - bOrder
+        );
+      });
+  }, [slides]);
 
   /*
   |--------------------------------------------------------------------------
   | HERO CONTENT
   |--------------------------------------------------------------------------
   |
-  | We use the first available slide for the existing Hero content.
+  | The FIRST active slide is the content source.
   |
-  | Background images rotate independently.
-  |
+  | This content NEVER changes when background slides rotate.
+  |--------------------------------------------------------------------------
   */
 
   const contentSlide =
-    slides.find(
+    activeSlides[0];
+
+  const content = {
+    eyebrow:
+      contentSlide?.eyebrow ||
+      FALLBACK_CONTENT.eyebrow,
+
+    title:
+      contentSlide?.title ||
+      FALLBACK_CONTENT.title,
+
+    description:
+      contentSlide?.description ||
+      FALLBACK_CONTENT.description,
+
+    primaryButtonText:
+      contentSlide?.primaryButtonText ||
+      FALLBACK_CONTENT.primaryButtonText,
+
+    primaryButtonLink:
+      contentSlide?.primaryButtonLink ||
+      FALLBACK_CONTENT.primaryButtonLink,
+
+    secondaryButtonText:
+      contentSlide?.secondaryButtonText ||
+      FALLBACK_CONTENT.secondaryButtonText,
+
+    secondaryButtonLink:
+      contentSlide?.secondaryButtonLink ||
+      FALLBACK_CONTENT.secondaryButtonLink,
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | BACKGROUND SLIDES
+  |--------------------------------------------------------------------------
+  |
+  | Only slides containing a valid image participate in the carousel.
+  |--------------------------------------------------------------------------
+  */
+
+  const backgroundSlides =
+    activeSlides.filter(
       (slide) =>
-        slide.active !== false
-    ) ||
-    slides[0];
+        typeof slide.image ===
+          "string" &&
+        slide.image.trim()
+          .length > 0
+    );
+
+  const [
+    currentIndex,
+    setCurrentIndex,
+  ] = useState(0);
+
+  /*
+  |--------------------------------------------------------------------------
+  | AUTO ROTATION
+  |--------------------------------------------------------------------------
+  */
 
   useEffect(() => {
-
     if (
-      total <= 1 ||
-      paused
+      backgroundSlides.length <= 1
     ) {
       return;
     }
 
-    const timer =
-      window.setInterval(
-        () => {
+    const interval =
+      window.setInterval(() => {
+        setCurrentIndex(
+          (current) =>
+            (
+              current + 1
+            ) %
+            backgroundSlides.length
+        );
+      }, 6000);
 
-          setActiveIndex(
-            (current) =>
-              (
-                current +
-                1
-              ) %
-              total
-          );
-
-        },
-        7000
-      );
-
-    return () =>
+    return () => {
       window.clearInterval(
-        timer
+        interval
       );
+    };
+  }, [backgroundSlides.length]);
 
-  }, [
-    paused,
-    total,
-  ]);
+  /*
+  |--------------------------------------------------------------------------
+  | RESET INDEX
+  |--------------------------------------------------------------------------
+  */
 
   useEffect(() => {
-
     if (
-      activeIndex >=
-      total
+      currentIndex >=
+      backgroundSlides.length
     ) {
-
-      setActiveIndex(0);
-
+      setCurrentIndex(0);
     }
-
   }, [
-    activeIndex,
-    total,
+    currentIndex,
+    backgroundSlides.length,
   ]);
 
   /*
   |--------------------------------------------------------------------------
-  | FALLBACK
+  | MANUAL SLIDE CHANGE
   |--------------------------------------------------------------------------
   */
 
-  if (
-    !contentSlide
-  ) {
-    return null;
-  }
+  const goToSlide = (
+    index: number
+  ) => {
+    setCurrentIndex(index);
+  };
 
-  function previous() {
+  /*
+  |--------------------------------------------------------------------------
+  | NEXT SLIDE
+  |--------------------------------------------------------------------------
+  */
 
+  const nextSlide = () => {
     if (
-      total <= 1
+      backgroundSlides.length <= 1
     ) {
       return;
     }
 
-    setActiveIndex(
+    setCurrentIndex(
+      (current) =>
+        (
+          current + 1
+        ) %
+        backgroundSlides.length
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | PREVIOUS SLIDE
+  |--------------------------------------------------------------------------
+  */
+
+  const previousSlide = () => {
+    if (
+      backgroundSlides.length <= 1
+    ) {
+      return;
+    }
+
+    setCurrentIndex(
       (current) =>
         (
           current -
           1 +
-          total
+          backgroundSlides.length
         ) %
-        total
+        backgroundSlides.length
     );
-
-  }
-
-  function next() {
-
-    if (
-      total <= 1
-    ) {
-      return;
-    }
-
-    setActiveIndex(
-      (current) =>
-        (
-          current +
-          1
-        ) %
-        total
-    );
-
-  }
+  };
 
   return (
-
-    <section
-      className="relative isolate min-h-[calc(100svh-5rem)] overflow-hidden bg-ink"
-      onMouseEnter={() =>
-        setPaused(true)
-      }
-      onMouseLeave={() =>
-        setPaused(false)
-      }
-    >
-
-      {/* ============================================================
+    <section className="relative isolate flex min-h-[calc(100vh-5rem)] items-center overflow-hidden">
+      {/* ================================================================
           BACKGROUND CAROUSEL
-          ============================================================ */}
+      ================================================================= */}
 
-      <div className="absolute inset-0 z-0">
-
-        {activeSlides.length >
-        0 ? (
-
-          activeSlides.map(
+      <div
+        className="absolute inset-0 -z-20"
+        aria-hidden="true"
+      >
+        {backgroundSlides.length >
+          0 ? (
+          backgroundSlides.map(
             (
               slide,
               index
             ) => {
-
-              const active =
+              const isActive =
                 index ===
-                activeIndex;
+                currentIndex;
 
               return (
-
                 <div
                   key={
                     slide._id ||
+                    slide.id ||
                     `${slide.image}-${index}`
                   }
-                  className={`absolute inset-0 transition-opacity duration-[1400ms] ease-out ${
-                    active
+                  className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                    isActive
                       ? "opacity-100"
                       : "opacity-0"
                   }`}
-                  aria-hidden={
-                    !active
-                  }
                 >
-
                   <Image
                     src={
-                      slide.image
+                      slide.image as string
                     }
-                    alt=""
+                    alt={
+                      slide.alt ||
+                      ""
+                    }
                     fill
                     priority={
                       index === 0
                     }
                     sizes="100vw"
-                    quality={82}
-                    className={`object-cover transition-transform duration-[7000ms] ease-linear ${
-                      active
-                        ? "scale-110"
+                    className={`object-cover transition-transform duration-[7000ms] ease-out ${
+                      isActive
+                        ? "scale-105"
                         : "scale-100"
                     }`}
                   />
-
-                  <div
-                    className={`absolute inset-0 ${overlayClass(
-                      slide.overlayStrength
-                    )}`}
-                  />
-
                 </div>
-
               );
-
             }
           )
-
         ) : (
-
-          /*
-          |--------------------------------------------------------------------------
-          | NO IMAGE FALLBACK
-          |--------------------------------------------------------------------------
-          */
-
-          <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
         )}
-
       </div>
 
-      {/* ============================================================
-          GLOBAL OVERLAY
-          ============================================================ */}
+      {/* ================================================================
+          DARK OVERLAY
+      ================================================================= */}
 
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
+      <div
+        className="absolute inset-0 -z-10 bg-background/75"
+        aria-hidden="true"
+      />
 
-      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_75%_20%,rgba(201,162,39,.16),transparent_35%)]" />
+      {/* ================================================================
+          GRADIENT OVERLAY
+      ================================================================= */}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-56 bg-gradient-to-t from-black/65 to-transparent" />
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/70 to-background/30"
+        aria-hidden="true"
+      />
 
+      {/* ================================================================
+          DECORATIVE LIGHT
+      ================================================================= */}
 
-      {/* ============================================================
-          FIXED HERO CONTENT
-          ============================================================ */}
+      <div
+        className="pointer-events-none absolute -right-40 top-1/2 -z-10 h-[30rem] w-[30rem] -translate-y-1/2 rounded-full bg-gold/10 blur-[140px]"
+        aria-hidden="true"
+      />
 
-      <div className="relative z-20 mx-auto flex min-h-[calc(100svh-5rem)] max-w-[90rem] items-center px-5 py-24">
+      {/* ================================================================
+          HERO CONTENT
+      ================================================================= */}
 
-        <div className="max-w-4xl text-paper animate-fade-up">
+      <Container className="relative z-10 py-24 sm:py-28 lg:py-32">
+        <div className="max-w-3xl">
+          {/* EYEBROW */}
 
-          {contentSlide.eyebrow && (
-
-            <p className="text-xs font-medium uppercase tracking-[0.22em] text-gold">
-
-              {
-                contentSlide.eyebrow
-              }
-
+          {content.eyebrow && (
+            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-gold sm:text-sm">
+              {content.eyebrow}
             </p>
-
           )}
 
-          {contentSlide.title && (
+          {/* TITLE */}
 
-            <h1 className="mt-5 max-w-4xl font-display text-5xl font-semibold leading-[.96] text-white sm:text-7xl lg:text-8xl">
+          <h1 className="max-w-4xl text-5xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
+            {content.title}
+          </h1>
 
-              {renderTitle(
-                contentSlide
-              )}
+          {/* DESCRIPTION */}
 
-            </h1>
-
-          )}
-
-          {contentSlide.text && (
-
-            <p className="mt-7 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
-
-              {
-                contentSlide.text
-              }
-
+          {content.description && (
+            <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted sm:text-lg md:text-xl">
+              {content.description}
             </p>
-
           )}
 
-          <div className="mt-9 flex flex-wrap gap-3">
+          {/* BUTTONS */}
 
-            {contentSlide.primaryText &&
-              contentSlide.primaryLink && (
-
-                <ButtonLink
-                  href={
-                    contentSlide.primaryLink
-                  }
-                >
-
-                  {
-                    contentSlide.primaryText
-                  }
-
-                </ButtonLink>
-
-              )}
-
-            {contentSlide.secondaryText &&
-              contentSlide.secondaryLink && (
-
-                <ButtonLink
-                  href={
-                    contentSlide.secondaryLink
-                  }
-                  variant="secondary"
-                >
-
-                  {
-                    contentSlide.secondaryText
-                  }
-
-                </ButtonLink>
-
-              )}
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* ============================================================
-          CAROUSEL CONTROLS
-          ============================================================ */}
-
-      {total > 1 && (
-
-        <div className="absolute bottom-7 left-5 right-5 z-30 flex items-end justify-between gap-6 sm:bottom-10 sm:left-8 sm:right-8">
-
-
-          {/* INDICATORS */}
-
-          <div className="flex flex-1 gap-2">
-
-            {activeSlides.map(
-              (
-                slide,
-                index
-              ) => (
-
-                <button
-                  key={
-                    slide._id ||
-                    index
-                  }
-                  type="button"
-                  aria-label={`Show background ${
-                    index + 1
-                  }`}
-                  onClick={() =>
-                    setActiveIndex(
-                      index
-                    )
-                  }
-                  className="group flex-1 py-3"
-                >
-
-                  <span className="block h-px overflow-hidden bg-white/25">
-
-                    <span
-                      className={`block h-full bg-gold transition-all ${
-                        index ===
-                        activeIndex
-                          ? "w-full duration-[7000ms]"
-                          : "w-0 duration-300"
-                      }`}
-                    />
-
-                  </span>
-
-                </button>
-
-              )
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+            {content.primaryButtonText && (
+              <ButtonLink
+                href={
+                  content.primaryButtonLink ||
+                  "/contact"
+                }
+                variant="primary"
+              >
+                {
+                  content.primaryButtonText
+                }
+              </ButtonLink>
             )}
 
+            {content.secondaryButtonText && (
+              <ButtonLink
+                href={
+                  content.secondaryButtonLink ||
+                  "/projects"
+                }
+                variant="secondary"
+              >
+                {
+                  content.secondaryButtonText
+                }
+              </ButtonLink>
+            )}
           </div>
-
-
-          {/* NAVIGATION */}
-
-          <div className="flex shrink-0 gap-2">
-
-            <button
-              type="button"
-              aria-label="Previous background"
-              onClick={
-                previous
-              }
-              className="grid h-11 w-11 place-items-center border border-white/30 text-white transition hover:border-gold hover:text-gold"
-            >
-
-              ←
-
-            </button>
-
-            <button
-              type="button"
-              aria-label="Next background"
-              onClick={
-                next
-              }
-              className="grid h-11 w-11 place-items-center border border-white/30 text-white transition hover:border-gold hover:text-gold"
-            >
-
-              →
-
-            </button>
-
-          </div>
-
         </div>
+      </Container>
 
+      {/* ================================================================
+          CAROUSEL CONTROLS
+      ================================================================= */}
+
+      {backgroundSlides.length >
+        1 && (
+        <>
+          {/* PREVIOUS */}
+
+          <button
+            type="button"
+            onClick={
+              previousSlide
+            }
+            aria-label="Previous background"
+            className="absolute left-4 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/20 text-xl text-white backdrop-blur transition hover:border-gold hover:text-gold lg:flex"
+          >
+            ←
+          </button>
+
+          {/* NEXT */}
+
+          <button
+            type="button"
+            onClick={nextSlide}
+            aria-label="Next background"
+            className="absolute right-4 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/20 text-xl text-white backdrop-blur transition hover:border-gold hover:text-gold lg:flex"
+          >
+            →
+          </button>
+        </>
       )}
 
-    </section>
+      {/* ================================================================
+          SLIDE INDICATORS
+      ================================================================= */}
 
+      {backgroundSlides.length >
+        1 && (
+        <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+          {backgroundSlides.map(
+            (
+              slide,
+              index
+            ) => (
+              <button
+                key={
+                  slide._id ||
+                  slide.id ||
+                  `indicator-${index}`
+                }
+                type="button"
+                onClick={() =>
+                  goToSlide(
+                    index
+                  )
+                }
+                aria-label={`Go to background ${
+                  index + 1
+                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index ===
+                  currentIndex
+                    ? "w-8 bg-gold"
+                    : "w-2 bg-white/50 hover:bg-white"
+                }`}
+              />
+            )
+          )}
+        </div>
+      )}
+    </section>
   );
 }
+

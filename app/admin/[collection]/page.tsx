@@ -18,16 +18,15 @@ import {
   isCmsCollection,
 } from "@/lib/cms";
 
-export default function CollectionPage({
+export default async function CollectionPage({
   params,
 }: {
-  params: {
-    collection: string;
-  };
+  params: Promise<{ collection: string }>;
 }) {
+  const { collection } = await params;
   if (
     !isCmsCollection(
-      params.collection
+      collection
     )
   ) {
     notFound();
@@ -82,7 +81,7 @@ export default function CollectionPage({
 
                         const active =
                           collection ===
-                          params.collection;
+                          collection;
 
                         return (
 
@@ -134,11 +133,11 @@ export default function CollectionPage({
 
           <ContentManager
             collection={
-              params.collection
+              collection
             }
             label={
               collectionLabels[
-                params.collection
+                collection
               ]
             }
           />

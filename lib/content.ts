@@ -28,6 +28,13 @@ export type Service = {
   published?: boolean;
 };
 
+export type Product = {
+  _id?: string; name: string; slug: string; shortDescription: string; content: string;
+  category?: string; coverImage?: string; gallery?: string[]; technologies?: string[]; features?: string[];
+  url?: string; ctaText?: string; ctaLink?: string; displayOrder?: number;
+  status: "draft" | "published" | "archived"; seoTitle?: string; seoDescription?: string; updatedAt?: Date;
+};
+
 export type Post = {
   _id?: string;
 
@@ -489,11 +496,7 @@ async function read<T>(
     const documents =
       await db
         .collection(collection)
-        .find({
-          published: {
-            $ne: false,
-          },
-        })
+        .find({ $and: [{ status: { $in: ["published", null] } }, { published: { $ne: false } }] })
         .sort({
           displayOrder: 1,
           createdAt: -1,
@@ -527,6 +530,9 @@ export function getProjects() {
     projects
   );
 }
+
+export function getProducts() { return read<Product>("products", []); }
+export async function getProduct(slug: string) { return (await getProducts()).find((product) => product.slug === slug); }
 
 export function getPosts() {
   return read<Post>(
@@ -1181,4 +1187,3 @@ export async function getAboutContent(): Promise<AboutContent> {
     return fallback;
   }
 }
-

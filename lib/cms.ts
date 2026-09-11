@@ -31,6 +31,7 @@ export const cmsCollections = [
 
   "services",
   "projects",
+  "products",
 
   /*
   |--------------------------------------------------------------------------
@@ -99,6 +100,7 @@ export const editorCollections:
 
   "services",
   "projects",
+  "products",
 
   "posts",
   "categories",
@@ -215,6 +217,7 @@ export const cmsNavigation = [
       "projects",
     ],
   },
+  { title: "PRODUCTS", items: ["products"] },
 
   {
     title: "BLOG",
@@ -279,6 +282,7 @@ export const collectionLabels:
 
   projects:
     "Projects",
+  products: "Our Products",
 
   posts:
     "Blog Posts",
@@ -494,7 +498,7 @@ export function validateCmsData(
     [
       "heroSlides",
       "services",
-      "projects",
+      "projects", "products",
       "posts",
       "jobs",
       "announcements",
@@ -837,6 +841,17 @@ export function validateCmsData(
     );
   }
 
+  if (collection === "products") {
+    requireField("name", "Product name");
+    requireField("slug", "Slug");
+    requireField("shortDescription", "Short description");
+    requireField("content", "Full description");
+    if (!isOptionalText(data.category)) errors.push("Category must be text.");
+    if (data.status && !statuses.includes(String(data.status))) errors.push("Product status is invalid.");
+    ["coverImage", "url", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+    ["gallery", "technologies", "features"].forEach((key) => { if (!arrayOfStrings(data[key])) errors.push(`${key} must contain only text values.`); });
+  }
+
   /*
   |--------------------------------------------------------------------------
   | POSTS
@@ -1152,7 +1167,7 @@ export function validateCmsData(
 
   if (
     [
-      "projects",
+      "projects", "products",
       "posts",
       "categories",
       "tags",
@@ -1176,4 +1191,3 @@ export function validateCmsData(
 
   return errors;
 }
-

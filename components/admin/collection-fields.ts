@@ -428,6 +428,25 @@ export const collectionFields: Record<
   |--------------------------------------------------------------------------
   */
 
+  products: [
+    { name: "name", label: "Product Name", type: "text", group: "Product Details", required: true },
+    { name: "slug", label: "Slug", type: "text", group: "Product Details", required: true, hint: "Lowercase letters, numbers and hyphens only." },
+    { name: "category", label: "Category / Type", type: "text", group: "Product Details", placeholder: "SaaS, Website, Application" },
+    { name: "shortDescription", label: "Short Description", type: "textarea", group: "Content", required: true },
+    { name: "content", label: "Full Description", type: "markdown", group: "Content", required: true },
+    { name: "coverImage", label: "Cover Image", type: "image", group: "Media" },
+    { name: "gallery", label: "Gallery URLs", type: "tags", group: "Media", hint: "Comma-separated image URLs." },
+    { name: "technologies", label: "Technologies", type: "tags", group: "Product Details" },
+    { name: "features", label: "Features", type: "tags", group: "Product Details" },
+    { name: "url", label: "Product / Website URL", type: "url", group: "Links" },
+    { name: "ctaText", label: "CTA Text", type: "text", group: "Links", placeholder: "Visit product" },
+    { name: "ctaLink", label: "CTA Link", type: "url", group: "Links" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"] },
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
+  ],
+
   projects: [
     {
       name: "title",
@@ -835,4 +854,3 @@ export const collectionFields: Record<
     },
   ],
 };
-

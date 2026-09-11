@@ -53,6 +53,7 @@ const navLinks = [
     href: "/projects",
     label: "Projects",
   },
+  { href: "/products", label: "Our Products" },
 
   {
     href: "/blog",
@@ -235,4 +236,3 @@ export function Header({
     </header>
   );
 }
-

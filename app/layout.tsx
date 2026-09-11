@@ -25,12 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
     "Ideas. Engineered.";
 
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
     title: {
       default: companyName,
       template: `%s | ${companyName}`,
     },
 
     description,
+    alternates: { canonical: "/" },
+    openGraph: { type: "website", siteName: companyName, title: companyName, description },
+    twitter: { card: "summary_large_image", title: companyName, description },
 
     icons: {
       icon:

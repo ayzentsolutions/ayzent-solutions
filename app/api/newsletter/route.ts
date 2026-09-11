@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { cleanText, validEmail } from "@/lib/validation";
+import { clientIp, rateLimit, rateLimitedResponse } from "@/lib/security";
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(`newsletter:${clientIp(request)}`, 10, 60 * 60 * 1000);
+    if (!limited.allowed) return rateLimitedResponse(limited.retryAfter);
     const { email: rawEmail } = await request.json();
     const email = cleanText(rawEmail, 254).toLowerCase();
     if (!validEmail(email)) return NextResponse.json({ message: "Please enter a valid email address." }, { status: 400 });

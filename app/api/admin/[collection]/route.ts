@@ -21,6 +21,7 @@ import {
 import {
   getDb,
 } from "@/lib/mongodb";
+import { csrfValid } from "@/lib/security";
 
 const singletonCollections = [
   "siteSettings",
@@ -114,15 +115,13 @@ export async function GET(
   {
     params,
   }: {
-    params: {
-      collection: string;
-    };
+    params: Promise<{ collection: string }>;
   }
 ) {
   const result =
     await access(
       request,
-      params.collection,
+      (await params).collection,
       "read"
     );
 
@@ -246,7 +245,7 @@ async function validateAndPrepare(
 
   if (
     (
-      collection === "projects" ||
+      collection === "projects" || collection === "products" ||
       collection === "posts"
     ) &&
     data.slug
@@ -304,15 +303,14 @@ export async function POST(
   {
     params,
   }: {
-    params: {
-      collection: string;
-    };
+    params: Promise<{ collection: string }>;
   }
 ) {
+  if (!csrfValid(request)) return NextResponse.json({ message: "Invalid request origin." }, { status: 403 });
   const result =
     await access(
       request,
-      params.collection,
+      (await params).collection,
       "write"
     );
 
@@ -503,15 +501,14 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
-      collection: string;
-    };
+    params: Promise<{ collection: string }>;
   }
 ) {
+  if (!csrfValid(request)) return NextResponse.json({ message: "Invalid request origin." }, { status: 403 });
   const result =
     await access(
       request,
-      params.collection,
+      (await params).collection,
       "write"
     );
 
@@ -646,15 +643,14 @@ export async function DELETE(
   {
     params,
   }: {
-    params: {
-      collection: string;
-    };
+    params: Promise<{ collection: string }>;
   }
 ) {
+  if (!csrfValid(request)) return NextResponse.json({ message: "Invalid request origin." }, { status: 403 });
   const result =
     await access(
       request,
-      params.collection,
+      (await params).collection,
       "write"
     );
 

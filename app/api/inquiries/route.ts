@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { cleanText, validEmail } from "@/lib/validation";
 import { notifyInquiry } from "@/lib/email";
+import { clientIp, rateLimit, rateLimitedResponse } from "@/lib/security";
 
 const allowedServices = ["Website Development", "Digital Marketing", "SEO", "Website & Software Maintenance", "UI/UX Design", "Deployment & Cloud Services"];
 const allowedBudgets = ["Under $5,000", "$5,000 – $15,000", "$15,000+"];
 
 export async function POST(request: Request) {
   try {
+    const limited = rateLimit(`inquiry:${clientIp(request)}`, 5, 60 * 60 * 1000);
+    if (!limited.allowed) return rateLimitedResponse(limited.retryAfter);
     const body = await request.json();
     const inquiry = {
       name: cleanText(body.name, 100), email: cleanText(body.email, 254).toLowerCase(), phone: cleanText(body.phone, 40), company: cleanText(body.company, 120),

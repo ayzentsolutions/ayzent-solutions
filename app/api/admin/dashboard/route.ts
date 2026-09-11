@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { getDb } from "@/lib/mongodb";
 export async function GET(request: NextRequest) {
-  const user = await requireAdmin(request);
+  const user = await requireAdmin(request, false);
   if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   try {
     const db = await getDb();

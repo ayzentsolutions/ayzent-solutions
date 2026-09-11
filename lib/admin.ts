@@ -2,6 +2,7 @@ import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } fr
 import { promisify } from "util";
 import type { NextRequest } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 const scrypt = promisify(scryptCallback);
 const cookieName = "ayzent_admin";
@@ -41,4 +42,11 @@ export function getAdminFromRequest(request: NextRequest) { return readSession(r
 export function sessionCookie(value: string) { return { name: cookieName, value, options: { httpOnly: true, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production", path: "/", maxAge: sessionHours * 60 * 60 } }; }
 export function clearSessionCookie() { return { name: cookieName, value: "", options: { httpOnly: true, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production", path: "/", maxAge: 0 } }; }
 export async function logActivity(user: AdminUser, action: string, detail: string) { await (await getDb()).collection("activityLogs").insertOne({ userId: user.id, userEmail: user.email, action, detail, createdAt: new Date() }); }
-export async function requireAdmin(request: NextRequest, allowEditor = true) { const user = getAdminFromRequest(request); if (!user || (!allowEditor && user.role !== "SUPER_ADMIN")) return null; return user; }
+export async function requireAdmin(request: NextRequest, allowEditor = true) {
+  const session = getAdminFromRequest(request);
+  if (!session || !ObjectId.isValid(session.id)) return null;
+  const current = await (await getDb()).collection("adminUsers").findOne({ _id: new ObjectId(session.id), disabled: { $ne: true } }, { projection: { email: 1, name: 1, role: 1 } });
+  if (!current || (current.role !== "SUPER_ADMIN" && current.role !== "EDITOR")) return null;
+  const user: AdminUser = { id: session.id, email: String(current.email), name: String(current.name), role: current.role as AdminRole };
+  return !allowEditor && user.role !== "SUPER_ADMIN" ? null : user;
+}

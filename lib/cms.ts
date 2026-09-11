@@ -847,7 +847,7 @@ export function validateCmsData(
     requireField("shortDescription", "Short description");
     requireField("content", "Full description");
     if (!isOptionalText(data.category)) errors.push("Category must be text.");
-    if (data.status && !statuses.includes(String(data.status))) errors.push("Product status is invalid.");
+    if (!statuses.includes(String(data.status))) errors.push("Product status must be draft, published, or archived.");
     ["coverImage", "url", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
     ["gallery", "technologies", "features"].forEach((key) => { if (!arrayOfStrings(data[key])) errors.push(`${key} must contain only text values.`); });
   }

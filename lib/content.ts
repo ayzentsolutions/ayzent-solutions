@@ -496,18 +496,17 @@ async function read<T>(
     const documents =
       await db
         .collection(collection)
-        .find({ $and: [{ status: { $in: ["published", null] } }, { published: { $ne: false } }] })
+        .find({ status: "published" })
         .sort({
           displayOrder: 1,
           createdAt: -1,
         })
         .toArray();
 
-    return documents.length
-      ? (documents as unknown as T[])
-      : fallback;
-  } catch {
-    return fallback;
+    return documents as unknown as T[];
+  } catch (error) {
+    console.error(`CMS read failed for ${collection}`, error);
+    return [];
   }
 }
 
@@ -532,7 +531,7 @@ export function getProjects() {
 }
 
 export function getProducts() { return read<Product>("products", []); }
-export async function getProduct(slug: string) { return (await getProducts()).find((product) => product.slug === slug); }
+export async function getProduct(slug: string) { return getPublishedBySlug<Product>("products", slug); }
 
 export function getPosts() {
   return read<Post>(
@@ -547,16 +546,7 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(
-  slug: string
-) {
-  return (
-    await getProjects()
-  ).find(
-    (project) =>
-      project.slug === slug
-  );
-}
+export async function getProject(slug: string) { return getPublishedBySlug<Project>("projects", slug); }
 
 /*
 |--------------------------------------------------------------------------
@@ -564,15 +554,11 @@ export async function getProject(
 |--------------------------------------------------------------------------
 */
 
-export async function getPost(
-  slug: string
-) {
-  return (
-    await getPosts()
-  ).find(
-    (post) =>
-      post.slug === slug
-  );
+export async function getPost(slug: string) { return getPublishedBySlug<Post>("posts", slug); }
+
+async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
+  try { return (await (await getDb()).collection(collection).findOne({ slug, status: "published" })) as T | undefined; }
+  catch (error) { console.error(`CMS item read failed for ${collection}`, error); return undefined; }
 }
 
 /*

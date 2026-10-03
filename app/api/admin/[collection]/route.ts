@@ -260,17 +260,11 @@ async function validateAndPrepare(
     ) &&
     data.slug
   ) {
-    await db
-      .collection(collection)
-      .createIndex(
-        {
-          slug: 1,
-        },
-        {
-          unique: true,
-        }
-      );
-
+    /*
+     * Do not build the unique index during a user request.
+     * Legacy duplicate slugs can make MongoDB reject createIndex()
+     * and turn a normal product create into a 500.
+     */
     const duplicate =
       await db
         .collection(collection)
@@ -452,11 +446,15 @@ export async function POST(
           updatedAt: now,
         });
 
-    await logActivity(
-      result.user,
-      "created",
-      `${result.collection} entry`
-    );
+    try {
+      await logActivity(
+        result.user,
+        "created",
+        `${result.collection} entry`
+      );
+    } catch (activityError) {
+      console.error("Admin activity log failed after create", activityError);
+    }
 
     return NextResponse.json(
       {

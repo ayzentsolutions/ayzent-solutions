@@ -23,6 +23,8 @@ import {
 } from "@/lib/mongodb";
 import { csrfValid } from "@/lib/security";
 
+export const dynamic = "force-dynamic";
+
 const singletonCollections = [
   "siteSettings",
   "aboutContent",
@@ -118,26 +120,29 @@ export async function GET(
     params: Promise<{ collection: string }>;
   }
 ) {
-  const result =
-    await access(
-      request,
-      (await params).collection,
-      "read"
-    );
-
-  if (!result) {
-    return NextResponse.json(
-      {
-        message:
-          "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-
   try {
+    const collection =
+      (await params).collection;
+
+    const result =
+      await access(
+        request,
+        collection,
+        "read"
+      );
+
+    if (!result) {
+      return NextResponse.json(
+        {
+          message:
+            "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
     const db =
       await getDb();
 
@@ -198,7 +203,12 @@ export async function GET(
     return NextResponse.json({
       items,
     });
-  } catch {
+  } catch (error) {
+    console.error("Admin collection GET failed", {
+      collection: (await params).collection,
+      error,
+    });
+
     return NextResponse.json(
       {
         message:

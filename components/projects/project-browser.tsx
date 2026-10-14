@@ -20,7 +20,7 @@ export function ProjectBrowser({ projects }: { projects: Project[] }) {
     <>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filter projects by category">
         {categories.map((item) => (
-          <button type="button" key={item} onClick={() => select(item)} aria-pressed={category === item} className={`min-h-11 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-offset-4 ${category === item ? "border-ink bg-ink text-paper dark:border-paper dark:bg-paper dark:text-ink" : "border-line text-muted hover:border-gold hover:text-gold"}`}>
+          <button type="button" key={item} onClick={() => select(item)} aria-pressed={category === item} className={`min-h-11 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-offset-4 ${category === item ? "border-gold bg-gold text-white" : "border-line text-muted hover:border-gold hover:text-gold"}`}>
             {item}
           </button>
         ))}

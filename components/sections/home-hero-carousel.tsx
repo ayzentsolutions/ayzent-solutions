@@ -25,9 +25,10 @@ export function HomeHeroCarousel({ slides = [], style, hidden, "data-layout": la
     secondaryButtonText: contentSlide?.secondaryButtonText || contentSlide?.secondaryText || fallback.secondaryButtonText,
     secondaryButtonLink: contentSlide?.secondaryButtonLink || contentSlide?.secondaryLink || fallback.secondaryButtonLink
   };
-  const images = activeSlides.filter(slide => typeof slide.image === "string" && slide.image.trim());
+  const slideImages = activeSlides.filter(slide => typeof slide.image === "string" && slide.image.trim());
+  const images = imageOverride ? [{ id: "section-image", image: imageOverride, alt: content.title }, ...slideImages.filter(slide => slide.image !== imageOverride)] : slideImages;
   const [selected, setSelected] = useState(0);
-  const currentImage: HeroSlide | undefined = images[selected] || images[0] || (imageOverride ? { image: imageOverride } : undefined);
+  const currentImage: HeroSlide | undefined = images[selected] || images[0];
   return (
     <section style={style} hidden={hidden} data-layout={layoutVariant} data-home-section={sectionKey || "hero"} className="home-section relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0,transparent_calc(50%-1px),rgba(39,52,74,.45)_50%,transparent_calc(50%+1px),transparent_100%)] opacity-40" />

@@ -120,7 +120,6 @@ async function markCmsCollectionManaged(collection: string) {
     );
   } catch (error) {
     console.error("Unable to persist CMS collection state", { collection, error });
-    throw error;
   }
 }
 

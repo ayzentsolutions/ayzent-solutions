@@ -38,7 +38,7 @@ export type PageSection = {
   image?: string;
   ctaText?: string;
   ctaLink?: string;
-  layoutVariant?: "editorial" | "compact" | "full-bleed" | "image-led";
+  layoutVariant?: "editorial" | "compact" | "full-bleed";
   backgroundVariant?: "midnight" | "navy" | "elevated";
   displayOrder: number;
   active?: boolean;

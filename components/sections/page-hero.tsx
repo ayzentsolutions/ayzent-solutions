@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -11,13 +12,17 @@ type PageHeroProps = {
   image?: string;
   layoutVariant?: "editorial" | "compact" | "image-led";
   backgroundVariant?: "midnight" | "navy" | "elevated";
+  style?: CSSProperties;
+  hidden?: boolean;
+  "data-layout"?: string;
+  "data-section-key"?: string;
 };
 
 const backgrounds = { midnight: "#080D18", navy: "#0D1423", elevated: "#131D30" } as const;
 
-export function PageHero({ eyebrow, title, text, primaryText, primaryLink, image, layoutVariant = "editorial", backgroundVariant = "midnight" }: PageHeroProps) {
+export function PageHero({ eyebrow, title, text, primaryText, primaryLink, image, layoutVariant = "editorial", backgroundVariant = "midnight", style, hidden, "data-layout": configuredLayout, "data-section-key": sectionKey }: PageHeroProps) {
   return (
-    <section data-layout={layoutVariant} style={{ backgroundColor: backgrounds[backgroundVariant] }} className="page-hero relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
+    <section hidden={hidden} data-layout={configuredLayout || layoutVariant} data-section-key={sectionKey || "hero"} style={{ backgroundColor: backgrounds[backgroundVariant], ...style }} className="page-hero relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
       <div aria-hidden="true" className="grid-blueprint pointer-events-none absolute inset-0 opacity-50" />
       <Container className="page-hero-grid relative grid min-h-[25rem] gap-10 py-14 sm:py-20 lg:min-h-[32rem] lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,.8fr)] lg:items-end lg:gap-16 lg:py-24">
         <div className="max-w-4xl">

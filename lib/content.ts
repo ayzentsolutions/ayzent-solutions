@@ -554,18 +554,45 @@ async function read<T>(
 |--------------------------------------------------------------------------
 */
 
-export function getServices() {
-  return read<Service>(
-    "services",
-    services
-  );
+export async function getServices(): Promise<Service[]> {
+  const items = await read<Record<string, unknown>>("services", services as unknown as Record<string, unknown>[]);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    ...item,
+    title: String(item.title || item.name || "Service"),
+    text: String(item.text || item.shortDescription || item.description || ""),
+    slug: typeof item.slug === "string" ? item.slug : undefined,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    published: item.published !== false,
+  })) as unknown as Service[];
 }
 
-export function getProjects() {
-  return read<Project>(
-    "projects",
-    projects
-  );
+function normalizeProject(item: Record<string, unknown>): Project {
+  const name = String(item.name || item.title || "Project");
+  const description = String(item.summary || item.shortDescription || item.description || item.overview || "");
+  const stringList = (value: unknown) => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
+  return {
+    slug: String(item.slug || "project"),
+    name,
+    category: String(item.category || "Project"),
+    summary: description,
+    client: typeof item.client === "string" ? item.client : undefined,
+    technologies: stringList(item.technologies),
+    accent: "bg-[#477BFF]",
+    challenge: String(item.challenge || item.description || description),
+    solution: String(item.solution || item.approach || item.description || description),
+    features: stringList(item.features),
+    overview: String(item.overview || item.description || description),
+    featured: item.featured === true || item.active === true,
+    coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
+    seoTitle: typeof item.seoTitle === "string" ? item.seoTitle : undefined,
+    seoDescription: typeof item.seoDescription === "string" ? item.seoDescription : undefined,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+  };
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const items = await read<Record<string, unknown>>("projects", projects as unknown as Record<string, unknown>[]);
+  return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 export async function getNavigation(): Promise<NavigationItem[]> {
@@ -600,7 +627,7 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(slug: string) { return getPublishedBySlug<Project>("projects", slug); }
+export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); return item ? normalizeProject(item) : undefined; }
 
 /*
 |--------------------------------------------------------------------------

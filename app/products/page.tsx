@@ -28,7 +28,7 @@ export default async function ProductsPage() {
               {products.map((product) => (
                 <Link key={product.slug} href={`/products/${product.slug}`} className="group motion-lift min-w-0 overflow-hidden rounded-sm border border-line bg-background focus-visible:outline-offset-4">
                   <div className="relative aspect-[16/10] overflow-hidden bg-surface">
-                    {product.coverImage ? <Image src={product.coverImage} alt={`${product.name} product preview`} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw" /> : <div className="absolute inset-0 bg-gradient-to-br from-surface via-background to-accent-soft" />}
+                    {product.coverImage ? <Image src={product.coverImage} alt={`${product.name} product preview`} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw" /> : <div className="absolute inset-0 bg-gradient-to-br from-surface via-background to-surface" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent opacity-70" />
                     <span className="absolute left-4 top-4 border border-white/30 bg-black/20 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">{product.category || "Product"}</span>
                     <span aria-hidden="true" className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full border border-white/50 bg-black/20 text-lg text-white transition group-hover:translate-x-1 group-hover:bg-white group-hover:text-black">↗</span>

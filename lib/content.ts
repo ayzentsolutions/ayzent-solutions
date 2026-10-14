@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { getDb } from "@/lib/mongodb";
 
 import {
@@ -560,24 +561,104 @@ export type AboutContent = {
 |--------------------------------------------------------------------------
 */
 
-async function read<T>(
+type CmsPreviewRecord = {
+  token: string;
+  collection: string;
+  id?: string;
+  data: Record<string, unknown>;
+  expiresAt: Date;
+};
+
+async function getCmsPreviewToken() {
+  try {
+    return (await cookies()).get("ayzent-cms-preview")?.value || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCmsPreviewSession(): Promise<{ collection: string } | null> {
+  const token = await getCmsPreviewToken();
+  if (!token) return null;
+  try {
+    const record = await (await getDb()).collection("cmsPreviews").findOne(
+      { token, expiresAt: { $gt: new Date() } },
+      { projection: { collection: 1 } }
+    );
+    return record && typeof record.collection === "string"
+      ? { collection: record.collection }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getCmsPreviewSnapshot(collection: string): Promise<CmsPreviewRecord | null> {
+  const token = await getCmsPreviewToken();
+  if (!token) return null;
+  try {
+    const record = await (await getDb()).collection("cmsPreviews").findOne({
+      token,
+      collection,
+      expiresAt: { $gt: new Date() },
+    });
+    if (!record || !record.data || typeof record.data !== "object") return null;
+    return record as unknown as CmsPreviewRecord;
+  } catch {
+    return null;
+  }
+}
+
+function previewMatches(
   collection: string,
-  fallback: T[]
-): Promise<T[]> {
+  item: Record<string, unknown>,
+  preview: CmsPreviewRecord
+) {
+  if (preview.id && String(item._id) === preview.id) return true;
+  const data = preview.data;
+  if (collection === "pageContent") return Boolean(data.pageKey) && item.pageKey === data.pageKey;
+  if (collection === "pageSections") return Boolean(data.pageKey && data.sectionKey) && item.pageKey === data.pageKey && item.sectionKey === data.sectionKey;
+  if (collection === "homeSections") return Boolean(data.sectionKey) && item.sectionKey === data.sectionKey;
+  if (["projects", "products", "posts", "services", "jobs"].includes(collection)) return Boolean(data.slug) && item.slug === data.slug;
+  return false;
+}
+
+/**
+ * Public pages read only published content. The preview cookie grants access
+ * to one short-lived, authenticated snapshot without publishing or overwriting
+ * the live record.
+ */
+async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
   try {
     const db = await getDb();
+    const preview = await getCmsPreviewSnapshot(collection);
+    const filter = {
+      $or: [
+        { status: "published" },
+        { status: { $exists: false }, published: { $ne: false } },
+      ],
+    };
+    const [total, documents] = await Promise.all([
+      db.collection(collection).countDocuments(),
+      db.collection(collection).find(filter).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray(),
+    ]);
+    const rows = documents as unknown as Record<string, unknown>[];
 
-    const documents =
-      await db
-        .collection(collection)
-        .find({ status: "published" })
-        .sort({
-          displayOrder: 1,
-          createdAt: -1,
-        })
-        .toArray();
+    if (preview) {
+      const index = rows.findIndex((item) => previewMatches(collection, item, preview));
+      const current = index >= 0 ? rows[index] : {};
+      const merged = { ...current, ...preview.data, ...(preview.id ? { _id: current._id || preview.id } : {}) };
+      if (index >= 0) rows[index] = merged;
+      else rows.push(merged);
+      rows.sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999));
+      return rows as unknown as T[];
+    }
 
-    return documents.length ? documents as unknown as T[] : fallback;
+    if (rows.length) return rows as unknown as T[];
+    // Static seed content remains a fallback only before the CMS collection
+    // has ever been populated. Drafting/archiving every record must not
+    // unexpectedly resurrect old hardcoded content.
+    return total === 0 ? fallback : [];
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
     return fallback;
@@ -673,7 +754,13 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); if (item) return normalizeProject(item); const fallback = projects.find((project) => project.slug === slug); return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined; }
+export async function getProject(slug: string): Promise<Project | undefined> {
+  const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug);
+  if (item) return normalizeProject(item);
+  if (await hasCmsRecords("projects")) return undefined;
+  const fallback = projects.find((project) => project.slug === slug);
+  return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -681,11 +768,46 @@ export async function getProject(slug: string): Promise<Project | undefined> { c
 |--------------------------------------------------------------------------
 */
 
-export async function getPost(slug: string): Promise<Post | undefined> { const item = await getPublishedBySlug<Post>("posts", slug); if (item) return item; return posts.find((post) => post.slug === slug); }
+export async function getPost(slug: string): Promise<Post | undefined> {
+  const item = await getPublishedBySlug<Post>("posts", slug);
+  if (item) return item;
+  if (await hasCmsRecords("posts")) return undefined;
+  return posts.find((post) => post.slug === slug);
+}
 
 async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
-  try { return (await (await getDb()).collection(collection).findOne({ slug, status: "published" })) as T | undefined; }
-  catch (error) { console.error(`CMS item read failed for ${collection}`, error); return undefined; }
+  try {
+    const db = await getDb();
+    const preview = await getCmsPreviewSnapshot(collection);
+    if (preview && (preview.data.slug === slug || (preview.id && preview.id === slug))) {
+      const existing = preview.id && ObjectIdLike(preview.id)
+        ? await db.collection(collection).findOne({ _id: new (await import("mongodb")).ObjectId(preview.id) })
+        : await db.collection(collection).findOne({ slug, status: "published" });
+      return { ...(existing || {}), ...preview.data, ...(existing?._id ? { _id: existing._id } : {}) } as T;
+    }
+    return (await db.collection(collection).findOne({
+      slug,
+      $or: [
+        { status: "published" },
+        { status: { $exists: false }, published: { $ne: false } },
+      ],
+    })) as T | undefined;
+  } catch (error) {
+    console.error(`CMS item read failed for ${collection}`, error);
+    return undefined;
+  }
+}
+
+function ObjectIdLike(value: string) {
+  return /^[a-f\\d]{24}$/i.test(value);
+}
+
+async function hasCmsRecords(collection: string) {
+  try {
+    return await (await getDb()).collection(collection).countDocuments() > 0;
+  } catch {
+    return false;
+  }
 }
 
 /*
@@ -871,22 +993,21 @@ export async function getJobs(): Promise<Job[]> {
 |--------------------------------------------------------------------------
 */
 
-export async function getAnnouncements() {
-  return (
-    await read<Announcement>(
-      "announcements",
-      []
-    )
-  )
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getAnnouncements(): Promise<Announcement[]> {
+  const items = await read<Record<string, unknown>>("announcements", []);
+  return items
+    .filter((item) => item.active !== false && item.published !== false)
+    .map((item) => ({
+      ...item,
+      title: String(item.title || ""),
+      content: String(item.content || item.description || ""),
+      ctaText: String(item.ctaText || item.linkText || ""),
+      ctaLink: String(item.ctaLink || item.link || ""),
+      image: typeof item.image === "string" ? item.image : undefined,
+      active: item.active !== false,
+      published: item.published !== false,
+      displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    })) as unknown as Announcement[];
 }
 
 /*
@@ -1125,11 +1246,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         .limit(1)
         .next();
 
-    if (!document) {
-      return fallback;
-    }
+    const preview = await getCmsPreviewSnapshot("siteSettings");
+    if (!document && !preview) return fallback;
 
-    const raw = document as unknown as Record<string, unknown>;
+    const raw = {
+      ...(document as unknown as Record<string, unknown> | null || {}),
+      ...(preview?.data || {}),
+    };
     return {
       ...fallback,
       ...(raw as unknown as SiteSettings),
@@ -1288,11 +1411,13 @@ export async function getAboutContent(): Promise<AboutContent> {
         .limit(1)
         .next();
 
-    if (!document) {
-      return fallback;
-    }
+    const preview = await getCmsPreviewSnapshot("aboutContent");
+    if (!document && !preview) return fallback;
 
-    const raw = document as unknown as Record<string, unknown>;
+    const raw = {
+      ...(document as unknown as Record<string, unknown> | null || {}),
+      ...(preview?.data || {}),
+    };
     const text = (...values: unknown[]) => {
       const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
       return typeof found === "string" ? found : "";

@@ -335,47 +335,10 @@ async function validateAndPrepare(
       ...(id && ObjectId.isValid(id) ? { _id: { $ne: new ObjectId(id) } } : {}),
     });
     if (duplicate) {
-      return { error: "An entry with the same identifying details already exists." };
+      return { error: ["projects", "products", "posts"].includes(collection) ? "This slug is already in use." : "An entry with the same identifying details already exists." };
     }
   }
 
-  if (
-    (
-      collection === "projects" || collection === "products" ||
-      collection === "posts"
-    ) &&
-    data.slug
-  ) {
-    /*
-     * Do not build the unique index during a user request.
-     * Legacy duplicate slugs can make MongoDB reject createIndex()
-     * and turn a normal product create into a 500.
-     */
-    const duplicate =
-      await db
-        .collection(collection)
-        .findOne({
-          slug: data.slug,
-
-          ...(id
-            ? {
-                _id: {
-                  $ne:
-                    new ObjectId(
-                      id
-                    ),
-                },
-              }
-            : {}),
-        });
-
-    if (duplicate) {
-      return {
-        error:
-          "This slug is already in use.",
-      };
-    }
-  }
 
   return {
     db,

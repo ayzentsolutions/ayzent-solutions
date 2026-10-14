@@ -28,6 +28,32 @@ export type Service = {
   published?: boolean;
 };
 
+export type HomeSection = {
+  _id?: string;
+  sectionKey: "intro" | "services" | "projects" | "products" | "process" | "studio" | "testimonials" | "faqs" | "cta";
+  title?: string;
+  eyebrow?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "full-bleed";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
+
+export type ProcessStep = {
+  _id?: string;
+  step?: string;
+  title: string;
+  description: string;
+  displayOrder?: number;
+  active?: boolean;
+  status?: "draft" | "published" | "archived";
+};
+
 export type Product = {
   _id?: string; name: string; slug: string; shortDescription: string; content: string;
   category?: string; coverImage?: string; gallery?: string[]; technologies?: string[]; features?: string[];
@@ -528,6 +554,15 @@ export function getProjects() {
     "projects",
     projects
   );
+}
+
+export function getHomeSections(): Promise<HomeSection[]> {
+  return read<HomeSection>("homeSections", []).sort((a, b) => a.displayOrder - b.displayOrder);
+}
+
+export async function getProcess(): Promise<ProcessStep[]> {
+  const steps = await read<ProcessStep>("process", []);
+  return steps.filter((step) => step.active !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 export function getProducts() { return read<Product>("products", []); }

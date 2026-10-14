@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Container } from "@/components/ui/container";
-import { ButtonLink } from "@/components/ui/button";
+import { MagneticCta } from "@/components/ui/magnetic-cta";
 
 export interface HeroSlide {
   id?: string; _id?: string; eyebrow?: string; title?: string; description?: string; primaryButtonText?: string; primaryButtonLink?: string;
@@ -52,7 +52,7 @@ export function HomeHeroCarousel({ slides = [] }: Props) {
           <h1 className="mt-7 max-w-5xl text-balance font-display text-[clamp(3.3rem,10vw,7.8rem)] font-semibold leading-[.88] tracking-[-.06em]">{content.title}</h1>
           <p className="mt-7 max-w-xl text-base leading-7 text-white/65 sm:mt-9 sm:text-lg sm:leading-8">{content.description}</p>
           <div className="mt-8 flex flex-wrap gap-3 sm:mt-10">
-            <ButtonLink href={content.primaryButtonLink} className="magnetic min-h-12 bg-[#246BFF] px-6 text-white hover:bg-[#1452D5]">{content.primaryButtonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink>
+            <MagneticCta href={content.primaryButtonLink} className="bg-[#246BFF] text-white hover:bg-[#1452D5]">{content.primaryButtonText}<span aria-hidden="true" className="ml-2">↗</span></MagneticCta>
             <Link href={content.secondaryButtonLink} className="inline-flex min-h-12 items-center gap-3 border border-white/20 px-5 text-sm text-white/80 transition hover:border-[#66A0FF] hover:text-white">{content.secondaryButtonText}<span aria-hidden="true">↗</span></Link>
           </div>
           <div className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-white/15 pt-5 text-[10px] uppercase tracking-[.2em] text-white/40 sm:mt-16"><span>Strategy</span><span className="text-[#66A0FF]">•</span><span>Design</span><span className="text-[#66A0FF]">•</span><span>Engineering</span><span className="text-[#66A0FF]">•</span><span>Growth</span></div>

@@ -76,6 +76,7 @@ export type NavigationItem = {
   displayOrder: number;
   order?: number;
   active?: boolean;
+  published?: boolean;
   status: "draft" | "published" | "archived";
 };
 

@@ -69,3 +69,7 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 
 .page-hero[data-layout="compact"] .page-hero-grid { min-height: auto !important; padding-block: clamp(3rem, 5vw, 4.25rem) !important; }
 @media (min-width: 1024px) { .page-hero[data-layout="image-led"] .page-hero-grid { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); } }
+
+.page-section[hidden], .page-hero[hidden] { display: none !important; }
+.page-section[data-layout="compact"] { padding-top: clamp(3rem, 5vw, 4.25rem) !important; padding-bottom: clamp(3rem, 5vw, 4.25rem) !important; }
+.page-section[data-layout="full-bleed"] > .container { width: 100%; max-width: none !important; padding-inline: clamp(1.25rem, 4vw, 4rem) !important; }

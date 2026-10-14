@@ -14,6 +14,7 @@ export const cmsCollections = [
 
   "siteSettings",
   "heroSlides",
+  "navigation",
   "homeSections",
   "process",
 
@@ -97,6 +98,7 @@ export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+  "navigation",
   "homeSections",
   "process",
 
@@ -191,6 +193,7 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
+      "navigation",
       "homeSections",
       "testimonials",
       "clientLogos",
@@ -279,6 +282,8 @@ export const collectionLabels:
 
   heroSlides:
     "Hero Background Slides",
+
+  navigation: "Header & Footer Navigation",
 
   homeSections: "Homepage Section Layouts",
   process: "Engineering Process",
@@ -506,6 +511,7 @@ export function validateCmsData(
   if (
     [
       "heroSlides",
+      "navigation",
       "homeSections",
       "process",
       "services",
@@ -1198,6 +1204,15 @@ export function validateCmsData(
         "Slug must use lowercase letters, numbers, and hyphens only."
       );
     }
+  }
+
+  if (collection === "navigation") {
+    requireField("label", "Navigation label");
+    requireField("href", "Destination");
+    if (!["header", "footer", "both"].includes(String(data.location))) errors.push("Navigation placement is invalid.");
+    if (!isUrl(data.href)) errors.push("Navigation destination must be a valid internal or HTTP(S) URL.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Navigation status must be draft, published, or archived.");
   }
 
   if (collection === "homeSections") {

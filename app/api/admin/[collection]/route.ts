@@ -647,26 +647,16 @@ export async function PATCH(
       );
     }
 
-    const updateResult = await prepared.db!
-      .collection(
-        result.collection
-      )
-      .updateOne(
-        {
-          _id:
-            new ObjectId(
-              body.id
-            ),
-        },
-        {
-          $set: {
-            ...data,
+    const targetCollection = prepared.db!.collection(result.collection);
+    const existingBeforeUpdate = await targetCollection.findOne({ _id: new ObjectId(body.id) });
+    if (!existingBeforeUpdate) {
+      return NextResponse.json({ message: "Entry not found. Reload the CMS and try again." }, { status: 404 });
+    }
 
-            updatedAt:
-              new Date(),
-          },
-        }
-      );
+    const updateResult = await targetCollection.updateOne(
+      { _id: new ObjectId(body.id) },
+      { $set: { ...data, updatedAt: new Date() } }
+    );
 
     if (!updateResult.matchedCount) {
       return NextResponse.json({ message: "Entry not found. Reload the CMS and try again." }, { status: 404 });
@@ -682,6 +672,7 @@ export async function PATCH(
       console.error("Admin activity log failed after update", activityError);
     }
     await markCmsCollectionManaged(result.collection);
+    revalidatePublicContent(result.collection, existingBeforeUpdate as Record<string, unknown>);
     revalidatePublicContent(result.collection, data);
 
     return NextResponse.json({

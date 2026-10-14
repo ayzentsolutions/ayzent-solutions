@@ -28,6 +28,16 @@ export type Service = {
   published?: boolean;
 };
 
+export type NavigationItem = {
+  _id?: string;
+  label: string;
+  href: string;
+  location: "header" | "footer" | "both";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
+
 export type HomeSection = {
   _id?: string;
   sectionKey: "intro" | "services" | "projects" | "products" | "process" | "studio" | "testimonials" | "faqs" | "cta";
@@ -554,6 +564,11 @@ export function getProjects() {
     "projects",
     projects
   );
+}
+
+export async function getNavigation(): Promise<NavigationItem[]> {
+  const items = await read<NavigationItem>("navigation", []);
+  return items.filter((item) => item.active !== false).sort((a, b) => a.displayOrder - b.displayOrder);
 }
 
 export function getHomeSections(): Promise<HomeSection[]> {

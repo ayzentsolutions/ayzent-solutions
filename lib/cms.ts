@@ -523,7 +523,7 @@ export function validateCmsData(
       "homeSections",
       "process",
       "services",
-      "projects", "products",
+      "services", "projects", "products",
       "posts",
       "jobs",
       "announcements",
@@ -766,6 +766,7 @@ export function validateCmsData(
       data.description;
 
     if (!isText(text)) errors.push("Service summary is required.");
+    if (data.description !== undefined && !isText(data.description)) errors.push("Full service description must be text.");
     if (!isUrl(data.image)) errors.push("Service image must be a valid URL.");
   }
 

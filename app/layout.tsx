@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { CursorAtmosphere } from "@/components/effects/cursor-atmosphere";
 import { getNavigation, getSiteSettings } from "@/lib/content";
 
 const inter = Inter({
@@ -43,6 +44,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}>
+        <CursorAtmosphere />
         <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
           Skip to main content
         </a>

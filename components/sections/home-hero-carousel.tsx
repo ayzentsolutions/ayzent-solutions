@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useMemo, useState, type CSSProperties } from "react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
+import { InteractiveBackdrop } from "@/components/effects/interactive-backdrop";
+import { Magnetic } from "@/components/effects/magnetic";
 
 export interface HeroSlide {
   id?: string; _id?: string; eyebrow?: string; title?: string; description?: string; text?: string; primaryButtonText?: string; primaryButtonLink?: string; primaryText?: string; primaryLink?: string;
@@ -31,19 +33,20 @@ export function HomeHeroCarousel({ slides = [], style, hidden, "data-layout": la
   const currentImage: HeroSlide | undefined = images[selected] || images[0];
   return (
     <section style={style} hidden={hidden} data-layout={layoutVariant} data-home-section={sectionKey || "hero"} className="home-section relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
+      <InteractiveBackdrop variant="hero" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0,transparent_calc(50%-1px),rgba(39,52,74,.45)_50%,transparent_calc(50%+1px),transparent_100%)] opacity-40" />
-      <Container className="relative grid min-h-[min(790px,calc(100svh-76px))] gap-12 py-12 sm:py-16 lg:grid-cols-[.95fr_1.05fr] lg:items-center lg:gap-8 lg:py-20">
+      <Container className="relative z-10 grid min-h-[min(790px,calc(100svh-76px))] gap-12 py-12 sm:py-16 lg:grid-cols-[.95fr_1.05fr] lg:items-center lg:gap-8 lg:py-20">
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-3"><span className="h-px w-10 bg-[#477BFF]" /><p className="eyebrow text-[#8AA8FF]">{content.eyebrow}</p></div>
           <h1 className="mt-7 max-w-4xl text-balance font-display text-[clamp(3.5rem,8.4vw,7.6rem)] font-semibold leading-[.86] tracking-[-.065em]">{content.title}</h1>
           <p className="mt-7 max-w-xl text-base leading-7 text-[#94A3B8] sm:mt-9 sm:text-lg sm:leading-8">{content.description}</p>
           <div className="mt-8 flex flex-wrap gap-3 sm:mt-10">
-            <ButtonLink href={content.primaryButtonLink} className="bg-[#477BFF] px-6 text-white hover:bg-[#345FD1]">{content.primaryButtonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink>
+            <Magnetic><ButtonLink href={content.primaryButtonLink} className="bg-[#477BFF] px-6 text-white hover:bg-[#345FD1]">{content.primaryButtonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink></Magnetic>
             <Link href={content.secondaryButtonLink} className="inline-flex min-h-12 items-center gap-3 border border-[#27344A] px-5 text-sm text-[#E2E8F0] transition-colors hover:border-[#6792FF] hover:bg-[#131D30]">{content.secondaryButtonText}<span aria-hidden="true">↗</span></Link>
           </div>
           <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3 border-t border-[#27344A] pt-5 text-[10px] uppercase tracking-[.17em] text-[#64748B] sm:mt-16"><span>Strategy</span><span>Engineering</span><span>Digital products</span><span>Experience</span></div>
         </div>
-        <div className="relative min-w-0 lg:pl-6">
+        <div className="fx-parallax-strong relative min-w-0 lg:pl-6">
           <div aria-hidden="true" className="absolute -inset-4 border border-[#27344A] sm:-inset-6" />
           <div className="relative overflow-hidden border border-[#27344A] bg-[#0D1423] p-3 sm:p-4">
             <div className="flex items-center justify-between border-b border-[#27344A] px-2 pb-3"><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#25C6B7]" /><span className="text-[10px] uppercase tracking-[.2em] text-[#94A3B8]">Selected visual / 0{selected+1}</span></div><span className="font-mono text-[10px] text-[#64748B]">AYZ—SYS</span></div>

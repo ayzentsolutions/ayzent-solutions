@@ -779,14 +779,21 @@ export async function getNavigation(): Promise<NavigationItem[]> {
     if (count === 0 && !state && !preview) return defaultNavigation;
 
     const items = await read<NavigationItem>("navigation", []);
-    return items
-      .filter((item) => item.active !== false)
+    const normalized = items
+      .filter((item) => item.active !== false && item.published !== false)
       .map((item) => ({
         ...item,
         location: item.location === "header" || item.location === "footer" || item.location === "both" ? item.location : "both",
         displayOrder: Number(item.displayOrder ?? item.order ?? 999),
       }))
       .sort((a, b) => a.displayOrder - b.displayOrder);
+    const seen = new Set<string>();
+    return normalized.filter((item) => {
+      const key = `${item.location}:${item.href.trim().toLowerCase()}`;
+      if (!item.href.trim() || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   } catch (error) {
     console.error("CMS navigation read failed", error);
     return defaultNavigation;

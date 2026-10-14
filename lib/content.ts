@@ -674,22 +674,18 @@ export function getTags() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTeam() {
-  return (
-    await read<TeamMember>(
-      "team",
-      []
-    )
-  )
-    .filter(
-      (member) =>
-        member.published !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getTeam(): Promise<TeamMember[]> {
+  const items = await read<Record<string, unknown>>("team", []);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    _id: typeof item._id === "string" ? item._id : undefined,
+    name: String(item.name || item.title || "Team member"),
+    role: String(item.role || item.position || ""),
+    shortBio: typeof item.shortBio === "string" ? item.shortBio : typeof item.bio === "string" ? item.bio : undefined,
+    image: typeof item.image === "string" ? item.image : undefined,
+    socialLinks: Array.isArray(item.socialLinks) ? item.socialLinks.filter((value): value is string => typeof value === "string") : [item.linkedin, item.instagram].filter((value): value is string => typeof value === "string"),
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    published: item.published !== false,
+  })).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*
@@ -747,22 +743,20 @@ export async function getFaqs() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTestimonials() {
-  return (
-    await read<Testimonial>(
-      "testimonials",
-      []
-    )
-  )
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const items = await read<Record<string, unknown>>("testimonials", []);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    _id: typeof item._id === "string" ? item._id : undefined,
+    clientName: String(item.clientName || item.name || "Client"),
+    roleCompany: String(item.roleCompany || [item.clientRole, item.company].filter((value) => typeof value === "string" && value).join(" · ") || ""),
+    company: typeof item.company === "string" ? item.company : undefined,
+    role: typeof item.role === "string" ? item.role : typeof item.clientRole === "string" ? item.clientRole : undefined,
+    text: String(item.text || item.quote || ""),
+    image: typeof item.image === "string" ? item.image : undefined,
+    active: item.active !== false,
+    published: item.published !== false,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+  })).filter((item) => Boolean(item.text)).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*
@@ -814,22 +808,15 @@ export async function getClientLogos() {
 |--------------------------------------------------------------------------
 */
 
-export async function getJobs() {
-  return (
-    await read<Job>(
-      "jobs",
-      []
-    )
-  )
-    .filter(
-      (job) =>
-        job.status === "open"
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getJobs(): Promise<Job[]> {
+  try {
+    const db = await getDb();
+    const documents = await db.collection("jobs").find({ status: "open" }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
+    return (documents as unknown as Job[]).filter((job) => job.published !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  } catch (error) {
+    console.error("CMS read failed for jobs", error);
+    return [];
+  }
 }
 
 /*

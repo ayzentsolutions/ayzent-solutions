@@ -68,6 +68,7 @@ export type NavigationItem = {
   href: string;
   location: "header" | "footer" | "both";
   displayOrder: number;
+  order?: number;
   active?: boolean;
   status: "draft" | "published" | "archived";
 };

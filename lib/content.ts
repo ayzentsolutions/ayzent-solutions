@@ -627,7 +627,7 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); return item ? normalizeProject(item) : undefined; }
+export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); if (item) return normalizeProject(item); const fallback = projects.find((project) => project.slug === slug); return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined; }
 
 /*
 |--------------------------------------------------------------------------
@@ -635,7 +635,7 @@ export async function getProject(slug: string): Promise<Project | undefined> { c
 |--------------------------------------------------------------------------
 */
 
-export async function getPost(slug: string) { return getPublishedBySlug<Post>("posts", slug); }
+export async function getPost(slug: string): Promise<Post | undefined> { const item = await getPublishedBySlug<Post>("posts", slug); if (item) return item; return posts.find((post) => post.slug === slug); }
 
 async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
   try { return (await (await getDb()).collection(collection).findOne({ slug, status: "published" })) as T | undefined; }
@@ -1235,10 +1235,26 @@ export async function getAboutContent(): Promise<AboutContent> {
       return fallback;
     }
 
+    const raw = document as unknown as Record<string, unknown>;
+    const text = (...values: unknown[]) => {
+      const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
+      return typeof found === "string" ? found : "";
+    };
+    const cmsValues = Array.isArray(raw.values) ? raw.values.filter((value): value is string => typeof value === "string") : undefined;
     return {
       ...fallback,
-
-      ...(document as unknown as AboutContent),
+      ...(raw as unknown as AboutContent),
+      heroEyebrow: text(raw.heroEyebrow, raw.eyebrow, fallback.heroEyebrow),
+      heroTitle: text(raw.heroTitle, raw.title, fallback.heroTitle),
+      heroText: text(raw.heroText, raw.description, fallback.heroText),
+      storyEyebrow: text(raw.storyEyebrow, raw.storyLabel, fallback.storyEyebrow),
+      storyParagraphOne: text(raw.storyParagraphOne, raw.story, fallback.storyParagraphOne),
+      storyParagraphTwo: text(raw.storyParagraphTwo, raw.storyContinuation, fallback.storyParagraphTwo),
+      mission: text(raw.mission, raw.missionDescription, fallback.mission),
+      vision: text(raw.vision, raw.visionDescription, fallback.vision),
+      values: cmsValues?.length ? cmsValues : fallback.values,
+      teamTitle: text(raw.teamTitle, raw.teamHeading, fallback.teamTitle),
+      teamText: text(raw.teamText, raw.teamDescription, fallback.teamText),
     };
   } catch {
     return fallback;

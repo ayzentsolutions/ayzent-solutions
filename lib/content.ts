@@ -752,7 +752,8 @@ export async function getNavigation(): Promise<NavigationItem[]> {
   try {
     const db = await getDb();
     const count = await db.collection("navigation").countDocuments();
-    if (count === 0) return defaultNavigation;
+    const preview = await getCmsPreviewSnapshot("navigation");
+    if (count === 0 && !preview) return defaultNavigation;
 
     const items = await read<NavigationItem>("navigation", []);
     return items

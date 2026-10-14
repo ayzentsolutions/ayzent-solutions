@@ -520,6 +520,18 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    {
+      name: "seoTitle",
+      label: "SEO Title",
+      type: "text",
+      group: "SEO",
+    },
+    {
+      name: "seoDescription",
+      label: "SEO Description",
+      type: "textarea",
+      group: "SEO",
+    },
   ],
 
   /*

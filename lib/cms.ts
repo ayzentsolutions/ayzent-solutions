@@ -1226,7 +1226,7 @@ export function validateCmsData(
   if (collection === "pageSections") {
     const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
     const sectionKeys = ["hero", "story", "mission", "values", "team", "quote", "cta", "service-list", "project-list", "product-list", "article-list", "job-list", "contact-form", "search-results"];
-    const layouts = ["editorial", "compact", "full-bleed", "image-led"];
+    const layouts = ["editorial", "compact", "full-bleed"];
     const backgrounds = ["midnight", "navy", "elevated"];
     if (!pageKeys.includes(String(data.pageKey))) errors.push("Choose a supported public page.");
     if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported page section.");

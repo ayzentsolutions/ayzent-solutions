@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { HomeHeroCarousel } from "@/components/sections/home-hero-carousel";
 import { ProjectCard } from "@/components/sections/project-card";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { getAboutContent, getClientLogos, getFaqs, getHeroSlides, getProducts, getProjects, getServices, getSiteSettings, getTestimonials } from "@/lib/content";
 
 export const revalidate = 60;
@@ -44,7 +45,7 @@ export default async function Home() {
       <section className="bg-[#E8E5DC] py-16 text-[#08152B] sm:py-24 lg:py-32">
         <Container>
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><p className="eyebrow text-[#246BFF]">02 / Selected work</p><h2 className="mt-5 max-w-3xl font-display text-4xl leading-[1.02] tracking-[-.035em] sm:text-5xl lg:text-6xl">Proof lives in the work.</h2></div><Link href="/projects" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold">Explore the portfolio <span aria-hidden="true">↗</span></Link></div>
-          {featuredProjects.length ? <div className="mt-10 grid gap-9 sm:mt-14 md:grid-cols-2 md:gap-x-8 lg:gap-x-12">{featuredProjects.map((project,index)=><div key={project.slug} className={index % 2 === 1 ? "md:mt-24" : ""}><ProjectCard project={project}/></div>)}</div> : <div className="mt-10 border-t border-[#08152B]/15 py-8 text-sm text-[#647087]">Portfolio projects are being prepared.</div>}
+          {featuredProjects.length ? <div className="mt-10 grid gap-9 sm:mt-14 md:grid-cols-2 md:gap-x-8 lg:gap-x-12">{featuredProjects.map((project,index)=><ScrollReveal key={project.slug} delay={index*90} className={index % 2 === 1 ? "md:mt-24" : ""}><ProjectCard project={project}/></ScrollReveal>)}</div> : <div className="mt-10 border-t border-[#08152B]/15 py-8 text-sm text-[#647087]">Portfolio projects are being prepared.</div>}
         </Container>
       </section>
 

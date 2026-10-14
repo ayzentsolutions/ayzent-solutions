@@ -14,6 +14,7 @@ export type Project = {
   coverImage?: string;
   seoTitle?: string;
   seoDescription?: string;
+  displayOrder?: number;
 };
 
 export const services = [

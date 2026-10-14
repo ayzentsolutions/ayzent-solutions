@@ -816,6 +816,15 @@ export const collectionFields: Record<
   |--------------------------------------------------------------------------
   */
 
+  navigation: [
+    { name: "label", label: "Navigation Label", type: "text", required: true, group: "Link" },
+    { name: "href", label: "Destination", type: "url", required: true, group: "Link", placeholder: "/services" },
+    { name: "location", label: "Show In", type: "select", required: true, group: "Placement", options: ["header", "footer", "both"] },
+    { name: "displayOrder", label: "Display Order", type: "number", required: true, group: "Placement" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
   homeSections: [
     { name: "sectionKey", label: "Homepage Section", type: "select", required: true, group: "Section", options: ["hero", "intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"] },
     { name: "title", label: "Title Override", type: "textarea", group: "Content", hint: "Optional. Leave empty to use the current CMS page content." },

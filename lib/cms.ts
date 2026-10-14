@@ -786,10 +786,9 @@ export function validateCmsData(
     collection ===
     "projects"
   ) {
-    requireField(
-      "name",
-      "Project name"
-    );
+    if (!isText(data.name ?? data.title)) {
+      errors.push("Project name is required.");
+    }
 
     requireField(
       "slug",
@@ -839,7 +838,9 @@ export function validateCmsData(
 
     [
       "coverImage",
+      "image",
       "liveLink",
+      "url",
     ].forEach(
       (key) => {
         if (

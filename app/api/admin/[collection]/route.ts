@@ -511,23 +511,6 @@ export async function POST(
       }
     }
 
-    const identity = duplicateIdentity(result.collection, data);
-    if (identity) {
-      const existingDuplicate = await prepared.db!
-        .collection(result.collection)
-        .findOne(identity);
-
-      if (existingDuplicate) {
-        return NextResponse.json(
-          {
-            message: "An entry with the same identifying details already exists. Open the existing entry instead of creating a duplicate.",
-            id: String(existingDuplicate._id),
-          },
-          { status: 409 }
-        );
-      }
-    }
-
     /*
     |--------------------------------------------------------------------------
     | INSERT

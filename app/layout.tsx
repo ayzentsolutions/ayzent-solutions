@@ -16,14 +16,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
   const companyName = settings.companyName || "Ayzent Solutions";
   const description = settings.footerDescription || "Ideas. Engineered.";
+  const socialImage = settings.socialImage || settings.companyLogo;
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
     title: { default: companyName, template: `%s | ${companyName}` },
     description,
     alternates: { canonical: "/" },
-    openGraph: { type: "website", siteName: companyName, title: companyName, description },
-    twitter: { card: "summary_large_image", title: companyName, description },
+    openGraph: { type: "website", siteName: companyName, title: companyName, description, images: socialImage ? [{ url: socialImage }] : undefined },
+    twitter: { card: "summary_large_image", title: companyName, description, images: socialImage ? [socialImage] : undefined },
     icons: { icon: settings.companyLogo || "/favicon.ico" },
   };
 }

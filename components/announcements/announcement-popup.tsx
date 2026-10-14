@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -17,13 +18,15 @@ export function AnnouncementPopup({
 }: {
   announcement?: Announcement;
 }) {
+  const pathname = usePathname();
+
   const [
     visible,
     setVisible,
   ] = useState(false);
 
   useEffect(() => {
-    if (!announcement) return;
+    if (!announcement || pathname.startsWith("/admin")) return;
 
     const key =
       `ayzent-announcement-${
@@ -38,10 +41,11 @@ export function AnnouncementPopup({
     ) {
       setVisible(true);
     }
-  }, [announcement]);
+  }, [announcement, pathname]);
 
   if (
     !announcement ||
+    pathname.startsWith("/admin") ||
     !visible
   ) {
     return null;

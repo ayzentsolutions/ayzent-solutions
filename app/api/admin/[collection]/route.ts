@@ -6,6 +6,7 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import {
   canEditCollection,
@@ -104,6 +105,37 @@ function isSingleton(
   return singletonCollections.includes(
     collection
   );
+}
+
+function revalidatePublicContent(
+  collection: string,
+  data: Record<string, unknown> = {}
+) {
+  try {
+    // The root layout owns site settings, navigation, branding and footer data.
+    revalidatePath("/", "layout");
+    revalidatePath("/sitemap.xml");
+
+    const slug = typeof data.slug === "string" ? data.slug.trim() : "";
+    if (collection === "projects" && slug) revalidatePath(`/projects/${slug}`);
+    if (collection === "products" && slug) revalidatePath(`/products/${slug}`);
+    if (collection === "posts" && slug) revalidatePath(`/blog/${slug}`);
+
+    if (collection === "pageContent" || collection === "pageSections") {
+      const pageKey = typeof data.pageKey === "string" ? data.pageKey : "";
+      if (pageKey) revalidatePath(pageKey === "search" ? "/search" : `/${pageKey}`);
+    }
+
+    if (collection === "services") revalidatePath("/services");
+    if (collection === "jobs") revalidatePath("/careers");
+    if (collection === "team" || collection === "aboutContent") revalidatePath("/about");
+    if (collection === "categories" || collection === "tags" || collection === "comments") revalidatePath("/blog");
+    if (collection === "socialLinks") revalidatePath("/contact");
+  } catch (error) {
+    // A cache invalidation failure should be visible in logs, but must not
+    // turn a successful database write into a misleading save failure.
+    console.error("CMS public cache invalidation failed", { collection, error });
+  }
 }
 
 /**
@@ -454,6 +486,7 @@ export async function POST(
           "updated",
           `${result.collection} settings`
         );
+        revalidatePublicContent(result.collection, data);
 
         return NextResponse.json(
           {
@@ -515,6 +548,7 @@ export async function POST(
     } catch (activityError) {
       console.error("Admin activity log failed after create", activityError);
     }
+    revalidatePublicContent(result.collection, data);
 
     return NextResponse.json(
       {
@@ -637,7 +671,7 @@ export async function PATCH(
       );
     }
 
-    await prepared.db!
+    const updateResult = await prepared.db!
       .collection(
         result.collection
       )
@@ -658,11 +692,20 @@ export async function PATCH(
         }
       );
 
-    await logActivity(
-      result.user,
-      "updated",
-      `${result.collection} entry`
-    );
+    if (!updateResult.matchedCount) {
+      return NextResponse.json({ message: "Entry not found. Reload the CMS and try again." }, { status: 404 });
+    }
+
+    try {
+      await logActivity(
+        result.user,
+        "updated",
+        `${result.collection} entry`
+      );
+    } catch (activityError) {
+      console.error("Admin activity log failed after update", activityError);
+    }
+    revalidatePublicContent(result.collection, data);
 
     return NextResponse.json({
       ok: true,
@@ -774,22 +817,25 @@ export async function DELETE(
     );
   }
 
-  await (
-    await getDb()
-  )
-    .collection(
-      result.collection
-    )
-    .deleteOne({
-      _id:
-        new ObjectId(id),
-    });
+  const deleteDb = await getDb();
+  const collection = deleteDb.collection(result.collection);
+  const existing = await collection.findOne({ _id: new ObjectId(id) });
+  const deleted = await collection.deleteOne({ _id: new ObjectId(id) });
 
-  await logActivity(
-    result.user,
-    "deleted",
-    `${result.collection} entry`
-  );
+  if (!deleted.deletedCount) {
+    return NextResponse.json({ message: "Entry not found. It may already have been deleted." }, { status: 404 });
+  }
+
+  try {
+    await logActivity(
+      result.user,
+      "deleted",
+      `${result.collection} entry`
+    );
+  } catch (activityError) {
+    console.error("Admin activity log failed after delete", activityError);
+  }
+  revalidatePublicContent(result.collection, (existing || {}) as Record<string, unknown>);
 
   return NextResponse.json({
     ok: true,

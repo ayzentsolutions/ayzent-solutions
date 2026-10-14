@@ -573,8 +573,10 @@ export async function getNavigation(): Promise<NavigationItem[]> {
   return items.filter((item) => item.active !== false).sort((a, b) => a.displayOrder - b.displayOrder);
 }
 
-export function getHomeSections(): Promise<HomeSection[]> {
-  return read<HomeSection>("homeSections", []).sort((a, b) => a.displayOrder - b.displayOrder);
+export async function getHomeSections(): Promise<HomeSection[]> {
+  const sections = (await read<HomeSection>("homeSections", [])).sort((a, b) => a.displayOrder - b.displayOrder);
+  const seen = new Set<string>();
+  return sections.filter((section) => { if (seen.has(section.sectionKey)) return false; seen.add(section.sectionKey); return true; });
 }
 
 export async function getProcess(): Promise<ProcessStep[]> {

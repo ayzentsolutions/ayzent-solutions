@@ -750,6 +750,7 @@ export const collectionFields: Record<
     },
     { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
 
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
   ],
 
   /*
@@ -795,6 +796,7 @@ export const collectionFields: Record<
     },
     { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
 
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
   ],
 
   /*

@@ -839,6 +839,7 @@ export function validateCmsData(
     [
       "coverImage",
       "image",
+      "projectUrl",
       "liveLink",
       "url",
     ].forEach(

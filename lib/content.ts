@@ -732,9 +732,41 @@ export async function getPageContent(pageKey: PageContent["pageKey"]): Promise<P
   return pages.find((page) => page.pageKey === pageKey);
 }
 
+const defaultNavigation: NavigationItem[] = [
+  { label: "Services", href: "/services", location: "header", displayOrder: 1, status: "published", active: true },
+  { label: "Selected work", href: "/projects", location: "header", displayOrder: 2, status: "published", active: true },
+  { label: "Products", href: "/products", location: "header", displayOrder: 3, status: "published", active: true },
+  { label: "Studio", href: "/about", location: "header", displayOrder: 4, status: "published", active: true },
+  { label: "Journal", href: "/blog", location: "header", displayOrder: 5, status: "published", active: true },
+  { label: "Careers", href: "/careers", location: "header", displayOrder: 6, status: "published", active: true },
+  { label: "Studio", href: "/about", location: "footer", displayOrder: 1, status: "published", active: true },
+  { label: "Services", href: "/services", location: "footer", displayOrder: 2, status: "published", active: true },
+  { label: "Work", href: "/projects", location: "footer", displayOrder: 3, status: "published", active: true },
+  { label: "Products", href: "/products", location: "footer", displayOrder: 4, status: "published", active: true },
+  { label: "Journal", href: "/blog", location: "footer", displayOrder: 5, status: "published", active: true },
+  { label: "Careers", href: "/careers", location: "footer", displayOrder: 6, status: "published", active: true },
+  { label: "Contact", href: "/contact", location: "footer", displayOrder: 7, status: "published", active: true },
+];
+
 export async function getNavigation(): Promise<NavigationItem[]> {
-  const items = await read<NavigationItem>("navigation", []);
-  return items.filter((item) => item.active !== false).sort((a, b) => a.displayOrder - b.displayOrder);
+  try {
+    const db = await getDb();
+    const count = await db.collection("navigation").countDocuments();
+    if (count === 0) return defaultNavigation;
+
+    const items = await read<NavigationItem>("navigation", []);
+    return items
+      .filter((item) => item.active !== false)
+      .map((item) => ({
+        ...item,
+        location: item.location === "header" || item.location === "footer" || item.location === "both" ? item.location : "both",
+        displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+      }))
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  } catch (error) {
+    console.error("CMS navigation read failed", error);
+    return defaultNavigation;
+  }
 }
 
 export async function getHomeSections(): Promise<HomeSection[]> {

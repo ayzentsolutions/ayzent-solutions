@@ -7,8 +7,9 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import Image from "next/image";
 
-type HeaderProps = { buttonText?: string; buttonLink?: string; logo?: string; companyName?: string };
-const navLinks = [
+type NavigationLink = { href: string; label: string; location?: "header" | "footer" | "both" };
+type HeaderProps = { buttonText?: string; buttonLink?: string; logo?: string; companyName?: string; navigation?: NavigationLink[] };
+const defaultNavLinks = [
   { href: "/services", label: "Services" },
   { href: "/projects", label: "Selected work" },
   { href: "/products", label: "Products" },
@@ -18,9 +19,11 @@ const navLinks = [
 ];
 function isActivePath(pathname: string, href: string) { return pathname === href || pathname.startsWith(`${href}/`); }
 
-export function Header({ buttonText = "Start a project", buttonLink = "/contact", logo, companyName = "Ayzent Solutions" }: HeaderProps) {
+export function Header({ buttonText = "Start a project", buttonLink = "/contact", logo, companyName = "Ayzent Solutions", navigation = [] }: HeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const navLinks = navigation.filter((item) => item.location === "header" || item.location === "both").map(({ href, label }) => ({ href, label }));
+  const links = navLinks.length ? navLinks : defaultNavLinks;
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -39,7 +42,7 @@ export function Header({ buttonText = "Start a project", buttonLink = "/contact"
           <span className="min-w-0"><span className="block truncate text-sm font-semibold tracking-wide">{companyName}</span><span className="mt-0.5 block text-[9px] uppercase tracking-[.24em] text-white/45">Digital engineering</span></span>
         </Link>
         <nav aria-label="Main navigation" className="hidden items-center gap-6 xl:flex">
-          {navLinks.map((link) => {
+          {links.map((link) => {
             const active = isActivePath(pathname, link.href);
             return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`group relative py-3 text-[12px] transition-colors hover:text-white ${active ? "text-white" : "text-white/60"}`}>
               {link.label}<span aria-hidden="true" className={`absolute -bottom-0.5 left-0 h-px bg-[#66A0FF] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />

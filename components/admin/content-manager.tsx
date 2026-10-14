@@ -300,6 +300,9 @@ export function ContentManager({
   const [pending, setPending] =
     useState(false);
 
+  const [previewPending, setPreviewPending] =
+    useState(false);
+
   // A ref closes the same-tick double-submit window before React re-renders.
   const saveLock = useRef(false);
 
@@ -564,6 +567,45 @@ export function ContentManager({
     }
   }
 
+  async function preview() {
+    if (previewPending || saveLock.current) return;
+
+    const previewWindow = window.open("about:blank", "_blank");
+    if (!previewWindow) {
+      setMessage("Allow pop-ups for this site to open the public preview.");
+      return;
+    }
+
+    previewWindow.opener = null;
+    setPreviewPending(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          collection,
+          ...(editing ? { id: getItemId(editing) } : {}),
+          data: toData(fields, values),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || typeof result.url !== "string") {
+        throw new Error(result.message || "Unable to create a public preview.");
+      }
+
+      previewWindow.location.replace(result.url);
+      setMessage("Preview opened in a new tab. This preview does not publish your changes.");
+    } catch (error) {
+      previewWindow.close();
+      setMessage(error instanceof Error ? error.message : "Unable to create a public preview.");
+    } finally {
+      setPreviewPending(false);
+    }
+  }
+
   function edit(
     item: Item
   ) {
@@ -736,6 +778,15 @@ export function ContentManager({
                     : editing
                       ? "Save Changes"
                       : "Create Entry"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pending || previewPending}
+                onClick={() => void preview()}
+              >
+                {previewPending ? "Preparing Preview..." : "Preview Public Page"}
               </Button>
 
               {editing &&

@@ -53,9 +53,9 @@ export default async function AboutPage() {
 
       {/* STORY */}
 
-      <section className="py-20 sm:py-28">
+      <section className="py-14 sm:py-20 lg:py-28">
 
-        <Container className="grid gap-12 lg:grid-cols-[.85fr_1.15fr]">
+        <Container className="grid gap-7 sm:gap-12 lg:grid-cols-[.75fr_1.25fr] lg:gap-16">
 
           <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
 
@@ -66,7 +66,7 @@ export default async function AboutPage() {
 
           </p>
 
-          <div className="space-y-6 text-lg leading-relaxed text-muted">
+          <div className="space-y-6 text-base leading-8 text-muted sm:text-lg">
 
             {content.storyParagraphOne && (
 
@@ -96,9 +96,9 @@ export default async function AboutPage() {
 
       {/* MISSION + VISION */}
 
-      <section className="border-y border-line bg-surface py-20">
+      <section className="border-y border-line bg-surface py-14 sm:py-20 lg:py-24">
 
-        <Container className="grid gap-12 md:grid-cols-2">
+        <Container className="grid gap-8 md:grid-cols-2 md:gap-12">
 
           <div>
 
@@ -111,7 +111,7 @@ export default async function AboutPage() {
 
             </p>
 
-            <h2 className="mt-4 font-display text-4xl leading-tight">
+            <h2 className="mt-4 text-balance font-display text-3xl leading-tight sm:text-4xl lg:text-5xl">
 
               {
                 content.mission
@@ -163,7 +163,7 @@ export default async function AboutPage() {
 
             </p>
 
-            <div className="mt-10 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">
 
               {values.map(
                 (
@@ -173,7 +173,7 @@ export default async function AboutPage() {
 
                   <div
                     key={value}
-                    className="bg-background p-7"
+                    className="motion-lift bg-background p-5 sm:p-7"
                   >
 
                     <span className="text-xs text-gold">
@@ -187,7 +187,7 @@ export default async function AboutPage() {
 
                     </span>
 
-                    <h3 className="mt-8 text-lg">
+                    <h3 className="mt-6 font-display text-xl leading-relaxed sm:text-2xl">
                       {value}
                     </h3>
 
@@ -246,7 +246,7 @@ export default async function AboutPage() {
 
           {team.length > 0 ? (
 
-            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
 
               {team.map(
                 (member) => (
@@ -256,12 +256,12 @@ export default async function AboutPage() {
                       member._id ||
                       member.name
                     }
-                    className="overflow-hidden border border-line"
+                    className="motion-lift overflow-hidden border border-line bg-background"
                   >
 
                     {member.image && (
 
-                      <div className="relative aspect-[4/5] bg-surface">
+                      <div className="relative aspect-[4/5] overflow-hidden bg-surface">
 
                         <Image
                           src={
@@ -279,7 +279,7 @@ export default async function AboutPage() {
 
                     )}
 
-                    <div className="p-6">
+                    <div className="p-5 sm:p-6">
 
                       <h3 className="font-display text-2xl">
 
@@ -352,9 +352,9 @@ export default async function AboutPage() {
 
           ) : content.quote ? (
 
-            <div className="mt-12 bg-ink p-8 text-paper sm:p-10">
+            <div className="relative isolate overflow-hidden bg-ink p-6 text-paper sm:p-10 lg:p-12">
 
-              <p className="font-display text-3xl">
+              <p className="text-balance font-display text-2xl leading-relaxed sm:text-3xl lg:text-4xl">
 
                 “{
                   content.quote
@@ -427,7 +427,7 @@ export default async function AboutPage() {
 
         <Container>
 
-          <div className="flex flex-col justify-between gap-6 border border-line p-8 sm:flex-row sm:items-center">
+          <div className="motion-lift flex flex-col justify-between gap-6 border border-line bg-surface/40 p-6 sm:p-8 lg:flex-row lg:items-center">
 
             <div>
 

@@ -52,9 +52,9 @@ export default async function ContactPage() {
 
       <section className="py-16 sm:py-24">
 
-        <Container className="grid gap-14 lg:grid-cols-[.7fr_1.3fr]">
+        <Container className="grid min-w-0 gap-8 sm:gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-16">
 
-          <aside className="space-y-7 text-sm">
+          <aside className="h-fit space-y-6 border border-line bg-surface/50 p-5 text-sm sm:space-y-7 sm:p-7 lg:sticky lg:top-28">
 
             {settings.email && (
 

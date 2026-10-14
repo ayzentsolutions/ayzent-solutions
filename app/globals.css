@@ -2,55 +2,111 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ayzent design tokens: one source of truth for public pages and CMS. */
 :root {
+  color-scheme: light;
   --background: #faf9f6;
   --foreground: #101113;
-  --muted: #6b6f76;
+  --muted: #626873;
   --surface: #f1efe9;
+  --surface-raised: #ffffff;
   --line: #e4e2dc;
+  --accent: #b8911d;
+  --accent-strong: #8b6a0d;
+  --accent-soft: #f5edcf;
+  --focus-ring: #8b6a0d;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --shadow-soft: 0 12px 36px rgb(16 17 19 / 7%);
+  --shadow-lift: 0 22px 60px rgb(16 17 19 / 12%);
+  --motion-fast: 160ms;
+  --motion-base: 260ms;
+  --motion-slow: 520ms;
+  --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
 .dark {
+  color-scheme: dark;
   --background: #101113;
   --foreground: #faf9f6;
-  --muted: #9a9da3;
-  --surface: #16171a;
-  --line: #26282c;
+  --muted: #a6a9b0;
+  --surface: #17191d;
+  --surface-raised: #1d2025;
+  --line: #2c2f35;
+  --accent: #e0bd55;
+  --accent-strong: #f0d47d;
+  --accent-soft: #302916;
+  --focus-ring: #f0d47d;
+  --shadow-soft: 0 12px 36px rgb(0 0 0 / 18%);
+  --shadow-lift: 0 22px 60px rgb(0 0 0 / 28%);
 }
 
-* {
-  border-color: var(--line);
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+* { border-color: var(--line); }
+html { scroll-behavior: smooth; scroll-padding-top: 6rem; text-size-adjust: 100%; }
 body {
+  min-width: 320px;
+  overflow-x: clip;
   background-color: var(--background);
   color: var(--foreground);
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease;
+  transition: background-color var(--motion-base) ease, color var(--motion-base) ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background-color: var(--accent-soft); color: var(--foreground); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, [role="button"], a { touch-action: manipulation; }
+button, input, select, textarea { font: inherit; }
+button:disabled { cursor: not-allowed; opacity: .65; }
+img, video, canvas, svg { max-width: 100%; }
+img { height: auto; }
+a { text-underline-offset: 0.2em; }
+::placeholder { color: var(--muted); opacity: .8; }
+:where(input, textarea, select) {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+}
+:where(input, textarea, select):focus-visible {
+  border-color: var(--focus-ring);
+}
+:where(textarea) { min-height: 7rem; }
+:where(table) { max-width: 100%; }
+:where(pre, code) { overflow-wrap: anywhere; }
+:where(iframe, video) { max-width: 100%; }
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .surface-raised { background: var(--surface-raised); box-shadow: var(--shadow-soft); }
+  .motion-lift {
+    transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), border-color var(--motion-base) ease;
+  }
+  .motion-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+  .motion-reveal { animation: ayzent-fade-up var(--motion-slow) var(--ease-out) both; }
+  .text-gradient-gold {
+    background: linear-gradient(110deg, var(--foreground) 10%, var(--accent) 85%);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
-::selection {
-  background-color: #c9a227;
-  color: #101113;
+@keyframes ayzent-fade-up {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-:focus-visible {
-  outline: 2px solid #c9a227;
-  outline-offset: 2px;
+@media (hover: none), (pointer: coarse) {
+  .motion-lift:hover { transform: none; box-shadow: var(--shadow-soft); }
 }
-
+@media (max-width: 640px) {
+  html { scroll-padding-top: 5rem; }
+  :where(button, [role="button"]) { min-height: 2.75rem; }
+}
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

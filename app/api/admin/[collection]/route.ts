@@ -106,6 +106,49 @@ function isSingleton(
   );
 }
 
+/**
+ * Identifies records that represent the same logical CMS item.
+ * This prevents repeat creates without deleting or rewriting existing data.
+ */
+function duplicateIdentity(
+  collection: string,
+  data: Record<string, unknown>
+): Record<string, unknown> | null {
+  const identityFields: Record<string, string[]> = {
+    services: ["slug"],
+    projects: ["slug"],
+    products: ["slug"],
+    posts: ["slug"],
+    jobs: ["slug"],
+    categories: ["slug"],
+    tags: ["slug"],
+    pageContent: ["pageKey"],
+    pageSections: ["pageKey", "sectionKey"],
+    homeSections: ["sectionKey"],
+    navigation: ["label", "href", "location"],
+    team: ["name"],
+    testimonials: ["clientName", "quote"],
+    announcements: ["title"],
+    faqs: ["question"],
+    socialLinks: ["label", "url"],
+  };
+
+  const fields = identityFields[collection];
+  if (!fields || fields.some((field) => {
+    const value = data[field];
+    return typeof value !== "string" || !value.trim();
+  })) {
+    return null;
+  }
+
+  return Object.fromEntries(
+    fields.map((field) => [
+      field,
+      (data[field] as string).trim(),
+    ])
+  );
+}
+
 /*
 |--------------------------------------------------------------------------
 | GET
@@ -420,6 +463,23 @@ export async function POST(
           {
             status: 200,
           }
+        );
+      }
+    }
+
+    const identity = duplicateIdentity(result.collection, data);
+    if (identity) {
+      const existingDuplicate = await prepared.db!
+        .collection(result.collection)
+        .findOne(identity);
+
+      if (existingDuplicate) {
+        return NextResponse.json(
+          {
+            message: "An entry with the same identifying details already exists. Open the existing entry instead of creating a duplicate.",
+            id: String(existingDuplicate._id),
+          },
+          { status: 409 }
         );
       }
     }

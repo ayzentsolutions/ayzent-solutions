@@ -12,6 +12,7 @@ export type Project = {
   overview?: string;
   featured?: boolean;
   coverImage?: string;
+  gallery?: string[];
   projectUrl?: string;
   seoTitle?: string;
   seoDescription?: string;

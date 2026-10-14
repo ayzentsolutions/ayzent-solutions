@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -299,6 +300,9 @@ export function ContentManager({
   const [pending, setPending] =
     useState(false);
 
+  // A ref closes the same-tick double-submit window before React re-renders.
+  const saveLock = useRef(false);
+
   const [
     loading,
     setLoading,
@@ -477,10 +481,11 @@ export function ContentManager({
   ) {
     event.preventDefault();
 
-    if (pending) {
+    if (saveLock.current) {
       return;
     }
 
+    saveLock.current = true;
     setPending(true);
 
     setMessage("");
@@ -554,6 +559,7 @@ export function ContentManager({
           : "Unable to save entry."
       );
     } finally {
+      saveLock.current = false;
       setPending(false);
     }
   }

@@ -42,6 +42,8 @@ export type PageContent = {
   seoTitle?: string;
   seoDescription?: string;
   socialImage?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   status: "draft" | "published" | "archived";
 };
 export type NavigationItem = {
@@ -972,6 +974,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       "",
 
     socialImage:
+      "",
+
+    seoTitle:
+      "",
+
+    seoDescription:
       "",
 
     /*

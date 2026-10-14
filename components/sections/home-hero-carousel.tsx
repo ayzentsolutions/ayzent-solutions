@@ -7,23 +7,23 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 
 export interface HeroSlide {
-  id?: string; _id?: string; eyebrow?: string; title?: string; description?: string; primaryButtonText?: string; primaryButtonLink?: string;
-  secondaryButtonText?: string; secondaryButtonLink?: string; image?: string; alt?: string; active?: boolean; order?: number; displayOrder?: number;
+  id?: string; _id?: string; eyebrow?: string; title?: string; description?: string; text?: string; primaryButtonText?: string; primaryButtonLink?: string; primaryText?: string; primaryLink?: string;
+  secondaryButtonText?: string; secondaryButtonLink?: string; secondaryText?: string; secondaryLink?: string; image?: string; alt?: string; active?: boolean; published?: boolean; order?: number; displayOrder?: number;
 }
 type Props = { slides?: HeroSlide[] };
 const fallback = { eyebrow: "AYZENT SOLUTIONS / DIGITAL ENGINEERING", title: "Ideas into impact.", description: "We engineer digital experiences and products for teams ready to make their next move.", primaryButtonText: "Start a project", primaryButtonLink: "/contact", secondaryButtonText: "Explore selected work", secondaryButtonLink: "/projects" };
 
 export function HomeHeroCarousel({ slides = [] }: Props) {
-  const activeSlides = useMemo(() => [...slides].filter(slide => slide.active !== false).sort((a,b) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0)), [slides]);
+  const activeSlides = useMemo(() => [...slides].filter(slide => slide.active !== false && slide.published !== false).sort((a,b) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0)), [slides]);
   const contentSlide = activeSlides[0];
   const content = {
     eyebrow: contentSlide?.eyebrow || fallback.eyebrow,
     title: contentSlide?.title || fallback.title,
-    description: contentSlide?.description || fallback.description,
-    primaryButtonText: contentSlide?.primaryButtonText || fallback.primaryButtonText,
-    primaryButtonLink: contentSlide?.primaryButtonLink || fallback.primaryButtonLink,
-    secondaryButtonText: contentSlide?.secondaryButtonText || fallback.secondaryButtonText,
-    secondaryButtonLink: contentSlide?.secondaryButtonLink || fallback.secondaryButtonLink
+    description: contentSlide?.description || contentSlide?.text || fallback.description,
+    primaryButtonText: contentSlide?.primaryButtonText || contentSlide?.primaryText || fallback.primaryButtonText,
+    primaryButtonLink: contentSlide?.primaryButtonLink || contentSlide?.primaryLink || fallback.primaryButtonLink,
+    secondaryButtonText: contentSlide?.secondaryButtonText || contentSlide?.secondaryText || fallback.secondaryButtonText,
+    secondaryButtonLink: contentSlide?.secondaryButtonLink || contentSlide?.secondaryLink || fallback.secondaryButtonLink
   };
   const images = activeSlides.filter(slide => typeof slide.image === "string" && slide.image.trim());
   const [selected, setSelected] = useState(0);

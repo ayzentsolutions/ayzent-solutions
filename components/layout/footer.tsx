@@ -15,7 +15,7 @@ export async function Footer() {
   const footerDescription = settings.footerDescription || "Ideas. Engineered.";
   return (
     <footer className="relative isolate overflow-hidden bg-[#080D18] text-[#E2E8F0]">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[30rem] w-[30rem] rounded-full border border-[#66A0FF]/20 sm:h-[42rem] sm:w-[42rem]"><div className="absolute inset-8 rounded-full border border-[#66A0FF]/15 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#66A0FF]/10 sm:inset-32" /></div>
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[30rem] w-[30rem] rounded-full border border-[#6792FF]/20 sm:h-[42rem] sm:w-[42rem]"><div className="absolute inset-8 rounded-full border border-[#66A0FF]/15 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#66A0FF]/10 sm:inset-32" /></div>
       <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[1.3fr_.7fr_.8fr_1fr] lg:gap-14 lg:py-24">
         <div className="min-w-0">
           <p className="eyebrow text-[#6792FF]">A good place to begin</p>

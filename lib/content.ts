@@ -655,8 +655,9 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
         { status: { $exists: false }, published: { $ne: false } },
       ],
     };
-    const [total, documents] = await Promise.all([
+    const [total, state, documents] = await Promise.all([
       db.collection(collection).countDocuments(),
+      db.collection("cmsCollectionState").findOne({ collection, managed: true }),
       db.collection(collection).find(filter).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray(),
     ]);
     const rows = documents as unknown as Record<string, unknown>[];
@@ -675,7 +676,7 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
     // Static seed content remains a fallback only before the CMS collection
     // has ever been populated. Drafting/archiving every record must not
     // unexpectedly resurrect old hardcoded content.
-    return total === 0 ? fallback : [];
+    return total === 0 && !state ? fallback : [];
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
     return fallback;
@@ -773,8 +774,9 @@ export async function getNavigation(): Promise<NavigationItem[]> {
   try {
     const db = await getDb();
     const count = await db.collection("navigation").countDocuments();
+    const state = await db.collection("cmsCollectionState").findOne({ collection: "navigation", managed: true });
     const preview = await getCmsPreviewSnapshot("navigation");
-    if (count === 0 && !preview) return defaultNavigation;
+    if (count === 0 && !state && !preview) return defaultNavigation;
 
     const items = await read<NavigationItem>("navigation", []);
     return items
@@ -868,7 +870,10 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
 
 async function hasCmsRecords(collection: string) {
   try {
-    return await (await getDb()).collection(collection).countDocuments() > 0;
+    const db = await getDb();
+    const count = await db.collection(collection).countDocuments();
+    if (count > 0) return true;
+    return Boolean(await db.collection("cmsCollectionState").findOne({ collection, managed: true }));
   } catch {
     return false;
   }

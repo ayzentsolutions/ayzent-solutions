@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
 import {
@@ -779,11 +780,15 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
   try {
     const db = await getDb();
     const preview = await getCmsPreviewSnapshot(collection);
-    if (preview && (preview.data.slug === slug || (preview.id && preview.id === slug))) {
-      const existing = preview.id && ObjectIdLike(preview.id)
-        ? await db.collection(collection).findOne({ _id: new (await import("mongodb")).ObjectId(preview.id) })
-        : await db.collection(collection).findOne({ slug, status: "published" });
-      return { ...(existing || {}), ...preview.data, ...(existing?._id ? { _id: existing._id } : {}) } as T;
+    if (preview) {
+      let existing: Record<string, unknown> | null = null;
+      if (preview.id && ObjectId.isValid(preview.id)) {
+        existing = await db.collection(collection).findOne({ _id: new ObjectId(preview.id) }) as Record<string, unknown> | null;
+      } else if (typeof preview.data.slug === "string") {
+        existing = await db.collection(collection).findOne({ slug: preview.data.slug }) as Record<string, unknown> | null;
+      }
+      const merged = { ...(existing || {}), ...preview.data, ...(existing?._id ? { _id: existing._id } : {}) };
+      if (merged.slug === slug) return merged as T;
     }
     return (await db.collection(collection).findOne({
       slug,
@@ -796,10 +801,6 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
     console.error(`CMS item read failed for ${collection}`, error);
     return undefined;
   }
-}
-
-function ObjectIdLike(value: string) {
-  return /^[a-f\\d]{24}$/i.test(value);
 }
 
 async function hasCmsRecords(collection: string) {

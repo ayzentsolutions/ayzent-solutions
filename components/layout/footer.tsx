@@ -3,12 +3,14 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { NewsletterForm } from "@/components/forms/newsletter-form";
 import { SocialLinks } from "@/components/social/social-links";
-import { getServices, getSiteSettings } from "@/lib/content";
+import { getNavigation, getServices, getSiteSettings } from "@/lib/content";
 
-const quickLinks = [{ href: "/about", label: "Studio" }, { href: "/services", label: "Services" }, { href: "/projects", label: "Work" }, { href: "/products", label: "Products" }, { href: "/blog", label: "Journal" }, { href: "/careers", label: "Careers" }, { href: "/contact", label: "Contact" }];
+const defaultQuickLinks = [{ href: "/about", label: "Studio" }, { href: "/services", label: "Services" }, { href: "/projects", label: "Work" }, { href: "/products", label: "Products" }, { href: "/blog", label: "Journal" }, { href: "/careers", label: "Careers" }, { href: "/contact", label: "Contact" }];
 
 export async function Footer() {
-  const [settings, services] = await Promise.all([getSiteSettings(), getServices()]);
+  const [settings, services, navigation] = await Promise.all([getSiteSettings(), getServices(), getNavigation()]);
+  const cmsLinks = navigation.filter(item => item.location === "footer" || item.location === "both").map(({ href, label }) => ({ href, label }));
+  const quickLinks = cmsLinks.length ? cmsLinks : defaultQuickLinks;
   const whatsappNumber = settings.whatsapp?.replace(/\D/g, "").trim();
   const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : undefined;
   const companyName = settings.companyName || "Ayzent Solutions";

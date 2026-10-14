@@ -64,4 +64,5 @@ a { text-underline-offset: .22em; }
 .home-section[data-layout="full-bleed"] > .container { width: 100%; max-width: none !important; padding-inline: clamp(1.25rem, 4vw, 4rem) !important; }
 .home-section[data-layout="editorial"] { isolation: isolate; }
 select option { color: #e2e8f0; background: #0d1423; }
+.home-section[hidden] { display: none !important; }
 input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus { -webkit-text-fill-color: #e2e8f0; box-shadow: 0 0 0 1000px #0d1423 inset; transition: background-color 9999s ease-out; }

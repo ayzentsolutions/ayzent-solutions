@@ -28,7 +28,7 @@ export default async function Home() {
   const values = (about.values || []).filter(Boolean).slice(0, 4);
   return (
     <div className="flex flex-col">
-      <HomeHeroCarousel slides={heroSlides} {...sectionProps("hero", 0, "midnight")} />
+      <HomeHeroCarousel slides={heroSlides} imageOverride={sectionConfig.get("hero")?.image} {...sectionProps("hero", 0, "midnight")} />
 
       <section {...sectionProps("intro", 1, "navy")} className="home-section border-b border-[#27344A] bg-[#0D1423] py-14 sm:py-20 lg:py-28">
         <Container className="grid gap-8 lg:grid-cols-[.45fr_1.55fr] lg:gap-16">

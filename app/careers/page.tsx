@@ -23,7 +23,7 @@ export default async function CareersPage() {
         text="We are building a thoughtful team of people who care about clear ideas and excellent execution."
       />
 
-      <section className="py-20">
+      <section className="py-14 sm:py-20 lg:py-24">
 
         <Container>
 
@@ -52,7 +52,7 @@ export default async function CareersPage() {
                       job._id ||
                       job.title
                     }
-                    className="py-8"
+                    className="motion-lift border-b border-line px-4 py-7 transition-colors hover:bg-surface/50 sm:px-6 sm:py-9"
                   >
 
                     <div className="flex flex-col justify-between gap-6 md:flex-row">
@@ -157,7 +157,7 @@ export default async function CareersPage() {
 
           ) : (
 
-            <div className="mt-12 border-y border-line py-10">
+            <div className="mt-10 border border-dashed border-line bg-surface/40 p-6 sm:mt-12 sm:p-10">
 
               <h3 className="font-display text-2xl">
                 No open roles right now

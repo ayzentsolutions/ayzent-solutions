@@ -6,8 +6,7 @@ import { HomeHeroCarousel } from "@/components/sections/home-hero-carousel";
 import { ProjectCard } from "@/components/sections/project-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { ProductShowcase } from "@/components/sections/product-showcase";
-import { getHomeSections, getProcess, type HomeSection } from "@/lib/content";
-import { getAboutContent, getClientLogos, getFaqs, getHeroSlides, getProducts, getProjects, getServices, getSiteSettings, getTestimonials } from "@/lib/content";
+import { getAboutContent, getClientLogos, getFaqs, getHeroSlides, getHomeSections, getProcess, getProducts, getProjects, getServices, getSiteSettings, getTestimonials, type HomeSection } from "@/lib/content";
 
 export const revalidate = 60;
 

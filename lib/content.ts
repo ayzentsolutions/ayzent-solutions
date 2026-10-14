@@ -1077,10 +1077,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       return fallback;
     }
 
+    const raw = document as unknown as Record<string, unknown>;
     return {
       ...fallback,
-
-      ...(document as unknown as SiteSettings),
+      ...(raw as unknown as SiteSettings),
+      homeCtaEyebrow: typeof raw.homeCtaEyebrow === "string" ? raw.homeCtaEyebrow : typeof raw.ctaEyebrow === "string" ? raw.ctaEyebrow : fallback.homeCtaEyebrow,
+      homeCtaTitle: typeof raw.homeCtaTitle === "string" ? raw.homeCtaTitle : typeof raw.ctaTitle === "string" ? raw.ctaTitle : fallback.homeCtaTitle,
+      homeCtaButtonText: typeof raw.homeCtaButtonText === "string" ? raw.homeCtaButtonText : typeof raw.ctaButtonText === "string" ? raw.ctaButtonText : fallback.homeCtaButtonText,
+      homeCtaButtonLink: typeof raw.homeCtaButtonLink === "string" ? raw.homeCtaButtonLink : typeof raw.ctaButtonLink === "string" ? raw.ctaButtonLink : fallback.homeCtaButtonLink,
+      contactText: typeof raw.contactText === "string" ? raw.contactText : typeof raw.contactDescription === "string" ? raw.contactDescription : fallback.contactText,
     };
   } catch {
     return fallback;

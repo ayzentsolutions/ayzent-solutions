@@ -416,14 +416,10 @@ export async function POST(
       );
 
     if (prepared.error) {
+      const duplicate = prepared.error.toLowerCase().includes("already");
       return NextResponse.json(
-        {
-          message:
-            prepared.error,
-        },
-        {
-          status: 400,
-        }
+        { message: prepared.error },
+        { status: duplicate ? 409 : 400 }
       );
     }
 
@@ -626,14 +622,10 @@ export async function PATCH(
       );
 
     if (prepared.error) {
+      const duplicate = prepared.error.toLowerCase().includes("already");
       return NextResponse.json(
-        {
-          message:
-            prepared.error,
-        },
-        {
-          status: 400,
-        }
+        { message: prepared.error },
+        { status: duplicate ? 409 : 400 }
       );
     }
 

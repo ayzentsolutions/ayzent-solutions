@@ -961,6 +961,22 @@ export const collectionFields: Record<
     { name: "status", label: "Moderation Status", type: "select", group: "Moderation", options: ["pending", "approved", "rejected"] },
   ],
 
+  pageSections: [
+    { name: "pageKey", label: "Public Page", type: "select", required: true, group: "Section", options: ["about", "services", "products", "projects", "blog", "careers", "contact", "search"] },
+    { name: "sectionKey", label: "Section", type: "select", required: true, group: "Section", options: ["hero", "story", "mission", "values", "team", "quote", "cta", "service-list", "project-list", "product-list", "article-list", "job-list", "contact-form", "search-results"] },
+    { name: "title", label: "Title Override", type: "textarea", group: "Content" },
+    { name: "eyebrow", label: "Eyebrow Override", type: "text", group: "Content" },
+    { name: "description", label: "Description Override", type: "textarea", group: "Content" },
+    { name: "image", label: "Supporting Image", type: "image", group: "Media" },
+    { name: "ctaText", label: "CTA Text", type: "text", group: "CTA" },
+    { name: "ctaLink", label: "CTA Link", type: "url", group: "CTA" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed", "image-led"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "displayOrder", label: "Display Order", type: "number", required: true, group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
   pageContent: [
     { name: "pageKey", label: "Public Page", type: "select", required: true, group: "Page", options: ["about", "services", "products", "projects", "blog", "careers", "contact", "search"] },
     { name: "eyebrow", label: "Hero Eyebrow", type: "text", group: "Hero" },

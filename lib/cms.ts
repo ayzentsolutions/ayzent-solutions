@@ -803,6 +803,8 @@ export function validateCmsData(
       );
     }
 
+    ["seoTitle", "seoDescription"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+
     if (
       data.category !== undefined &&
       !isOptionalText(

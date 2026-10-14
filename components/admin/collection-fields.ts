@@ -452,6 +452,7 @@ export const collectionFields: Record<
       name: "title",
       label: "Project Title",
       type: "text",
+      required: true,
       group: "Project Details",
     },
 
@@ -459,6 +460,7 @@ export const collectionFields: Record<
       name: "slug",
       label: "Slug",
       type: "text",
+      required: true,
       group: "Project Details",
     },
 

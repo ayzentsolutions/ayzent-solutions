@@ -344,14 +344,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
-      placeholder: "1",
-    },
-
-    {
       name: "active",
       label: "Active",
       type: "checkbox",
@@ -416,13 +408,6 @@ export const collectionFields: Record<
       label: "Service Image",
       type: "image",
       group: "Visual",
-    },
-
-    {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
     },
 
     {
@@ -515,13 +500,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
-    },
-
-    {
       name: "active",
       label: "Active",
       type: "checkbox",
@@ -602,13 +580,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
-    },
-
-    {
       name: "active",
       label: "Active",
       type: "checkbox",
@@ -672,13 +643,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
-    },
-
-    {
       name: "active",
       label: "Active",
       type: "checkbox",
@@ -736,13 +700,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
-    },
-
-    {
       name: "active",
       label: "Active",
       type: "checkbox",
@@ -779,13 +736,6 @@ export const collectionFields: Record<
       label: "Category",
       type: "text",
       group: "FAQ",
-    },
-
-    {
-      name: "order",
-      label: "Display Order",
-      type: "number",
-      group: "Settings",
     },
 
     {

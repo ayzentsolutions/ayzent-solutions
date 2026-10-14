@@ -828,8 +828,8 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
       } else if (typeof preview.data.slug === "string") {
         existing = await db.collection(collection).findOne({ slug: preview.data.slug }) as Record<string, unknown> | null;
       }
-      const merged = { ...(existing || {}), ...makePreviewVisible(collection, preview.data), ...(existing?._id ? { _id: existing._id } : {}) };
-      if (merged.slug === slug) return merged as T;
+      const merged: Record<string, unknown> = { ...(existing || {}), ...makePreviewVisible(collection, preview.data), ...(existing?._id ? { _id: existing._id } : {}) };
+      if (merged["slug"] === slug) return merged as T;
     }
     return (await db.collection(collection).findOne({
       slug,

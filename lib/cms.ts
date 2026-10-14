@@ -197,8 +197,6 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
-      "pageSections",
-      "pageContent",
       "navigation",
       "homeSections",
       "testimonials",

@@ -74,6 +74,9 @@ export function CursorAtmosphere() {
       });
     };
 
+    const onPointerOut = (event: PointerEvent) => {
+      if (event.relatedTarget === null) resetPointerEffects();
+    };
     const onVisibilityChange = () => {
       if (document.hidden) resetPointerEffects();
     };
@@ -82,15 +85,14 @@ export function CursorAtmosphere() {
     };
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerout", (event) => {
-      if (event.relatedTarget === null) resetPointerEffects();
-    }, { passive: true });
+    window.addEventListener("pointerout", onPointerOut, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
     reduceMotion.addEventListener("change", onMotionPreference);
     coarsePointer.addEventListener("change", onMotionPreference);
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerout", onPointerOut);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reduceMotion.removeEventListener("change", onMotionPreference);
       coarsePointer.removeEventListener("change", onMotionPreference);

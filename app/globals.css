@@ -2,11 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
- * Ayzent design tokens
- * Keep global presentation decisions centralized so the public site and CMS
- * can evolve without accumulating page-specific visual overrides.
- */
+/* Ayzent design tokens: one source of truth for public pages and CMS. */
 :root {
   color-scheme: light;
   --background: #faf9f6;
@@ -46,117 +42,68 @@
   --shadow-lift: 0 22px 60px rgb(0 0 0 / 28%);
 }
 
-* {
-  border-color: var(--line);
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
-  text-size-adjust: 100%;
-}
-
+* { border-color: var(--line); }
+html { scroll-behavior: smooth; scroll-padding-top: 6rem; text-size-adjust: 100%; }
 body {
+  min-width: 320px;
+  overflow-x: clip;
   background-color: var(--background);
   color: var(--foreground);
-  transition:
-    background-color var(--motion-base) ease,
-    color var(--motion-base) ease;
+  transition: background-color var(--motion-base) ease, color var(--motion-base) ease;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-
-::selection {
-  background-color: var(--accent-soft);
-  color: var(--foreground);
-}
-
-:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 3px;
-}
-
-a,
-button,
-input,
-select,
-textarea {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button,
-[role="button"],
-a {
-  touch-action: manipulation;
-}
-
-img,
-video,
-canvas,
-svg {
+::selection { background-color: var(--accent-soft); color: var(--foreground); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, [role="button"], a { touch-action: manipulation; }
+button, input, select, textarea { font: inherit; }
+button:disabled { cursor: not-allowed; opacity: .65; }
+img, video, canvas, svg { max-width: 100%; }
+img { height: auto; }
+a { text-underline-offset: 0.2em; }
+::placeholder { color: var(--muted); opacity: .8; }
+:where(input, textarea, select) {
   max-width: 100%;
+  border-radius: var(--radius-sm);
 }
-
-img {
-  height: auto;
+:where(input, textarea, select):focus-visible {
+  border-color: var(--focus-ring);
 }
+:where(textarea) { min-height: 7rem; }
+:where(table) { max-width: 100%; }
+:where(pre, code) { overflow-wrap: anywhere; }
+:where(iframe, video) { max-width: 100%; }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .surface-raised {
-    background: var(--surface-raised);
-    box-shadow: var(--shadow-soft);
-  }
-
+  .text-balance { text-wrap: balance; }
+  .surface-raised { background: var(--surface-raised); box-shadow: var(--shadow-soft); }
   .motion-lift {
-    transition:
-      transform var(--motion-base) var(--ease-out),
-      box-shadow var(--motion-base) var(--ease-out),
-      border-color var(--motion-base) ease;
+    transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), border-color var(--motion-base) ease;
   }
-
-  .motion-lift:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lift);
-  }
-
-  .motion-reveal {
-    animation: ayzent-fade-up var(--motion-slow) var(--ease-out) both;
+  .motion-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+  .motion-reveal { animation: ayzent-fade-up var(--motion-slow) var(--ease-out) both; }
+  .text-gradient-gold {
+    background: linear-gradient(110deg, var(--foreground) 10%, var(--accent) 85%);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
 @keyframes ayzent-fade-up {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 @media (hover: none), (pointer: coarse) {
-  .motion-lift:hover {
-    transform: none;
-    box-shadow: var(--shadow-soft);
-  }
+  .motion-lift:hover { transform: none; box-shadow: var(--shadow-soft); }
 }
-
 @media (max-width: 640px) {
-  html {
-    scroll-padding-top: 5rem;
-  }
+  html { scroll-padding-top: 5rem; }
+  :where(button, [role="button"]) { min-height: 2.75rem; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

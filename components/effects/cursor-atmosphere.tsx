@@ -1,88 +1,105 @@
 "use client";
+
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-
-type TrailPoint = { x: number; y: number; age: number };
 
 export function CursorAtmosphere() {
   const pathname = usePathname();
   const rootRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const rootElement = rootRef.current;
-    const canvasElement = canvasRef.current;
-    const context = canvasElement?.getContext("2d", { alpha: true, desynchronized: true });
-    if (!rootElement || !canvasElement || !context || pathname.startsWith("/admin") ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) return;
-    const root: HTMLDivElement = rootElement as HTMLDivElement;
-    const canvas: HTMLCanvasElement = canvasElement as HTMLCanvasElement;
-    const ctx: CanvasRenderingContext2D = context as CanvasRenderingContext2D;
+    const root = rootRef.current;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+    if (!root || pathname.startsWith("/admin") || reduceMotion.matches || coarsePointer.matches || window.innerWidth < 768) return;
 
-    let dpr = Math.min(window.devicePixelRatio || 1, 1.25), raf = 0, lastTime = 0;
-    let points: TrailPoint[] = [];
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 1.25);
-      canvas.width = Math.round(window.innerWidth * dpr);
-      canvas.height = Math.round(window.innerHeight * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function render(time: number) {
-      raf = 0;
-      if (document.hidden) {
-        points = []; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        root.classList.remove("is-active"); return;
-      }
-      const elapsed = Math.min(48, time - (lastTime || time - 16)); lastTime = time;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      points = points.map(p => ({ ...p, age: p.age + elapsed })).filter(p => p.age < 480);
-      for (let i = 1; i < points.length; i += 1) {
-        const previous = points[i - 1], point = points[i];
-        ctx.beginPath(); ctx.moveTo(previous.x, previous.y); ctx.lineTo(point.x, point.y);
-        ctx.strokeStyle = `rgba(103,146,255,${(Math.max(0, 1 - point.age / 480) * 0.16).toFixed(3)})`;
-        ctx.lineWidth = Math.max(0.4, 2.2 * (1 - point.age / 480)); ctx.lineCap = "round"; ctx.stroke();
-      }
-      for (const point of points) {
-        ctx.beginPath(); ctx.arc(point.x, point.y, Math.max(0.4, 2.2 * (1 - point.age / 480)), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(145,174,255,${(Math.max(0, 1 - point.age / 480) * 0.28).toFixed(3)})`; ctx.fill();
-      }
-      if (points.length) raf = window.requestAnimationFrame(render);
-      else root.classList.remove("is-active");
-    }
-    function onPointerMove(event: PointerEvent) {
-      points.push({ x: event.clientX, y: event.clientY, age: 0 });
-      if (points.length > 14) points.splice(0, points.length - 14);
-      root.style.setProperty("--cursor-x", `${(event.clientX / Math.max(1, window.innerWidth) * 100).toFixed(2)}%`);
-      root.style.setProperty("--cursor-y", `${(event.clientY / Math.max(1, window.innerHeight) * 100).toFixed(2)}%`);
+    let frame = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let activeMagnet: HTMLElement | null = null;
+
+    const applyPointerPosition = () => {
+      frame = 0;
+      root.style.setProperty("--cursor-x", `${lastX}px`);
+      root.style.setProperty("--cursor-y", `${lastY}px`);
       root.classList.add("is-active");
-      if (!raf) raf = window.requestAnimationFrame(render);
-    }
-    function onPointerOut(event: PointerEvent) {
-      if (event.relatedTarget === null) root.classList.remove("is-active");
-    }
-    function onVisibility() {
-      if (!document.hidden && points.length && !raf) raf = window.requestAnimationFrame(render);
-      else if (document.hidden) {
-        if (raf) window.cancelAnimationFrame(raf);
-        raf = 0; points = []; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        root.classList.remove("is-active");
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" && event.pointerType !== "pen") return;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      if (!frame) frame = window.requestAnimationFrame(applyPointerPosition);
+
+      const target = event.target instanceof Element ? event.target.closest<HTMLElement>(".magnetic-cta, [data-magnetic='true'], a[class*='bg-accent'], button[class*='bg-accent']") : null;
+      if (target && !target.matches(":disabled") && !target.closest("[data-no-magnetic]")) {
+        if (activeMagnet && activeMagnet !== target) activeMagnet.style.removeProperty("--magnetic-x");
+        if (activeMagnet && activeMagnet !== target) activeMagnet.style.removeProperty("--magnetic-y");
+        activeMagnet = target;
+        const rect = target.getBoundingClientRect();
+        const strength = target.dataset.magnetic === "strong" ? 0.18 : 0.1;
+        target.style.setProperty("--magnetic-x", `${((event.clientX - rect.left - rect.width / 2) * strength).toFixed(1)}px`);
+        target.style.setProperty("--magnetic-y", `${((event.clientY - rect.top - rect.height / 2) * strength).toFixed(1)}px`);
+      } else if (activeMagnet) {
+        activeMagnet.style.removeProperty("--magnetic-x");
+        activeMagnet.style.removeProperty("--magnetic-y");
+        activeMagnet = null;
       }
-    }
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
+
+      document.querySelectorAll<HTMLElement>(".fx-parallax, .fx-parallax-strong").forEach((element) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth) return;
+        const amount = element.classList.contains("fx-parallax-strong") ? 8 : 3;
+        const x = (event.clientX / Math.max(1, window.innerWidth) - 0.5) * amount;
+        const y = (event.clientY / Math.max(1, window.innerHeight) - 0.5) * amount;
+        element.style.setProperty("--fx-parallax-x", `${x.toFixed(2)}px`);
+        element.style.setProperty("--fx-parallax-y", `${y.toFixed(2)}px`);
+        element.style.setProperty("--fx-parallax-strong-x", `${(x * 2).toFixed(2)}px`);
+        element.style.setProperty("--fx-parallax-strong-y", `${(y * 2).toFixed(2)}px`);
+      });
+    };
+
+    const resetPointerEffects = () => {
+      root.classList.remove("is-active");
+      if (activeMagnet) {
+        activeMagnet.style.removeProperty("--magnetic-x");
+        activeMagnet.style.removeProperty("--magnetic-y");
+        activeMagnet = null;
+      }
+      document.querySelectorAll<HTMLElement>(".fx-parallax, .fx-parallax-strong").forEach((element) => {
+        element.style.removeProperty("--fx-parallax-x");
+        element.style.removeProperty("--fx-parallax-y");
+        element.style.removeProperty("--fx-parallax-strong-x");
+        element.style.removeProperty("--fx-parallax-strong-y");
+      });
+    };
+
+    const onPointerOut = (event: PointerEvent) => {
+      if (event.relatedTarget === null) resetPointerEffects();
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) resetPointerEffects();
+    };
+    const onMotionPreference = () => {
+      if (reduceMotion.matches || coarsePointer.matches) resetPointerEffects();
+    };
+
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerout", onPointerOut, { passive: true });
-    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    reduceMotion.addEventListener("change", onMotionPreference);
+    coarsePointer.addEventListener("change", onMotionPreference);
     return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerout", onPointerOut);
-      document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      reduceMotion.removeEventListener("change", onMotionPreference);
+      coarsePointer.removeEventListener("change", onMotionPreference);
+      resetPointerEffects();
     };
   }, [pathname]);
 
   if (pathname.startsWith("/admin")) return null;
-  return <div ref={rootRef} aria-hidden="true" className="cursor-atmosphere"><canvas ref={canvasRef} /></div>;
+  return <div ref={rootRef} aria-hidden="true" className="cursor-atmosphere" />;
 }

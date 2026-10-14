@@ -316,6 +316,8 @@ export type SiteSettings = {
 
   companyLogo?: string;
 
+  socialImage?: string;
+
   /*
   |--------------------------------------------------------------------------
   | Contact Information
@@ -930,6 +932,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       "Ayzent Solutions",
 
     companyLogo:
+      "",
+
+    socialImage:
       "",
 
     /*

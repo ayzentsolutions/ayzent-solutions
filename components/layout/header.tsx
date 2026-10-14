@@ -45,12 +45,12 @@ export function Header({ buttonText = "Start a project", buttonLink = "/contact"
           {links.map((link) => {
             const active = isActivePath(pathname, link.href);
             return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`group relative py-3 text-[12px] transition-colors hover:text-white ${active ? "text-white" : "text-white/60"}`}>
-              {link.label}<span aria-hidden="true" className={`absolute -bottom-0.5 left-0 h-px bg-[#66A0FF] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
+              {link.label}<span aria-hidden="true" className={`absolute -bottom-0.5 left-0 h-px bg-[#6792FF] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
             </Link>;
           })}
         </nav>
         <div className="hidden items-center gap-4 xl:flex"><ButtonLink href={buttonLink} className="border border-[#477BFF]/60 bg-[#477BFF] px-5 text-white hover:bg-[#345FD1]">{buttonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink></div>
-        <div className="flex items-center gap-3 xl:hidden"><button type="button" onClick={() => setOpen(v => !v)} aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-primary-navigation" className="grid h-11 w-11 shrink-0 place-items-center border border-white/20 text-white transition hover:border-[#66A0FF]">
+        <div className="flex items-center gap-3 xl:hidden"><button type="button" onClick={() => setOpen(v => !v)} aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-primary-navigation" className="grid h-11 w-11 shrink-0 place-items-center border border-white/20 text-white transition hover:border-[#6792FF]">
           <span className="sr-only">{open ? "Close menu" : "Open menu"}</span><span aria-hidden="true" className="text-xl">{open ? "×" : "☰"}</span>
         </button></div>
       </Container>

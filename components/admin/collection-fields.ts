@@ -357,6 +357,9 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -428,6 +431,10 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "text", label: "Service Summary", type: "textarea", group: "Service Details" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -532,6 +539,17 @@ export const collectionFields: Record<
       type: "textarea",
       group: "SEO",
     },
+    { name: "name", label: "Project Name", type: "text", required: true, group: "Project Details" },
+    { name: "summary", label: "Project Summary", type: "textarea", group: "Project Content" },
+    { name: "overview", label: "Overview", type: "markdown", group: "Project Content" },
+    { name: "coverImage", label: "Cover Image", type: "image", group: "Visual" },
+    { name: "gallery", label: "Image Gallery", type: "tags", group: "Visual" },
+    { name: "technologies", label: "Technologies", type: "tags", group: "Project Details" },
+    { name: "features", label: "Key Features", type: "tags", group: "Project Details" },
+    { name: "featured", label: "Feature on Homepage", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -596,6 +614,10 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "shortBio", label: "Short Bio", type: "textarea", group: "Team Member" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -662,6 +684,11 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "text", label: "Testimonial Text", type: "textarea", group: "Testimonial" },
+    { name: "roleCompany", label: "Role / Company", type: "text", group: "Client" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -721,6 +748,8 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -764,6 +793,8 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -828,6 +859,18 @@ export const collectionFields: Record<
       type: "textarea",
       group: "Vision",
     },
+    { name: "heroEyebrow", label: "Hero Eyebrow", type: "text", group: "About Page" },
+    { name: "heroTitle", label: "Hero Title", type: "textarea", group: "About Page" },
+    { name: "heroText", label: "Hero Description", type: "textarea", group: "About Page" },
+    { name: "storyEyebrow", label: "Story Eyebrow", type: "text", group: "Story" },
+    { name: "storyParagraphOne", label: "Story Paragraph One", type: "textarea", group: "Story" },
+    { name: "storyParagraphTwo", label: "Story Paragraph Two", type: "textarea", group: "Story" },
+    { name: "mission", label: "Mission", type: "textarea", group: "Mission" },
+    { name: "vision", label: "Vision", type: "textarea", group: "Vision" },
+    { name: "values", label: "Values", type: "tags", group: "Values" },
+    { name: "teamTitle", label: "Team Section Title", type: "text", group: "Team" },
+    { name: "teamText", label: "Team Description", type: "textarea", group: "Team" },
+
   ],
 
   /*

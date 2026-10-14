@@ -81,6 +81,14 @@ export const collectionFields: Record<
         "Upload or replace the company logo. The image is uploaded through the existing Cloudinary media API.",
     },
 
+    {
+      name: "socialImage",
+      label: "Social Preview Image",
+      type: "image",
+      group: "Brand & Identity",
+      hint: "Optional default image for Open Graph and social sharing previews.",
+    },
+
     /*
     ------------------------------------------------------------------------
     CONTACT INFORMATION

@@ -1,41 +1,16 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { PageHero } from "@/components/sections/page-hero";
 import { getPosts } from "@/lib/content";
-
 export const dynamic = "force-dynamic";
-
 export default async function BlogPage() {
   const posts = await getPosts();
-
-  return (
-    <>
-      <PageHero eyebrow="Journal" title="Useful thinking for better digital decisions." text="Notes on strategy, design, technology, and the practical work of making a business more useful online." />
-      <section className="py-12 sm:py-20 lg:py-24">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Ideas in progress</p><p className="mt-2 text-sm text-muted">{posts.length} {posts.length === 1 ? "article" : "articles"}</p></div>
-            <Link href="/contact" className="text-sm font-medium text-gold transition hover:text-foreground">Discuss an idea <span aria-hidden="true">↗</span></Link>
-          </div>
-          {posts.length ? (
-            <div className="divide-y divide-line border-b border-line">
-              {posts.map((post, index) => (
-                <Link className="group grid gap-4 py-7 transition-colors hover:bg-surface/50 sm:gap-6 sm:py-9 md:grid-cols-[3rem_minmax(0,1fr)_auto] md:items-start" href={`/blog/${post.slug}`} key={post.slug}>
-                  <span className="pt-1 text-xs font-medium tabular-nums text-gold">{String(index + 1).padStart(2, "0")}</span>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted"><span className="text-gold">{post.category || "Journal"}</span>{post.date ? <><span aria-hidden="true">·</span><time>{post.date}</time></> : null}</div>
-                    <h2 className="mt-3 break-words font-display text-2xl leading-tight transition-colors group-hover:text-gold sm:text-3xl lg:text-4xl">{post.title}</h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">{post.excerpt}</p>
-                  </div>
-                  <span aria-hidden="true" className="mt-1 hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-lg transition group-hover:translate-x-1 group-hover:border-gold group-hover:text-gold md:grid">↗</span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 sm:py-24"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Coming soon</p><h2 className="mt-3 font-display text-3xl sm:text-4xl">A little more thinking, soon.</h2><p className="mt-4 max-w-xl text-sm leading-7 text-muted">Our journal is being prepared. Check back for ideas on strategy, design, and technology.</p></div>
-          )}
-        </Container>
-      </section>
-    </>
-  );
+  const [lead, ...rest] = posts;
+  return <><PageHero eyebrow="Journal / 04" title="Notes for the work ahead." text="Explore published writing from Ayzent Solutions." primaryText="Discuss an idea" primaryLink="/contact"/>
+    <section className="bg-[#F5F1E8] py-10 text-[#08152B] sm:py-16 lg:py-24"><Container>
+      <div className="mb-8 flex items-end justify-between gap-4 border-b border-[#08152B]/15 pb-5"><div><p className="eyebrow text-[#246BFF]">Field notes</p><h2 className="mt-3 font-display text-3xl sm:text-4xl">The journal</h2></div><p className="text-sm text-[#647087]">{posts.length} articles</p></div>
+      {lead ? <><Link href={`/blog/${lead.slug}`} className="group grid overflow-hidden border border-[#08152B]/15 bg-[#08152B] text-[#F5F1E8] md:grid-cols-[1.1fr_.9fr]">{(lead.coverImage || lead.image) ? <div className="relative min-h-64 overflow-hidden md:min-h-[28rem]"><Image src={(lead.coverImage || lead.image)!} alt={lead.title} fill sizes="(max-width: 768px) 100vw, 55vw" className="object-cover transition duration-700 group-hover:scale-105"/></div> : <div className="grid-blueprint relative min-h-64 bg-[#102746] md:min-h-[28rem]"><div aria-hidden="true" className="absolute left-1/4 top-1/4 h-40 w-40 border border-[#66A0FF]/30 bg-[#246BFF]/15"/></div>}<div className="flex flex-col justify-between p-6 sm:p-10"><div><p className="eyebrow text-[#66A0FF]">{lead.category || "Journal"}{lead.date ? ` / ${lead.date}` : ""}</p><h3 className="mt-5 font-display text-3xl leading-tight sm:text-4xl lg:text-5xl">{lead.title}</h3><p className="mt-5 text-sm leading-7 text-white/55">{lead.excerpt}</p></div><span className="mt-8 inline-flex items-center gap-3 text-sm text-[#66A0FF]">Read article <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">↗</span></span></div></Link>
+      {rest.length > 0 && <div className="mt-8 grid gap-0 border-t border-[#08152B]/15 md:grid-cols-2">{rest.map((post,index)=><Link key={post.slug} href={`/blog/${post.slug}`} className={`group border-b border-[#08152B]/15 py-6 sm:py-8 ${index%2 ? "md:border-l md:pl-8" : "md:pr-8"}`}><p className="eyebrow text-[#246BFF]">{post.category || "Journal"}{post.date ? ` / ${post.date}` : ""}</p><h3 className="mt-4 font-display text-2xl leading-tight transition-colors group-hover:text-[#246BFF] sm:text-3xl">{post.title}</h3><p className="mt-3 text-sm leading-7 text-[#647087]">{post.excerpt}</p><span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Read note ↗</span></Link>)}</div>}</> : <div className="py-14"><h3 className="font-display text-3xl">The journal is being prepared.</h3><p className="mt-3 text-sm text-[#647087]">Published articles will appear here.</p></div>}
+    </Container></section></>;
 }

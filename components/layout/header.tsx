@@ -3,137 +3,61 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import { Container } from "@/components/ui/container";
-import { Logo } from "@/components/ui/logo";
 import { ButtonLink } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
-type HeaderProps = {
-  buttonText?: string;
-  buttonLink?: string;
-  logo?: string;
-  companyName?: string;
-};
-
+type HeaderProps = { buttonText?: string; buttonLink?: string; logo?: string; companyName?: string };
 const navLinks = [
-  { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/projects", label: "Projects" },
-  { href: "/products", label: "Our Products" },
-  { href: "/blog", label: "Blog" },
-  { href: "/careers", label: "Careers" },
-  { href: "/contact", label: "Contact" },
+  { href: "/projects", label: "Selected work" },
+  { href: "/products", label: "Products" },
+  { href: "/about", label: "Studio" },
+  { href: "/blog", label: "Journal" },
+  { href: "/careers", label: "Careers" }
 ];
+function isActivePath(pathname: string, href: string) { return pathname === href || pathname.startsWith(`${href}/`); }
 
-function isActivePath(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function Header({
-  buttonText = "Get a Quote",
-  buttonLink = "/contact",
-  logo,
-  companyName = "Ayzent Solutions",
-}: HeaderProps) {
+export function Header({ buttonText = "Start a project", buttonLink = "/contact", logo, companyName = "Ayzent Solutions" }: HeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-
   useEffect(() => {
     if (!open) return;
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
     document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", closeOnEscape);
-    };
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", closeOnEscape); };
   }, [open]);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
+  useEffect(() => { setOpen(false); }, [pathname]);
   if (pathname.startsWith("/admin")) return null;
-
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur-xl">
-      <Container className="flex h-20 items-center justify-between">
-        <Logo logo={logo} companyName={companyName} />
-
-        <nav aria-label="Main navigation" className="hidden items-center gap-7 lg:flex">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08152B]/95 text-[#F5F1E8] backdrop-blur-2xl">
+      <Container className="flex h-[76px] items-center justify-between gap-5">
+        <Link href="/" aria-label={`${companyName} home`} className="group flex min-w-0 items-center gap-3">
+          <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center border border-white/20 bg-white/[.04] text-sm font-black tracking-tight text-[#66A0FF] transition group-hover:border-[#66A0FF] group-hover:bg-[#246BFF]/15">A.</span>
+          <span className="min-w-0"><span className="block truncate text-sm font-semibold tracking-wide">{companyName}</span><span className="mt-0.5 block text-[9px] uppercase tracking-[.24em] text-white/45">Digital engineering</span></span>
+        </Link>
+        <nav aria-label="Main navigation" className="hidden items-center gap-6 xl:flex">
           {navLinks.map((link) => {
             const active = isActivePath(pathname, link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={`relative py-2 text-sm transition-colors duration-200 hover:text-gold focus-visible:rounded-sm ${active ? "text-foreground after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:bg-gold" : "text-muted"}`}
-              >
-                {link.label}
-              </Link>
-            );
+            return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`group relative py-3 text-[12px] transition-colors hover:text-white ${active ? "text-white" : "text-white/60"}`}>
+              {link.label}<span aria-hidden="true" className={`absolute -bottom-0.5 left-0 h-px bg-[#66A0FF] transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"}`} />
+            </Link>;
           })}
         </nav>
-
-        <div className="hidden items-center gap-4 lg:flex">
-          <ThemeToggle />
-          <ButtonLink href={buttonLink} variant="primary">
-            {buttonText}
-          </ButtonLink>
-        </div>
-
-        <div className="flex items-center gap-3 lg:hidden">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setOpen((value) => !value)}
-            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={open}
-            aria-controls="mobile-primary-navigation"
-            className="relative flex h-11 w-11 shrink-0 flex-col items-center justify-center gap-1.5 rounded-md border border-line transition-colors hover:bg-surface focus-visible:outline-offset-2"
-          >
-            <span className={`h-px w-5 bg-foreground transition-transform duration-200 ${open ? "translate-y-2 rotate-45" : ""}`} />
-            <span className={`h-px w-5 bg-foreground transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`} />
-            <span className={`h-px w-5 bg-foreground transition-transform duration-200 ${open ? "-translate-y-2 -rotate-45" : ""}`} />
-          </button>
-        </div>
+        <div className="hidden items-center gap-4 xl:flex"><ThemeToggle /><ButtonLink href={buttonLink} className="magnetic border border-[#66A0FF]/60 bg-[#246BFF] px-5 text-white hover:bg-[#1452D5]">{buttonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink></div>
+        <div className="flex items-center gap-3 xl:hidden"><ThemeToggle /><button type="button" onClick={() => setOpen(v => !v)} aria-label={open ? "Close navigation menu" : "Open navigation menu"} aria-expanded={open} aria-controls="mobile-primary-navigation" className="grid h-11 w-11 shrink-0 place-items-center border border-white/20 text-white transition hover:border-[#66A0FF]">
+          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span><span aria-hidden="true" className="text-xl">{open ? "×" : "☰"}</span>
+        </button></div>
       </Container>
-
-      <div
-        id="mobile-primary-navigation"
-        aria-label="Mobile navigation"
-        aria-hidden={!open}
-        className={`overflow-y-auto border-t border-line bg-background transition-[max-height,opacity] duration-300 ease-in-out lg:hidden ${open ? "max-h-[min(75vh,36rem)] opacity-100" : "pointer-events-none max-h-0 border-t-0 opacity-0"}`}
-      >
-        <Container className="flex flex-col gap-1 py-5">
-          <nav aria-label="Mobile primary navigation" className="flex flex-col">
-            {navLinks.map((link) => {
-              const active = isActivePath(pathname, link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  tabIndex={open ? 0 : -1}
-                  aria-current={active ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                  className={`rounded-md border-b border-line px-3 py-3.5 text-base transition-colors hover:bg-surface hover:text-gold last:border-b-0 ${active ? "font-semibold text-gold" : "text-foreground"}`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+      <div id="mobile-primary-navigation" aria-hidden={!open} className={`fixed inset-x-0 top-[76px] z-50 overflow-y-auto border-t border-white/10 bg-[#08152B] transition-[max-height,opacity] duration-300 xl:hidden ${open ? "max-h-[calc(100dvh-76px)] opacity-100" : "pointer-events-none max-h-0 opacity-0"}`}>
+        <Container className="pb-8 pt-5">
+          <nav aria-label="Mobile primary navigation" className="grid">
+            {navLinks.map((link, index) => { const active = isActivePath(pathname, link.href); return <Link key={link.href} href={link.href} tabIndex={open ? 0 : -1} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)} className={`flex min-h-14 items-center justify-between border-b border-white/10 py-4 text-lg ${active ? "text-[#66A0FF]" : "text-white/80"}`}><span><span className="mr-4 text-xs text-white/30">0{index + 1}</span>{link.label}</span><span aria-hidden="true">↗</span></Link>; })}
           </nav>
-          <ButtonLink href={buttonLink} variant="primary" className="mt-4 w-full">
-            {buttonText}
-          </ButtonLink>
+          <ButtonLink href={buttonLink} className="mt-6 w-full bg-[#246BFF] text-white">{buttonText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink>
+          <Link href="/contact" onClick={() => setOpen(false)} className="mt-5 inline-flex min-h-11 items-center text-sm text-white/60 hover:text-white">Contact the studio <span aria-hidden="true" className="ml-2">→</span></Link>
         </Container>
       </div>
     </header>

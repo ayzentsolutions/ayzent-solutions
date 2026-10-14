@@ -43,7 +43,7 @@ export function LoginForm() {
         Password
         <input required minLength={10} name="password" type="password" autoComplete="current-password" className="min-h-12 border border-line bg-background px-3 py-3 text-foreground outline-none transition focus:border-gold focus:ring-2 focus:ring-gold/20" />
       </label>
-      {message && <p role="alert" className="border border-red-500/30 bg-red-500/5 px-3 py-3 text-sm text-red-700 dark:text-red-300">{message}</p>}
+      {message && <p role="alert" className="border border-red-500/30 bg-red-500/5 px-3 py-3 text-sm text-red-300">{message}</p>}
       <Button disabled={pending} type="submit" className="min-h-12 w-full">{pending ? "Signing in…" : "Sign in"} <span aria-hidden="true">{pending ? "…" : "→"}</span></Button>
       <p className="text-center text-xs leading-5 text-muted">Authorized administrators only. Your session is protected.</p>
     </form>

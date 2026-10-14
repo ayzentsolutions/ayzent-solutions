@@ -23,6 +23,10 @@ export type Service = {
 
   text: string;
 
+  description?: string;
+
+  icon?: string;
+
   image?: string;
 
   slug?: string;
@@ -690,11 +694,22 @@ export async function getServices(): Promise<Service[]> {
     ...item,
     title: String(item.title || item.name || "Service"),
     text: String(item.text || item.shortDescription || item.description || ""),
+    description: typeof item.description === "string" ? item.description : undefined,
+    icon: typeof item.icon === "string" ? item.icon : undefined,
     image: typeof item.image === "string" ? item.image : undefined,
-    slug: typeof item.slug === "string" ? item.slug : undefined,
+    slug: typeof item.slug === "string" && item.slug.trim() ? item.slug : slugifyContentTitle(String(item.title || item.name || "service")),
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
     published: item.published !== false,
   })) as unknown as Service[];
+}
+
+function slugifyContentTitle(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export async function getService(slug: string): Promise<Service | undefined> {
+  const items = await getServices();
+  return items.find((item) => item.slug === slug);
 }
 
 function normalizeProject(item: Record<string, unknown>): Project {

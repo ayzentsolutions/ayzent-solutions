@@ -552,13 +552,6 @@ export const collectionFields: Record<
     },
 
     {
-      name: "bio",
-      label: "Bio",
-      type: "textarea",
-      group: "Team Member",
-    },
-
-    {
       name: "image",
       label: "Photo",
       type: "image",
@@ -625,13 +618,6 @@ export const collectionFields: Record<
       label: "Client Photo",
       type: "image",
       group: "Visual",
-    },
-
-    {
-      name: "quote",
-      label: "Testimonial",
-      type: "textarea",
-      group: "Testimonial",
     },
 
     {
@@ -756,73 +742,24 @@ export const collectionFields: Record<
   */
 
   aboutContent: [
-    {
-      name: "eyebrow",
-      label: "Eyebrow",
-      type: "text",
-      group: "About Page",
-    },
-
-    {
-      name: "title",
-      label: "Title",
-      type: "textarea",
-      group: "About Page",
-    },
-
-    {
-      name: "description",
-      label: "Description",
-      type: "markdown",
-      group: "About Page",
-    },
-
-    {
-      name: "image",
-      label: "Featured Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "missionTitle",
-      label: "Mission Title",
-      type: "text",
-      group: "Mission",
-    },
-
-    {
-      name: "missionDescription",
-      label: "Mission Description",
-      type: "textarea",
-      group: "Mission",
-    },
-
-    {
-      name: "visionTitle",
-      label: "Vision Title",
-      type: "text",
-      group: "Vision",
-    },
-
-    {
-      name: "visionDescription",
-      label: "Vision Description",
-      type: "textarea",
-      group: "Vision",
-    },
-    { name: "heroEyebrow", label: "Hero Eyebrow", type: "text", group: "About Page" },
-    { name: "heroTitle", label: "Hero Title", type: "textarea", group: "About Page" },
-    { name: "heroText", label: "Hero Description", type: "textarea", group: "About Page" },
     { name: "storyEyebrow", label: "Story Eyebrow", type: "text", group: "Story" },
     { name: "storyParagraphOne", label: "Story Paragraph One", type: "textarea", group: "Story" },
     { name: "storyParagraphTwo", label: "Story Paragraph Two", type: "textarea", group: "Story" },
+    { name: "missionEyebrow", label: "Mission Eyebrow", type: "text", group: "Mission" },
     { name: "mission", label: "Mission", type: "textarea", group: "Mission" },
+    { name: "visionEyebrow", label: "Vision Eyebrow", type: "text", group: "Vision" },
     { name: "vision", label: "Vision", type: "textarea", group: "Vision" },
+    { name: "valuesEyebrow", label: "Values Eyebrow", type: "text", group: "Values" },
     { name: "values", label: "Values", type: "tags", group: "Values" },
+    { name: "teamEyebrow", label: "Team Eyebrow", type: "text", group: "Team" },
     { name: "teamTitle", label: "Team Section Title", type: "text", group: "Team" },
     { name: "teamText", label: "Team Description", type: "textarea", group: "Team" },
-
+    { name: "quote", label: "Featured Quote", type: "textarea", group: "Quote" },
+    { name: "quoteAuthor", label: "Quote Author", type: "text", group: "Quote" },
+    { name: "ctaTitle", label: "CTA Title", type: "text", group: "Call to Action" },
+    { name: "ctaText", label: "CTA Description", type: "textarea", group: "Call to Action" },
+    { name: "ctaButtonText", label: "CTA Button Text", type: "text", group: "Call to Action" },
+    { name: "ctaButtonLink", label: "CTA Button Link", type: "url", group: "Call to Action" },
   ],
 
   /*

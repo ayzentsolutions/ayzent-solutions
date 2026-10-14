@@ -28,6 +28,22 @@ export type Service = {
   published?: boolean;
 };
 
+export type PageSection = {
+  _id?: string;
+  pageKey: "about" | "services" | "products" | "projects" | "blog" | "careers" | "contact" | "search";
+  sectionKey: "hero" | "story" | "mission" | "values" | "team" | "quote" | "cta" | "service-list" | "project-list" | "product-list" | "article-list" | "job-list" | "contact-form" | "search-results";
+  title?: string;
+  eyebrow?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "full-bleed" | "image-led";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
 export type PageContent = {
   _id?: string;
   pageKey: "about" | "services" | "products" | "projects" | "blog" | "careers" | "contact" | "search";
@@ -615,6 +631,11 @@ export async function getProjects(): Promise<Project[]> {
   return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
+export async function getPageSections(pageKey: PageSection["pageKey"]): Promise<PageSection[]> {
+  const sections = (await read<PageSection>("pageSections", [])).filter((section) => section.pageKey === pageKey).sort((a, b) => a.displayOrder - b.displayOrder);
+  const seen = new Set<string>();
+  return sections.filter((section) => { if (seen.has(section.sectionKey)) return false; seen.add(section.sectionKey); return true; });
+}
 export async function getPageContent(pageKey: PageContent["pageKey"]): Promise<PageContent | undefined> {
   const pages = await read<PageContent>("pageContent", []);
   return pages.find((page) => page.pageKey === pageKey);

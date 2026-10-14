@@ -165,6 +165,15 @@ function duplicateIdentity(
     socialLinks: ["label", "url"],
   };
 
+  if (collection === "testimonials") {
+    const clientName = data.clientName;
+    const text = data.text ?? data.quote;
+    if (typeof clientName === "string" && clientName.trim() && typeof text === "string" && text.trim()) {
+      return { clientName: clientName.trim(), $or: [{ text: text.trim() }, { quote: text.trim() }] };
+    }
+    return null;
+  }
+
   const fields = identityFields[collection];
   if (!fields || fields.some((field) => {
     const value = data[field];

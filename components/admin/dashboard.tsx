@@ -54,7 +54,7 @@ export function Dashboard() {
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Dashboard unavailable</p>
         <h2 className="mt-3 font-display text-2xl">We couldn&apos;t load your workspace.</h2>
         <p className="mt-2 max-w-xl text-sm leading-6 text-muted">{error}</p>
-        <button type="button" onClick={() => void load()} className="mt-5 inline-flex min-h-11 items-center justify-center bg-ink px-5 text-sm text-paper transition hover:bg-gold hover:text-ink dark:bg-paper dark:text-ink">Try again</button>
+        <button type="button" onClick={() => void load()} className="mt-5 inline-flex min-h-11 items-center justify-center bg-ink px-5 text-sm text-paper transition hover:bg-gold hover:text-ink">Try again</button>
       </section>
     );
   }
@@ -73,7 +73,7 @@ export function Dashboard() {
       {error && <p role="status" className="border border-line px-4 py-3 text-sm text-muted">Some data may be out of date. {error} <button type="button" onClick={() => void load()} className="ml-2 font-medium text-gold underline underline-offset-4">Refresh</button></p>}
       <section aria-label="Content overview" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {cards.map((card, index) => (
-          <article key={card.key} className="motion-lift min-w-0 border border-line bg-background p-5 sm:p-6">
+          <article key={card.key} className="motion-lift min-w-0 border border-line bg-surface p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm text-muted">{card.label}</p>
               <span className="text-[10px] font-semibold tracking-[0.12em] text-gold">{String(index + 1).padStart(2, "0")}</span>

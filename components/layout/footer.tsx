@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
-import { Logo } from "@/components/ui/logo";
 import { ButtonLink } from "@/components/ui/button";
 import { NewsletterForm } from "@/components/forms/newsletter-form";
 import { SocialLinks } from "@/components/social/social-links";

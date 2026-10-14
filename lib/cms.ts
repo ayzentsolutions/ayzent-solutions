@@ -99,6 +99,7 @@ export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+  "pageContent",
   "navigation",
   "homeSections",
   "process",

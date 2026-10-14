@@ -35,6 +35,7 @@ function previewPath(collection: string, data: Record<string, unknown>) {
   if (collection === "projects" && slug) return `/projects/${encodeURIComponent(slug)}`;
   if (collection === "products" && slug) return `/products/${encodeURIComponent(slug)}`;
   if (collection === "posts" && slug) return `/blog/${encodeURIComponent(slug)}`;
+  if (collection === "services" && slug) return `/services/${encodeURIComponent(slug)}`;
   if (collection === "services") return "/services";
   if (collection === "jobs") return "/careers";
   if (collection === "team" || collection === "aboutContent") return "/about";

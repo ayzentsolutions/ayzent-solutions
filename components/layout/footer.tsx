@@ -5,12 +5,10 @@ import { NewsletterForm } from "@/components/forms/newsletter-form";
 import { SocialLinks } from "@/components/social/social-links";
 import { getNavigation, getServices, getSiteSettings } from "@/lib/content";
 
-const defaultQuickLinks = [{ href: "/about", label: "Studio" }, { href: "/services", label: "Services" }, { href: "/projects", label: "Work" }, { href: "/products", label: "Products" }, { href: "/blog", label: "Journal" }, { href: "/careers", label: "Careers" }, { href: "/contact", label: "Contact" }];
-
 export async function Footer() {
   const [settings, services, navigation] = await Promise.all([getSiteSettings(), getServices(), getNavigation()]);
   const cmsLinks = navigation.filter(item => item.location === "footer" || item.location === "both").map(({ href, label }) => ({ href, label }));
-  const quickLinks = cmsLinks.length ? cmsLinks : defaultQuickLinks;
+  const quickLinks = cmsLinks;
   const whatsappNumber = settings.whatsapp?.replace(/\D/g, "").trim();
   const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : undefined;
   const companyName = settings.companyName || "Ayzent Solutions";
@@ -26,9 +24,9 @@ export async function Footer() {
           <ButtonLink href={settings.headerButtonLink || "/contact"} className="mt-7 bg-[#477BFF] text-white hover:bg-[#345FD1]">{settings.headerButtonText || "Start a project"} <span aria-hidden="true" className="ml-2">↗</span></ButtonLink>
           <div className="mt-7"><SocialLinks /></div>
         </div>
-        <nav aria-label="Footer navigation" className="flex flex-col items-start gap-3">
+        {quickLinks.length > 0 && <nav aria-label="Footer navigation" className="flex flex-col items-start gap-3">
           <h3 className="eyebrow mb-2 text-white/35">Explore</h3>{quickLinks.map(link => <Link key={link.href} href={link.href} className="text-sm text-white/65 transition-colors hover:text-[#6792FF]">{link.label}</Link>)}
-        </nav>
+        </nav>}
         <nav aria-label="Footer services" className="flex flex-col items-start gap-3">
           <h3 className="eyebrow mb-2 text-white/35">Capabilities</h3>{services.slice(0, 6).map(service => <Link key={service.title} href="/services" className="text-sm text-white/65 transition-colors hover:text-[#6792FF]">{service.title}</Link>)}{!services.length && <Link href="/services" className="text-sm text-white/65">Explore services</Link>}
         </nav>

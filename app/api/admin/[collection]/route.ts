@@ -107,6 +107,23 @@ function isSingleton(
   );
 }
 
+async function markCmsCollectionManaged(collection: string) {
+  try {
+    const db = await getDb();
+    await db.collection("cmsCollectionState").updateOne(
+      { collection },
+      {
+        $set: { collection, managed: true, updatedAt: new Date() },
+        $setOnInsert: { createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    console.error("Unable to persist CMS collection state", { collection, error });
+    throw error;
+  }
+}
+
 function revalidatePublicContent(
   collection: string,
   data: Record<string, unknown> = {}
@@ -465,6 +482,7 @@ export async function POST(
           "updated",
           `${result.collection} settings`
         );
+        await markCmsCollectionManaged(result.collection);
         revalidatePublicContent(result.collection, data);
 
         return NextResponse.json(
@@ -510,6 +528,7 @@ export async function POST(
     } catch (activityError) {
       console.error("Admin activity log failed after create", activityError);
     }
+    await markCmsCollectionManaged(result.collection);
     revalidatePublicContent(result.collection, data);
 
     return NextResponse.json(
@@ -663,6 +682,7 @@ export async function PATCH(
     } catch (activityError) {
       console.error("Admin activity log failed after update", activityError);
     }
+    await markCmsCollectionManaged(result.collection);
     revalidatePublicContent(result.collection, data);
 
     return NextResponse.json({
@@ -793,6 +813,7 @@ export async function DELETE(
   } catch (activityError) {
     console.error("Admin activity log failed after delete", activityError);
   }
+  await markCmsCollectionManaged(result.collection);
   revalidatePublicContent(result.collection, (existing || {}) as Record<string, unknown>);
 
   return NextResponse.json({

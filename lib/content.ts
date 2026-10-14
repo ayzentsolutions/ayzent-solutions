@@ -40,7 +40,7 @@ export type NavigationItem = {
 
 export type HomeSection = {
   _id?: string;
-  sectionKey: "intro" | "services" | "projects" | "products" | "process" | "studio" | "testimonials" | "faqs" | "cta";
+  sectionKey: "hero" | "intro" | "services" | "projects" | "products" | "process" | "studio" | "testimonials" | "faqs" | "cta";
   title?: string;
   eyebrow?: string;
   description?: string;

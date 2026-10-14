@@ -970,7 +970,7 @@ export const collectionFields: Record<
     { name: "image", label: "Supporting Image", type: "image", group: "Media" },
     { name: "ctaText", label: "CTA Text", type: "text", group: "CTA" },
     { name: "ctaLink", label: "CTA Link", type: "url", group: "CTA" },
-    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed", "image-led"] },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed"] },
     { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
     { name: "displayOrder", label: "Display Order", type: "number", required: true, group: "Publishing" },
     { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },

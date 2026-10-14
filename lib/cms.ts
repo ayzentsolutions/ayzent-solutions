@@ -14,6 +14,7 @@ export const cmsCollections = [
 
   "siteSettings",
   "heroSlides",
+  "pageSections",
   "pageContent",
   "navigation",
   "homeSections",
@@ -99,6 +100,7 @@ export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+  "pageSections",
   "pageContent",
   "navigation",
   "homeSections",
@@ -195,6 +197,7 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
+      "pageSections",
       "pageContent",
       "navigation",
       "homeSections",
@@ -230,7 +233,7 @@ export const cmsNavigation = [
   },
   { title: "PRODUCTS", items: ["products"] },
   { title: "ENGINEERING", items: ["process"] },
-  { title: "PUBLIC PAGES", items: ["pageContent"] },
+  { title: "PUBLIC PAGES", items: ["pageContent", "pageSections"] },
 
   {
     title: "BLOG",
@@ -288,6 +291,7 @@ export const collectionLabels:
     "Hero Background Slides",
 
   pageContent: "Public Page Content",
+  pageSections: "Public Page Section Layouts",
 
   navigation: "Header & Footer Navigation",
 
@@ -1219,6 +1223,20 @@ export function validateCmsData(
     }
   }
 
+  if (collection === "pageSections") {
+    const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
+    const sectionKeys = ["hero", "story", "mission", "values", "team", "quote", "cta", "service-list", "project-list", "product-list", "article-list", "job-list", "contact-form", "search-results"];
+    const layouts = ["editorial", "compact", "full-bleed", "image-led"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!pageKeys.includes(String(data.pageKey))) errors.push("Choose a supported public page.");
+    if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported page section.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Section layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Section background variant is invalid.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Section status must be draft, published, or archived.");
+    ["title", "eyebrow", "description", "ctaText"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
   if (collection === "pageContent") {
     const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
     const layouts = ["editorial", "compact", "image-led"];

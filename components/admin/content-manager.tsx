@@ -305,6 +305,7 @@ export function ContentManager({
 
   // A ref closes the same-tick double-submit window before React re-renders.
   const saveLock = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [
     loading,
@@ -569,6 +570,7 @@ export function ContentManager({
 
   async function preview() {
     if (previewPending || saveLock.current) return;
+    if (!formRef.current?.reportValidity()) return;
 
     const previewWindow = window.open("about:blank", "_blank");
     if (!previewWindow) {
@@ -726,6 +728,7 @@ export function ContentManager({
           </div>
         ) : (
           <form
+            ref={formRef}
             onSubmit={save}
             className="mt-8 grid gap-7"
           >

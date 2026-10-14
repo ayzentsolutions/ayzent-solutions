@@ -817,7 +817,7 @@ export const collectionFields: Record<
   */
 
   homeSections: [
-    { name: "sectionKey", label: "Homepage Section", type: "select", required: true, group: "Section", options: ["intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"] },
+    { name: "sectionKey", label: "Homepage Section", type: "select", required: true, group: "Section", options: ["hero", "intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"] },
     { name: "title", label: "Title Override", type: "textarea", group: "Content", hint: "Optional. Leave empty to use the current CMS page content." },
     { name: "eyebrow", label: "Eyebrow Override", type: "text", group: "Content" },
     { name: "description", label: "Description Override", type: "textarea", group: "Content" },

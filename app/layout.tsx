@@ -5,7 +5,7 @@ import "./globals.css";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { getSiteSettings } from "@/lib/content";
+import { getNavigation, getSiteSettings } from "@/lib/content";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
+  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
   const companyName = settings.companyName || "Ayzent Solutions";
   const description = settings.footerDescription || "Ideas. Engineered.";
 
@@ -45,7 +45,7 @@ export default async function RootLayout({
           Skip to main content
         </a>
         <div className="flex min-h-screen flex-col">
-          <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} />
+          <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} navigation={navigation} />
           <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
             {children}
           </main>

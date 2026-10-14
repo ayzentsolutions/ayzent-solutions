@@ -328,6 +328,17 @@ async function validateAndPrepare(
   const db =
     await getDb();
 
+  const identity = duplicateIdentity(collection, data);
+  if (identity) {
+    const duplicate = await db.collection(collection).findOne({
+      ...identity,
+      ...(id && ObjectId.isValid(id) ? { _id: { $ne: new ObjectId(id) } } : {}),
+    });
+    if (duplicate) {
+      return { error: "An entry with the same identifying details already exists." };
+    }
+  }
+
   if (
     (
       collection === "projects" || collection === "products" ||

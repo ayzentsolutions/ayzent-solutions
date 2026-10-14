@@ -812,6 +812,27 @@ export const collectionFields: Record<
 
   /*
   |--------------------------------------------------------------------------
+  | HOMEPAGE SECTION CONTROL
+  |--------------------------------------------------------------------------
+  */
+
+  homeSections: [
+    { name: "sectionKey", label: "Homepage Section", type: "select", required: true, group: "Section", options: ["intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"] },
+    { name: "title", label: "Title Override", type: "textarea", group: "Content", hint: "Optional. Leave empty to use the current CMS page content." },
+    { name: "eyebrow", label: "Eyebrow Override", type: "text", group: "Content" },
+    { name: "description", label: "Description Override", type: "textarea", group: "Content" },
+    { name: "image", label: "Supporting Image", type: "image", group: "Media" },
+    { name: "ctaText", label: "CTA Text", type: "text", group: "CTA" },
+    { name: "ctaLink", label: "CTA Link", type: "url", group: "CTA", placeholder: "/contact" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing", required: true },
+    { name: "active", label: "Visible on Homepage", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"], required: true },
+  ],
+
+  /*
+  |--------------------------------------------------------------------------
   | PROCESS
   |--------------------------------------------------------------------------
   */
@@ -840,10 +861,11 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
+      name: "displayOrder",
       label: "Display Order",
       type: "number",
       group: "Settings",
+      required: true,
     },
 
     {
@@ -851,6 +873,14 @@ export const collectionFields: Record<
       label: "Active",
       type: "checkbox",
       group: "Settings",
+    },
+    {
+      name: "status",
+      label: "Publishing Status",
+      type: "select",
+      group: "Settings",
+      options: ["draft", "published", "archived"],
+      required: true,
     },
   ],
 };

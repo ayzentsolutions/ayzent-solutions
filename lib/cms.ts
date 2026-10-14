@@ -562,6 +562,7 @@ export function validateCmsData(
       "companyName",
 
       "companyLogo",
+      "socialImage",
 
       "email",
       "phone",
@@ -596,6 +597,8 @@ export function validateCmsData(
         }
       }
     );
+
+    if (!isUrl(data.socialImage)) errors.push("Social preview image must be a valid image URL.");
 
     if (
       !isUrl(

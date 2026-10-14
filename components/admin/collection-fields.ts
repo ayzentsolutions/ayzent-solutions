@@ -362,10 +362,10 @@ export const collectionFields: Record<
 
   services: [
     { name: "title", label: "Service Title", type: "text", required: true, group: "Service Details" },
-    { name: "slug", label: "Slug", type: "text", group: "Service Details", placeholder: "web-development", hint: "Used for service URLs." },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Service Details", placeholder: "web-development", hint: "Used for service detail URLs." },
     { name: "text", label: "Service Summary", type: "textarea", required: true, group: "Service Details" },
-    { name: "icon", label: "Icon", type: "text", group: "Visual", placeholder: "Code" },
-    { name: "image", label: "Service Image", type: "image", group: "Visual" },
+    { name: "description", label: "Full Service Description", type: "markdown", group: "Service Content" },
+    { name: "image", label: "Service Image", type: "image", group: "Media" },
     { name: "active", label: "Active", type: "checkbox", group: "Publishing" },
     { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
     { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },

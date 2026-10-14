@@ -14,6 +14,7 @@ export const cmsCollections = [
 
   "siteSettings",
   "heroSlides",
+  "pageContent",
   "navigation",
   "homeSections",
   "process",
@@ -193,6 +194,7 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
+      "pageContent",
       "navigation",
       "homeSections",
       "testimonials",
@@ -227,6 +229,7 @@ export const cmsNavigation = [
   },
   { title: "PRODUCTS", items: ["products"] },
   { title: "ENGINEERING", items: ["process"] },
+  { title: "PUBLIC PAGES", items: ["pageContent"] },
 
   {
     title: "BLOG",
@@ -282,6 +285,8 @@ export const collectionLabels:
 
   heroSlides:
     "Hero Background Slides",
+
+  pageContent: "Public Page Content",
 
   navigation: "Header & Footer Navigation",
 
@@ -1211,6 +1216,17 @@ export function validateCmsData(
     }
   }
 
+  if (collection === "pageContent") {
+    const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
+    const layouts = ["editorial", "compact", "image-led"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!pageKeys.includes(String(data.pageKey))) errors.push("Choose a supported public page.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Page layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Page background variant is invalid.");
+    if (!statuses.includes(String(data.status))) errors.push("Page content status must be draft, published, or archived.");
+    ["eyebrow", "title", "description", "ctaText", "seoTitle", "seoDescription"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink", "socialImage"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
   if (collection === "navigation") {
     requireField("label", "Navigation label");
     requireField("href", "Destination");

@@ -42,8 +42,6 @@ export type PageContent = {
   seoTitle?: string;
   seoDescription?: string;
   socialImage?: string;
-  seoTitle?: string;
-  seoDescription?: string;
   status: "draft" | "published" | "archived";
 };
 export type NavigationItem = {
@@ -335,6 +333,10 @@ export type SiteSettings = {
   companyLogo?: string;
 
   socialImage?: string;
+
+  seoTitle?: string;
+
+  seoDescription?: string;
 
   /*
   |--------------------------------------------------------------------------

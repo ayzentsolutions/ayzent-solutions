@@ -990,7 +990,7 @@ export async function getJobs(): Promise<Job[]> {
   try {
     const db = await getDb();
     const preview = await getCmsPreviewSnapshot("jobs");
-    const documents = await db.collection("jobs").find({ status: "open", $or: [{ status: "open" }] }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
+    const documents = await db.collection("jobs").find({ status: "open" }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
     const rows = documents as unknown as Record<string, unknown>[];
     if (preview) {
       const index = rows.findIndex((item) => previewMatches("jobs", item, preview));

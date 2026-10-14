@@ -17,7 +17,7 @@ export async function Footer() {
   const footerDescription = settings.footerDescription || "Ideas. Engineered.";
   return (
     <footer className="relative isolate overflow-hidden bg-[#080D18] text-[#E2E8F0]">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[30rem] w-[30rem] rounded-full border border-[#6792FF]/20 sm:h-[42rem] sm:w-[42rem]"><div className="absolute inset-8 rounded-full border border-[#66A0FF]/15 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#66A0FF]/10 sm:inset-32" /></div>
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[30rem] w-[30rem] rounded-full border border-[#6792FF]/20 sm:h-[42rem] sm:w-[42rem]"><div className="absolute inset-8 rounded-full border border-[#6792FF]/15 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#6792FF]/10 sm:inset-32" /></div>
       <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[1.3fr_.7fr_.8fr_1fr] lg:gap-14 lg:py-24">
         <div className="min-w-0">
           <p className="eyebrow text-[#6792FF]">A good place to begin</p>
@@ -27,10 +27,10 @@ export async function Footer() {
           <div className="mt-7"><SocialLinks /></div>
         </div>
         <nav aria-label="Footer navigation" className="flex flex-col items-start gap-3">
-          <h3 className="eyebrow mb-2 text-white/35">Explore</h3>{quickLinks.map(link => <Link key={link.href} href={link.href} className="text-sm text-white/65 transition-colors hover:text-[#66A0FF]">{link.label}</Link>)}
+          <h3 className="eyebrow mb-2 text-white/35">Explore</h3>{quickLinks.map(link => <Link key={link.href} href={link.href} className="text-sm text-white/65 transition-colors hover:text-[#6792FF]">{link.label}</Link>)}
         </nav>
         <nav aria-label="Footer services" className="flex flex-col items-start gap-3">
-          <h3 className="eyebrow mb-2 text-white/35">Capabilities</h3>{services.slice(0, 6).map(service => <Link key={service.title} href="/services" className="text-sm text-white/65 transition-colors hover:text-[#66A0FF]">{service.title}</Link>)}{!services.length && <Link href="/services" className="text-sm text-white/65">Explore services</Link>}
+          <h3 className="eyebrow mb-2 text-white/35">Capabilities</h3>{services.slice(0, 6).map(service => <Link key={service.title} href="/services" className="text-sm text-white/65 transition-colors hover:text-[#6792FF]">{service.title}</Link>)}{!services.length && <Link href="/services" className="text-sm text-white/65">Explore services</Link>}
         </nav>
         <div className="min-w-0">
           <h3 className="eyebrow mb-4 text-white/35">Keep in touch</h3>

@@ -6,7 +6,8 @@ import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CursorAtmosphere } from "@/components/effects/cursor-atmosphere";
-import { getNavigation, getSiteSettings } from "@/lib/content";
+import { getActiveAnnouncement, getCmsPreviewSession, getNavigation, getSiteSettings } from "@/lib/content";
+import { AnnouncementPopup } from "@/components/announcements/announcement-popup";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +37,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
+  const [settings, navigation, announcement, previewSession] = await Promise.all([getSiteSettings(), getNavigation(), getActiveAnnouncement(), getCmsPreviewSession()]);
   const companyName = settings.companyName || "Ayzent Solutions";
   const headerButtonText = settings.headerButtonText || "Start a Project";
   const headerButtonLink = settings.headerButtonLink || "/contact";
@@ -49,11 +50,13 @@ export default async function RootLayout({
           Skip to main content
         </a>
         <div className="flex min-h-screen flex-col">
+          {previewSession && <aside className="relative z-[70] flex flex-wrap items-center justify-center gap-3 bg-[#477BFF] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm" role="status"><span>CMS preview mode · {previewSession.collection}</span><a href="/api/preview/exit" className="underline underline-offset-4">Exit preview</a></aside>}
           <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} navigation={navigation} />
           <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
             {children}
           </main>
           <Footer />
+          <AnnouncementPopup announcement={announcement || undefined} />
         </div>
       </body>
     </html>

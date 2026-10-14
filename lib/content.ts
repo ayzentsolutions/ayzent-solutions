@@ -23,6 +23,8 @@ export type Service = {
 
   text: string;
 
+  image?: string;
+
   slug?: string;
 
   displayOrder?: number;
@@ -688,6 +690,7 @@ export async function getServices(): Promise<Service[]> {
     ...item,
     title: String(item.title || item.name || "Service"),
     text: String(item.text || item.shortDescription || item.description || ""),
+    image: typeof item.image === "string" ? item.image : undefined,
     slug: typeof item.slug === "string" ? item.slug : undefined,
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
     published: item.published !== false,
@@ -712,6 +715,7 @@ function normalizeProject(item: Record<string, unknown>): Project {
     overview: String(item.overview || item.description || description),
     featured: item.featured === true || item.active === true,
     coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
+    gallery: stringList(item.gallery),
     projectUrl: typeof item.projectUrl === "string" ? item.projectUrl : typeof item.liveLink === "string" ? item.liveLink : typeof item.url === "string" ? item.url : undefined,
     seoTitle: typeof item.seoTitle === "string" ? item.seoTitle : undefined,
     seoDescription: typeof item.seoDescription === "string" ? item.seoDescription : undefined,

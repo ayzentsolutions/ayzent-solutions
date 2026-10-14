@@ -361,65 +361,14 @@ export const collectionFields: Record<
   */
 
   services: [
-    {
-      name: "title",
-      label: "Service Title",
-      type: "text",
-      group: "Service Details",
-    },
-
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      group: "Service Details",
-      placeholder:
-        "web-development",
-      hint:
-        "Used for service URLs.",
-    },
-
-    {
-      name: "shortDescription",
-      label:
-        "Short Description",
-      type: "textarea",
-      group: "Service Details",
-    },
-
-    {
-      name: "description",
-      label: "Full Description",
-      type: "markdown",
-      group: "Service Content",
-    },
-
-    {
-      name: "icon",
-      label: "Icon",
-      type: "text",
-      group: "Visual",
-      placeholder:
-        "Code",
-    },
-
-    {
-      name: "image",
-      label: "Service Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    { name: "text", label: "Service Summary", type: "textarea", group: "Service Details" },
-    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
-    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
-
+    { name: "title", label: "Service Title", type: "text", required: true, group: "Service Details" },
+    { name: "slug", label: "Slug", type: "text", group: "Service Details", placeholder: "web-development", hint: "Used for service URLs." },
+    { name: "text", label: "Service Summary", type: "textarea", required: true, group: "Service Details" },
+    { name: "icon", label: "Icon", type: "text", group: "Visual", placeholder: "Code" },
+    { name: "image", label: "Service Image", type: "image", group: "Visual" },
+    { name: "active", label: "Active", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
   ],
 
   /*
@@ -529,54 +478,15 @@ export const collectionFields: Record<
   */
 
   testimonials: [
-    {
-      name: "clientName",
-      label: "Client Name",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "clientRole",
-      label:
-        "Client Role / Position",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "company",
-      label: "Company",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "image",
-      label: "Client Photo",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "rating",
-      label: "Rating",
-      type: "number",
-      group: "Testimonial",
-      placeholder: "5",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    { name: "text", label: "Testimonial Text", type: "textarea", group: "Testimonial" },
+    { name: "clientName", label: "Client Name", type: "text", required: true, group: "Client" },
+    { name: "company", label: "Company", type: "text", group: "Client" },
     { name: "roleCompany", label: "Role / Company", type: "text", group: "Client" },
-    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
-    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
-
+    { name: "image", label: "Client Photo", type: "image", group: "Visual" },
+    { name: "text", label: "Testimonial Text", type: "textarea", required: true, group: "Testimonial" },
+    { name: "rating", label: "Rating", type: "number", group: "Testimonial", placeholder: "5" },
+    { name: "active", label: "Active", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
   ],
 
   /*
@@ -610,7 +520,7 @@ export const collectionFields: Record<
     {
       name: "link",
       label: "Button Link",
-      type: "text",
+      type: "url",
       group: "Link",
       placeholder:
         "/contact",

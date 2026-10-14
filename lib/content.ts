@@ -1420,7 +1420,7 @@ export async function getAboutContent(): Promise<AboutContent> {
       ...(preview?.data || {}),
     };
     const text = (...values: unknown[]) => {
-      const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
+      const found = values.find((value) => typeof value === "string");
       return typeof found === "string" ? found : "";
     };
     const cmsValues = Array.isArray(raw.values) ? raw.values.filter((value): value is string => typeof value === "string") : undefined;
@@ -1435,7 +1435,7 @@ export async function getAboutContent(): Promise<AboutContent> {
       storyParagraphTwo: text(raw.storyParagraphTwo, raw.storyContinuation, fallback.storyParagraphTwo),
       mission: text(raw.mission, raw.missionDescription, fallback.mission),
       vision: text(raw.vision, raw.visionDescription, fallback.vision),
-      values: cmsValues?.length ? cmsValues : fallback.values,
+      values: cmsValues !== undefined ? cmsValues : fallback.values,
       teamTitle: text(raw.teamTitle, raw.teamHeading, fallback.teamTitle),
       teamText: text(raw.teamText, raw.teamDescription, fallback.teamText),
     };

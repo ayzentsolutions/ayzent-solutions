@@ -12,6 +12,8 @@ export type Project = {
   overview?: string;
   featured?: boolean;
   coverImage?: string;
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
 export const services = [

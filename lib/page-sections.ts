@@ -10,7 +10,7 @@ export function getPageSectionProps(sections: PageSection[], sectionKey: PageSec
       ...(config?.backgroundVariant ? { backgroundColor: backgrounds[config.backgroundVariant] } : {}),
     },
     hidden: Boolean(config && config.active === false),
-    "data-layout": config?.layoutVariant || "editorial",
+    "data-layout": config?.layoutVariant,
     "data-section-key": sectionKey,
   };
 }

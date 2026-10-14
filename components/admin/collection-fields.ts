@@ -448,88 +448,24 @@ export const collectionFields: Record<
   ],
 
   projects: [
-    {
-      name: "title",
-      label: "Project Title",
-      type: "text",
-      required: true,
-      group: "Project Details",
-    },
-
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      required: true,
-      group: "Project Details",
-    },
-
-    {
-      name: "category",
-      label: "Category",
-      type: "text",
-      group: "Project Details",
-      placeholder:
-        "Web Development",
-    },
-
-    {
-      name: "client",
-      label: "Client",
-      type: "text",
-      group: "Project Details",
-    },
-
-    {
-      name: "description",
-      label: "Description",
-      type: "markdown",
-      group: "Project Content",
-    },
-
-    {
-      name: "image",
-      label: "Featured Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "projectUrl",
-      label: "Project URL",
-      type: "url",
-      group: "Links",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    {
-      name: "seoTitle",
-      label: "SEO Title",
-      type: "text",
-      group: "SEO",
-    },
-    {
-      name: "seoDescription",
-      label: "SEO Description",
-      type: "textarea",
-      group: "SEO",
-    },
     { name: "name", label: "Project Name", type: "text", required: true, group: "Project Details" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Project Details", hint: "Lowercase letters, numbers and hyphens only." },
+    { name: "category", label: "Category", type: "text", group: "Project Details" },
+    { name: "client", label: "Client", type: "text", group: "Project Details" },
     { name: "summary", label: "Project Summary", type: "textarea", group: "Project Content" },
-    { name: "overview", label: "Overview", type: "markdown", group: "Project Content" },
-    { name: "coverImage", label: "Cover Image", type: "image", group: "Visual" },
-    { name: "gallery", label: "Image Gallery", type: "tags", group: "Visual" },
+    { name: "challenge", label: "The Challenge", type: "textarea", group: "Project Content" },
+    { name: "solution", label: "The Approach / Solution", type: "textarea", group: "Project Content" },
+    { name: "overview", label: "Full Overview", type: "markdown", group: "Project Content" },
+    { name: "coverImage", label: "Featured Image", type: "image", group: "Media" },
+    { name: "gallery", label: "Image Gallery URLs", type: "tags", group: "Media" },
     { name: "technologies", label: "Technologies", type: "tags", group: "Project Details" },
     { name: "features", label: "Key Features", type: "tags", group: "Project Details" },
+    { name: "projectUrl", label: "Live Project URL", type: "url", group: "Links" },
     { name: "featured", label: "Feature on Homepage", type: "checkbox", group: "Publishing" },
     { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
     { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
-
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
   ],
 
   /*

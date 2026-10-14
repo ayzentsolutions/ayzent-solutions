@@ -9,11 +9,15 @@ export function InteractiveBackdrop({ variant = "ambient" }: { variant?: Variant
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    const canvas = canvasRef.current;
-    const section = root?.parentElement;
-    const ctx = canvas?.getContext("2d", { alpha: true, desynchronized: true });
-    if (!root || !canvas || !section || !ctx) return;
+    const rootElement = rootRef.current;
+    const canvasElement = canvasRef.current;
+    const sectionElement = rootElement?.parentElement;
+    const context = canvasElement?.getContext("2d", { alpha: true, desynchronized: true });
+    if (!rootElement || !canvasElement || !sectionElement || !context) return;
+    const root: HTMLDivElement = rootElement as HTMLDivElement;
+    const canvas: HTMLCanvasElement = canvasElement as HTMLCanvasElement;
+    const section: HTMLElement = sectionElement as HTMLElement;
+    const ctx: CanvasRenderingContext2D = context as CanvasRenderingContext2D;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const coarse = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768;

@@ -10,11 +10,15 @@ export function CursorAtmosphere() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const root = rootRef.current, canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d", { alpha: true, desynchronized: true });
-    if (!root || !canvas || !ctx || pathname.startsWith("/admin") ||
+    const rootElement = rootRef.current;
+    const canvasElement = canvasRef.current;
+    const context = canvasElement?.getContext("2d", { alpha: true, desynchronized: true });
+    if (!rootElement || !canvasElement || !context || pathname.startsWith("/admin") ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
       window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) return;
+    const root: HTMLDivElement = rootElement as HTMLDivElement;
+    const canvas: HTMLCanvasElement = canvasElement as HTMLCanvasElement;
+    const ctx: CanvasRenderingContext2D = context as CanvasRenderingContext2D;
 
     let dpr = Math.min(window.devicePixelRatio || 1, 1.25), raf = 0, lastTime = 0;
     let points: TrailPoint[] = [];

@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
 import {
@@ -20,6 +22,12 @@ export type Service = {
   title: string;
 
   text: string;
+
+  description?: string;
+
+  icon?: string;
+
+  image?: string;
 
   slug?: string;
 
@@ -66,7 +74,9 @@ export type NavigationItem = {
   href: string;
   location: "header" | "footer" | "both";
   displayOrder: number;
+  order?: number;
   active?: boolean;
+  published?: boolean;
   status: "draft" | "published" | "archived";
 };
 
@@ -560,24 +570,114 @@ export type AboutContent = {
 |--------------------------------------------------------------------------
 */
 
-async function read<T>(
+type CmsPreviewRecord = {
+  token: string;
+  collection: string;
+  id?: string;
+  data: Record<string, unknown>;
+  expiresAt: Date;
+};
+
+async function getCmsPreviewToken() {
+  try {
+    return (await cookies()).get("ayzent-cms-preview")?.value || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCmsPreviewSession(): Promise<{ collection: string } | null> {
+  const token = await getCmsPreviewToken();
+  if (!token) return null;
+  try {
+    const record = await (await getDb()).collection("cmsPreviews").findOne(
+      { token, expiresAt: { $gt: new Date() } },
+      { projection: { collection: 1 } }
+    );
+    return record && typeof record.collection === "string"
+      ? { collection: record.collection }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getCmsPreviewSnapshot(collection: string): Promise<CmsPreviewRecord | null> {
+  const token = await getCmsPreviewToken();
+  if (!token) return null;
+  try {
+    const record = await (await getDb()).collection("cmsPreviews").findOne({
+      token,
+      collection,
+      expiresAt: { $gt: new Date() },
+    });
+    if (!record || !record.data || typeof record.data !== "object") return null;
+    return record as unknown as CmsPreviewRecord;
+  } catch {
+    return null;
+  }
+}
+
+function makePreviewVisible(collection: string, data: Record<string, unknown>) {
+  const visible = { ...data };
+  if ("active" in visible) visible.active = true;
+  if ("published" in visible) visible.published = true;
+  if (visible.status === "draft" || visible.status === "archived") visible.status = "published";
+  if (collection === "jobs" && visible.status === "closed") visible.status = "open";
+  return visible;
+}
+
+function previewMatches(
   collection: string,
-  fallback: T[]
-): Promise<T[]> {
+  item: Record<string, unknown>,
+  preview: CmsPreviewRecord
+) {
+  if (preview.id && String(item._id) === preview.id) return true;
+  const data = preview.data;
+  if (collection === "pageContent") return Boolean(data.pageKey) && item.pageKey === data.pageKey;
+  if (collection === "pageSections") return Boolean(data.pageKey && data.sectionKey) && item.pageKey === data.pageKey && item.sectionKey === data.sectionKey;
+  if (collection === "homeSections") return Boolean(data.sectionKey) && item.sectionKey === data.sectionKey;
+  if (["projects", "products", "posts", "services", "jobs"].includes(collection)) return Boolean(data.slug) && item.slug === data.slug;
+  return false;
+}
+
+/**
+ * Public pages read only published content. The preview cookie grants access
+ * to one short-lived, authenticated snapshot without publishing or overwriting
+ * the live record.
+ */
+async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
   try {
     const db = await getDb();
+    const preview = await getCmsPreviewSnapshot(collection);
+    const filter = {
+      $or: [
+        { status: "published" },
+        { status: { $exists: false }, published: { $ne: false } },
+      ],
+    };
+    const [total, state, documents] = await Promise.all([
+      db.collection(collection).countDocuments(),
+      db.collection("cmsCollectionState").findOne({ collection, managed: true }),
+      db.collection(collection).find(filter).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray(),
+    ]);
+    const rows = documents as unknown as Record<string, unknown>[];
 
-    const documents =
-      await db
-        .collection(collection)
-        .find({ status: "published" })
-        .sort({
-          displayOrder: 1,
-          createdAt: -1,
-        })
-        .toArray();
+    if (preview) {
+      const index = rows.findIndex((item) => previewMatches(collection, item, preview));
+      const current = index >= 0 ? rows[index] : {};
+      const merged = { ...current, ...makePreviewVisible(collection, preview.data), ...(preview.id ? { _id: current._id || preview.id } : {}) };
+      if (index >= 0) rows[index] = merged;
+      else rows.push(merged);
+      rows.sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999));
+      return rows as unknown as T[];
+    }
 
-    return documents.length ? documents as unknown as T[] : fallback;
+    if (rows.length) return rows as unknown as T[];
+    // Static seed content remains a fallback only before the CMS collection
+    // has ever been populated. Drafting/archiving every record must not
+    // unexpectedly resurrect old hardcoded content.
+    return total === 0 && !state ? fallback : [];
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
     return fallback;
@@ -596,10 +696,22 @@ export async function getServices(): Promise<Service[]> {
     ...item,
     title: String(item.title || item.name || "Service"),
     text: String(item.text || item.shortDescription || item.description || ""),
-    slug: typeof item.slug === "string" ? item.slug : undefined,
+    description: typeof item.description === "string" ? item.description : undefined,
+    icon: typeof item.icon === "string" ? item.icon : undefined,
+    image: typeof item.image === "string" ? item.image : undefined,
+    slug: typeof item.slug === "string" && item.slug.trim() ? item.slug : slugifyContentTitle(String(item.title || item.name || "service")),
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
     published: item.published !== false,
   })) as unknown as Service[];
+}
+
+function slugifyContentTitle(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export async function getService(slug: string): Promise<Service | undefined> {
+  const items = await getServices();
+  return items.find((item) => item.slug === slug);
 }
 
 function normalizeProject(item: Record<string, unknown>): Project {
@@ -620,6 +732,8 @@ function normalizeProject(item: Record<string, unknown>): Project {
     overview: String(item.overview || item.description || description),
     featured: item.featured === true || item.active === true,
     coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
+    gallery: stringList(item.gallery),
+    projectUrl: typeof item.projectUrl === "string" ? item.projectUrl : typeof item.liveLink === "string" ? item.liveLink : typeof item.url === "string" ? item.url : undefined,
     seoTitle: typeof item.seoTitle === "string" ? item.seoTitle : undefined,
     seoDescription: typeof item.seoDescription === "string" ? item.seoDescription : undefined,
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
@@ -641,9 +755,50 @@ export async function getPageContent(pageKey: PageContent["pageKey"]): Promise<P
   return pages.find((page) => page.pageKey === pageKey);
 }
 
+const defaultNavigation: NavigationItem[] = [
+  { label: "Services", href: "/services", location: "header", displayOrder: 1, status: "published", active: true },
+  { label: "Selected work", href: "/projects", location: "header", displayOrder: 2, status: "published", active: true },
+  { label: "Products", href: "/products", location: "header", displayOrder: 3, status: "published", active: true },
+  { label: "Studio", href: "/about", location: "header", displayOrder: 4, status: "published", active: true },
+  { label: "Journal", href: "/blog", location: "header", displayOrder: 5, status: "published", active: true },
+  { label: "Careers", href: "/careers", location: "header", displayOrder: 6, status: "published", active: true },
+  { label: "Studio", href: "/about", location: "footer", displayOrder: 1, status: "published", active: true },
+  { label: "Services", href: "/services", location: "footer", displayOrder: 2, status: "published", active: true },
+  { label: "Work", href: "/projects", location: "footer", displayOrder: 3, status: "published", active: true },
+  { label: "Products", href: "/products", location: "footer", displayOrder: 4, status: "published", active: true },
+  { label: "Journal", href: "/blog", location: "footer", displayOrder: 5, status: "published", active: true },
+  { label: "Careers", href: "/careers", location: "footer", displayOrder: 6, status: "published", active: true },
+  { label: "Contact", href: "/contact", location: "footer", displayOrder: 7, status: "published", active: true },
+];
+
 export async function getNavigation(): Promise<NavigationItem[]> {
-  const items = await read<NavigationItem>("navigation", []);
-  return items.filter((item) => item.active !== false).sort((a, b) => a.displayOrder - b.displayOrder);
+  try {
+    const db = await getDb();
+    const count = await db.collection("navigation").countDocuments();
+    const state = await db.collection("cmsCollectionState").findOne({ collection: "navigation", managed: true });
+    const preview = await getCmsPreviewSnapshot("navigation");
+    if (count === 0 && !state && !preview) return defaultNavigation;
+
+    const items = await read<NavigationItem>("navigation", []);
+    const normalized = items
+      .filter((item) => item.active !== false && item.published !== false)
+      .map((item) => ({
+        ...item,
+        location: item.location === "header" || item.location === "footer" || item.location === "both" ? item.location : "both",
+        displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+      }))
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+    const seen = new Set<string>();
+    return normalized.filter((item) => {
+      const key = `${item.location}:${item.href.trim().toLowerCase()}`;
+      if (!item.href.trim() || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  } catch (error) {
+    console.error("CMS navigation read failed", error);
+    return defaultNavigation;
+  }
 }
 
 export async function getHomeSections(): Promise<HomeSection[]> {
@@ -673,7 +828,13 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); if (item) return normalizeProject(item); const fallback = projects.find((project) => project.slug === slug); return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined; }
+export async function getProject(slug: string): Promise<Project | undefined> {
+  const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug);
+  if (item) return normalizeProject(item);
+  if (await hasCmsRecords("projects")) return undefined;
+  const fallback = projects.find((project) => project.slug === slug);
+  return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -681,11 +842,49 @@ export async function getProject(slug: string): Promise<Project | undefined> { c
 |--------------------------------------------------------------------------
 */
 
-export async function getPost(slug: string): Promise<Post | undefined> { const item = await getPublishedBySlug<Post>("posts", slug); if (item) return item; return posts.find((post) => post.slug === slug); }
+export async function getPost(slug: string): Promise<Post | undefined> {
+  const item = await getPublishedBySlug<Post>("posts", slug);
+  if (item) return item;
+  if (await hasCmsRecords("posts")) return undefined;
+  return posts.find((post) => post.slug === slug);
+}
 
 async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
-  try { return (await (await getDb()).collection(collection).findOne({ slug, status: "published" })) as T | undefined; }
-  catch (error) { console.error(`CMS item read failed for ${collection}`, error); return undefined; }
+  try {
+    const db = await getDb();
+    const preview = await getCmsPreviewSnapshot(collection);
+    if (preview) {
+      let existing: Record<string, unknown> | null = null;
+      if (preview.id && ObjectId.isValid(preview.id)) {
+        existing = await db.collection(collection).findOne({ _id: new ObjectId(preview.id) }) as Record<string, unknown> | null;
+      } else if (typeof preview.data.slug === "string") {
+        existing = await db.collection(collection).findOne({ slug: preview.data.slug }) as Record<string, unknown> | null;
+      }
+      const merged: Record<string, unknown> = { ...(existing || {}), ...makePreviewVisible(collection, preview.data), ...(existing?._id ? { _id: existing._id } : {}) };
+      if (merged["slug"] === slug) return merged as T;
+    }
+    return (await db.collection(collection).findOne({
+      slug,
+      $or: [
+        { status: "published" },
+        { status: { $exists: false }, published: { $ne: false } },
+      ],
+    })) as T | undefined;
+  } catch (error) {
+    console.error(`CMS item read failed for ${collection}`, error);
+    return undefined;
+  }
+}
+
+async function hasCmsRecords(collection: string) {
+  try {
+    const db = await getDb();
+    const count = await db.collection(collection).countDocuments();
+    if (count > 0) return true;
+    return Boolean(await db.collection("cmsCollectionState").findOne({ collection, managed: true }));
+  } catch {
+    return false;
+  }
 }
 
 /*
@@ -857,8 +1056,18 @@ export async function getClientLogos() {
 export async function getJobs(): Promise<Job[]> {
   try {
     const db = await getDb();
+    const preview = await getCmsPreviewSnapshot("jobs");
     const documents = await db.collection("jobs").find({ status: "open" }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
-    return (documents as unknown as Job[]).filter((job) => job.published !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+    const rows = documents as unknown as Record<string, unknown>[];
+    if (preview) {
+      const index = rows.findIndex((item) => previewMatches("jobs", item, preview));
+      const current = index >= 0 ? rows[index] : {};
+      const merged = { ...current, ...makePreviewVisible("jobs", preview.data), ...(preview.id ? { _id: current._id || preview.id } : {}) };
+      if (index >= 0) rows[index] = merged;
+      else rows.push(merged);
+    }
+    return rows.filter((job) => job.status === "open" && job.published !== false)
+      .sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999)) as unknown as Job[];
   } catch (error) {
     console.error("CMS read failed for jobs", error);
     return [];
@@ -871,22 +1080,21 @@ export async function getJobs(): Promise<Job[]> {
 |--------------------------------------------------------------------------
 */
 
-export async function getAnnouncements() {
-  return (
-    await read<Announcement>(
-      "announcements",
-      []
-    )
-  )
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getAnnouncements(): Promise<Announcement[]> {
+  const items = await read<Record<string, unknown>>("announcements", []);
+  return items
+    .filter((item) => item.active !== false && item.published !== false)
+    .map((item) => ({
+      ...item,
+      title: String(item.title || ""),
+      content: String(item.content || item.description || ""),
+      ctaText: String(item.ctaText || item.linkText || ""),
+      ctaLink: String(item.ctaLink || item.link || ""),
+      image: typeof item.image === "string" ? item.image : undefined,
+      active: item.active !== false,
+      published: item.published !== false,
+      displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    })) as unknown as Announcement[];
 }
 
 /*
@@ -1125,11 +1333,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         .limit(1)
         .next();
 
-    if (!document) {
-      return fallback;
-    }
+    const preview = await getCmsPreviewSnapshot("siteSettings");
+    if (!document && !preview) return fallback;
 
-    const raw = document as unknown as Record<string, unknown>;
+    const raw = {
+      ...(document as unknown as Record<string, unknown> | null || {}),
+      ...(preview?.data || {}),
+    };
     return {
       ...fallback,
       ...(raw as unknown as SiteSettings),
@@ -1288,13 +1498,15 @@ export async function getAboutContent(): Promise<AboutContent> {
         .limit(1)
         .next();
 
-    if (!document) {
-      return fallback;
-    }
+    const preview = await getCmsPreviewSnapshot("aboutContent");
+    if (!document && !preview) return fallback;
 
-    const raw = document as unknown as Record<string, unknown>;
+    const raw = {
+      ...(document as unknown as Record<string, unknown> | null || {}),
+      ...(preview?.data || {}),
+    };
     const text = (...values: unknown[]) => {
-      const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
+      const found = values.find((value) => typeof value === "string");
       return typeof found === "string" ? found : "";
     };
     const cmsValues = Array.isArray(raw.values) ? raw.values.filter((value): value is string => typeof value === "string") : undefined;
@@ -1309,7 +1521,7 @@ export async function getAboutContent(): Promise<AboutContent> {
       storyParagraphTwo: text(raw.storyParagraphTwo, raw.storyContinuation, fallback.storyParagraphTwo),
       mission: text(raw.mission, raw.missionDescription, fallback.mission),
       vision: text(raw.vision, raw.visionDescription, fallback.vision),
-      values: cmsValues?.length ? cmsValues : fallback.values,
+      values: cmsValues !== undefined ? cmsValues : fallback.values,
       teamTitle: text(raw.teamTitle, raw.teamHeading, fallback.teamTitle),
       teamText: text(raw.teamText, raw.teamDescription, fallback.teamText),
     };

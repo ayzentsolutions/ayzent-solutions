@@ -523,7 +523,7 @@ export function validateCmsData(
       "homeSections",
       "process",
       "services",
-      "projects", "products",
+      "services", "projects", "products",
       "posts",
       "jobs",
       "announcements",
@@ -765,15 +765,9 @@ export function validateCmsData(
       data.shortDescription ??
       data.description;
 
-    if (
-      text !== undefined &&
-      text !== null &&
-      typeof text !== "string"
-    ) {
-      errors.push(
-        "Service content must be text."
-      );
-    }
+    if (!isText(text)) errors.push("Service summary is required.");
+    if (data.description !== undefined && !isText(data.description)) errors.push("Full service description must be text.");
+    if (!isUrl(data.image)) errors.push("Service image must be a valid URL.");
   }
 
   /*
@@ -786,10 +780,9 @@ export function validateCmsData(
     collection ===
     "projects"
   ) {
-    requireField(
-      "name",
-      "Project name"
-    );
+    if (!isText(data.name ?? data.title)) {
+      errors.push("Project name is required.");
+    }
 
     requireField(
       "slug",
@@ -839,7 +832,10 @@ export function validateCmsData(
 
     [
       "coverImage",
+      "image",
+      "projectUrl",
       "liveLink",
+      "url",
     ].forEach(
       (key) => {
         if (
@@ -854,23 +850,12 @@ export function validateCmsData(
       }
     );
 
-    [
-      "features",
-      "technologies",
-      "gallery",
-    ].forEach(
-      (key) => {
-        if (
-          !arrayOfStrings(
-            data[key]
-          )
-        ) {
-          errors.push(
-            `${key} must contain only text values.`
-          );
-        }
-      }
-    );
+    ["features", "technologies", "gallery"].forEach((key) => {
+      if (!arrayOfStrings(data[key])) errors.push(`${key} must contain only text values.`);
+    });
+    if (Array.isArray(data.gallery) && data.gallery.some((url) => !isUrl(url))) {
+      errors.push("Gallery must contain only valid image URLs.");
+    }
   }
 
   if (collection === "products") {
@@ -882,6 +867,7 @@ export function validateCmsData(
     if (!statuses.includes(String(data.status))) errors.push("Product status must be draft, published, or archived.");
     ["coverImage", "url", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
     ["gallery", "technologies", "features"].forEach((key) => { if (!arrayOfStrings(data[key])) errors.push(`${key} must contain only text values.`); });
+    if (Array.isArray(data.gallery) && data.gallery.some((url) => !isUrl(url))) errors.push("Gallery must contain only valid image URLs.");
   }
 
   /*
@@ -1007,16 +993,8 @@ export function validateCmsData(
       data.text ??
       data.quote;
 
-    if (
-      testimonial !== undefined &&
-      !isText(
-        testimonial
-      )
-    ) {
-      errors.push(
-        "Testimonial must contain text."
-      );
-    }
+    if (!isText(testimonial)) errors.push("Testimonial must contain text.");
+    if (!isUrl(data.image)) errors.push("Testimonial image must be a valid URL.");
   }
 
   /*

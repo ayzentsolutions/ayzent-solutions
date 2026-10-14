@@ -361,65 +361,14 @@ export const collectionFields: Record<
   */
 
   services: [
-    {
-      name: "title",
-      label: "Service Title",
-      type: "text",
-      group: "Service Details",
-    },
-
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      group: "Service Details",
-      placeholder:
-        "web-development",
-      hint:
-        "Used for service URLs.",
-    },
-
-    {
-      name: "shortDescription",
-      label:
-        "Short Description",
-      type: "textarea",
-      group: "Service Details",
-    },
-
-    {
-      name: "description",
-      label: "Full Description",
-      type: "markdown",
-      group: "Service Content",
-    },
-
-    {
-      name: "icon",
-      label: "Icon",
-      type: "text",
-      group: "Visual",
-      placeholder:
-        "Code",
-    },
-
-    {
-      name: "image",
-      label: "Service Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    { name: "text", label: "Service Summary", type: "textarea", group: "Service Details" },
-    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
-    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
-
+    { name: "title", label: "Service Title", type: "text", required: true, group: "Service Details" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Service Details", placeholder: "web-development", hint: "Used for service detail URLs." },
+    { name: "text", label: "Service Summary", type: "textarea", required: true, group: "Service Details" },
+    { name: "description", label: "Full Service Description", type: "markdown", group: "Service Content" },
+    { name: "image", label: "Service Image", type: "image", group: "Media" },
+    { name: "active", label: "Active", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
   ],
 
   /*
@@ -448,86 +397,24 @@ export const collectionFields: Record<
   ],
 
   projects: [
-    {
-      name: "title",
-      label: "Project Title",
-      type: "text",
-      group: "Project Details",
-    },
-
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      group: "Project Details",
-    },
-
-    {
-      name: "category",
-      label: "Category",
-      type: "text",
-      group: "Project Details",
-      placeholder:
-        "Web Development",
-    },
-
-    {
-      name: "client",
-      label: "Client",
-      type: "text",
-      group: "Project Details",
-    },
-
-    {
-      name: "description",
-      label: "Description",
-      type: "markdown",
-      group: "Project Content",
-    },
-
-    {
-      name: "image",
-      label: "Featured Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "projectUrl",
-      label: "Project URL",
-      type: "url",
-      group: "Links",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    {
-      name: "seoTitle",
-      label: "SEO Title",
-      type: "text",
-      group: "SEO",
-    },
-    {
-      name: "seoDescription",
-      label: "SEO Description",
-      type: "textarea",
-      group: "SEO",
-    },
     { name: "name", label: "Project Name", type: "text", required: true, group: "Project Details" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Project Details", hint: "Lowercase letters, numbers and hyphens only." },
+    { name: "category", label: "Category", type: "text", group: "Project Details" },
+    { name: "client", label: "Client", type: "text", group: "Project Details" },
     { name: "summary", label: "Project Summary", type: "textarea", group: "Project Content" },
-    { name: "overview", label: "Overview", type: "markdown", group: "Project Content" },
-    { name: "coverImage", label: "Cover Image", type: "image", group: "Visual" },
-    { name: "gallery", label: "Image Gallery", type: "tags", group: "Visual" },
+    { name: "challenge", label: "The Challenge", type: "textarea", group: "Project Content" },
+    { name: "solution", label: "The Approach / Solution", type: "textarea", group: "Project Content" },
+    { name: "overview", label: "Full Overview", type: "markdown", group: "Project Content" },
+    { name: "coverImage", label: "Featured Image", type: "image", group: "Media" },
+    { name: "gallery", label: "Image Gallery URLs", type: "tags", group: "Media" },
     { name: "technologies", label: "Technologies", type: "tags", group: "Project Details" },
     { name: "features", label: "Key Features", type: "tags", group: "Project Details" },
+    { name: "projectUrl", label: "Live Project URL", type: "url", group: "Links" },
     { name: "featured", label: "Feature on Homepage", type: "checkbox", group: "Publishing" },
     { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
     { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
-
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
   ],
 
   /*
@@ -548,13 +435,6 @@ export const collectionFields: Record<
       name: "role",
       label: "Role / Position",
       type: "text",
-      group: "Team Member",
-    },
-
-    {
-      name: "bio",
-      label: "Bio",
-      type: "textarea",
       group: "Team Member",
     },
 
@@ -598,61 +478,15 @@ export const collectionFields: Record<
   */
 
   testimonials: [
-    {
-      name: "clientName",
-      label: "Client Name",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "clientRole",
-      label:
-        "Client Role / Position",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "company",
-      label: "Company",
-      type: "text",
-      group: "Client",
-    },
-
-    {
-      name: "image",
-      label: "Client Photo",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "quote",
-      label: "Testimonial",
-      type: "textarea",
-      group: "Testimonial",
-    },
-
-    {
-      name: "rating",
-      label: "Rating",
-      type: "number",
-      group: "Testimonial",
-      placeholder: "5",
-    },
-
-    {
-      name: "active",
-      label: "Active",
-      type: "checkbox",
-      group: "Settings",
-    },
-    { name: "text", label: "Testimonial Text", type: "textarea", group: "Testimonial" },
+    { name: "clientName", label: "Client Name", type: "text", required: true, group: "Client" },
+    { name: "company", label: "Company", type: "text", group: "Client" },
     { name: "roleCompany", label: "Role / Company", type: "text", group: "Client" },
-    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
-    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
-
+    { name: "image", label: "Client Photo", type: "image", group: "Visual" },
+    { name: "text", label: "Testimonial Text", type: "textarea", required: true, group: "Testimonial" },
+    { name: "rating", label: "Rating", type: "number", group: "Testimonial", placeholder: "5" },
+    { name: "active", label: "Active", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
   ],
 
   /*
@@ -686,7 +520,7 @@ export const collectionFields: Record<
     {
       name: "link",
       label: "Button Link",
-      type: "text",
+      type: "url",
       group: "Link",
       placeholder:
         "/contact",
@@ -756,73 +590,24 @@ export const collectionFields: Record<
   */
 
   aboutContent: [
-    {
-      name: "eyebrow",
-      label: "Eyebrow",
-      type: "text",
-      group: "About Page",
-    },
-
-    {
-      name: "title",
-      label: "Title",
-      type: "textarea",
-      group: "About Page",
-    },
-
-    {
-      name: "description",
-      label: "Description",
-      type: "markdown",
-      group: "About Page",
-    },
-
-    {
-      name: "image",
-      label: "Featured Image",
-      type: "image",
-      group: "Visual",
-    },
-
-    {
-      name: "missionTitle",
-      label: "Mission Title",
-      type: "text",
-      group: "Mission",
-    },
-
-    {
-      name: "missionDescription",
-      label: "Mission Description",
-      type: "textarea",
-      group: "Mission",
-    },
-
-    {
-      name: "visionTitle",
-      label: "Vision Title",
-      type: "text",
-      group: "Vision",
-    },
-
-    {
-      name: "visionDescription",
-      label: "Vision Description",
-      type: "textarea",
-      group: "Vision",
-    },
-    { name: "heroEyebrow", label: "Hero Eyebrow", type: "text", group: "About Page" },
-    { name: "heroTitle", label: "Hero Title", type: "textarea", group: "About Page" },
-    { name: "heroText", label: "Hero Description", type: "textarea", group: "About Page" },
     { name: "storyEyebrow", label: "Story Eyebrow", type: "text", group: "Story" },
     { name: "storyParagraphOne", label: "Story Paragraph One", type: "textarea", group: "Story" },
     { name: "storyParagraphTwo", label: "Story Paragraph Two", type: "textarea", group: "Story" },
+    { name: "missionEyebrow", label: "Mission Eyebrow", type: "text", group: "Mission" },
     { name: "mission", label: "Mission", type: "textarea", group: "Mission" },
+    { name: "visionEyebrow", label: "Vision Eyebrow", type: "text", group: "Vision" },
     { name: "vision", label: "Vision", type: "textarea", group: "Vision" },
+    { name: "valuesEyebrow", label: "Values Eyebrow", type: "text", group: "Values" },
     { name: "values", label: "Values", type: "tags", group: "Values" },
+    { name: "teamEyebrow", label: "Team Eyebrow", type: "text", group: "Team" },
     { name: "teamTitle", label: "Team Section Title", type: "text", group: "Team" },
     { name: "teamText", label: "Team Description", type: "textarea", group: "Team" },
-
+    { name: "quote", label: "Featured Quote", type: "textarea", group: "Quote" },
+    { name: "quoteAuthor", label: "Quote Author", type: "text", group: "Quote" },
+    { name: "ctaTitle", label: "CTA Title", type: "text", group: "Call to Action" },
+    { name: "ctaText", label: "CTA Description", type: "textarea", group: "Call to Action" },
+    { name: "ctaButtonText", label: "CTA Button Text", type: "text", group: "Call to Action" },
+    { name: "ctaButtonLink", label: "CTA Button Link", type: "url", group: "Call to Action" },
   ],
 
   /*

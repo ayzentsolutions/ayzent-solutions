@@ -9,21 +9,13 @@ import Image from "next/image";
 
 type NavigationLink = { href: string; label: string; location?: "header" | "footer" | "both" };
 type HeaderProps = { buttonText?: string; buttonLink?: string; logo?: string; companyName?: string; navigation?: NavigationLink[] };
-const defaultNavLinks = [
-  { href: "/services", label: "Services" },
-  { href: "/projects", label: "Selected work" },
-  { href: "/products", label: "Products" },
-  { href: "/about", label: "Studio" },
-  { href: "/blog", label: "Journal" },
-  { href: "/careers", label: "Careers" }
-];
 function isActivePath(pathname: string, href: string) { return pathname === href || pathname.startsWith(`${href}/`); }
 
 export function Header({ buttonText = "Start a project", buttonLink = "/contact", logo, companyName = "Ayzent Solutions", navigation = [] }: HeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const navLinks = navigation.filter((item) => item.location === "header" || item.location === "both").map(({ href, label }) => ({ href, label }));
-  const links = navLinks.length ? navLinks : defaultNavLinks;
+  const links = navLinks;
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;

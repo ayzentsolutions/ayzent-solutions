@@ -6,6 +6,7 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import {
   canEditCollection,
@@ -106,6 +107,53 @@ function isSingleton(
   );
 }
 
+async function markCmsCollectionManaged(collection: string) {
+  try {
+    const db = await getDb();
+    await db.collection("cmsCollectionState").updateOne(
+      { collection },
+      {
+        $set: { collection, managed: true, updatedAt: new Date() },
+        $setOnInsert: { createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    console.error("Unable to persist CMS collection state", { collection, error });
+  }
+}
+
+function revalidatePublicContent(
+  collection: string,
+  data: Record<string, unknown> = {}
+) {
+  try {
+    // The root layout owns site settings, navigation, branding and footer data.
+    revalidatePath("/", "layout");
+    revalidatePath("/sitemap.xml");
+
+    const slug = typeof data.slug === "string" ? data.slug.trim() : "";
+    if (collection === "projects" && slug) revalidatePath(`/projects/${slug}`);
+    if (collection === "products" && slug) revalidatePath(`/products/${slug}`);
+    if (collection === "posts" && slug) revalidatePath(`/blog/${slug}`);
+
+    if (collection === "pageContent" || collection === "pageSections") {
+      const pageKey = typeof data.pageKey === "string" ? data.pageKey : "";
+      if (pageKey) revalidatePath(pageKey === "search" ? "/search" : `/${pageKey}`);
+    }
+
+    if (collection === "services") revalidatePath("/services");
+    if (collection === "jobs") revalidatePath("/careers");
+    if (collection === "team" || collection === "aboutContent") revalidatePath("/about");
+    if (collection === "categories" || collection === "tags" || collection === "comments") revalidatePath("/blog");
+    if (collection === "socialLinks") revalidatePath("/contact");
+  } catch (error) {
+    // A cache invalidation failure should be visible in logs, but must not
+    // turn a successful database write into a misleading save failure.
+    console.error("CMS public cache invalidation failed", { collection, error });
+  }
+}
+
 /**
  * Identifies records that represent the same logical CMS item.
  * This prevents repeat creates without deleting or rewriting existing data.
@@ -127,11 +175,20 @@ function duplicateIdentity(
     homeSections: ["sectionKey"],
     navigation: ["label", "href", "location"],
     team: ["name"],
-    testimonials: ["clientName", "quote"],
+    testimonials: ["clientName", "text"],
     announcements: ["title"],
     faqs: ["question"],
     socialLinks: ["label", "url"],
   };
+
+  if (collection === "testimonials") {
+    const clientName = data.clientName;
+    const text = data.text ?? data.quote;
+    if (typeof clientName === "string" && clientName.trim() && typeof text === "string" && text.trim()) {
+      return { clientName: clientName.trim(), $or: [{ text: text.trim() }, { quote: text.trim() }] };
+    }
+    return null;
+  }
 
   const fields = identityFields[collection];
   if (!fields || fields.some((field) => {
@@ -296,43 +353,17 @@ async function validateAndPrepare(
   const db =
     await getDb();
 
-  if (
-    (
-      collection === "projects" || collection === "products" ||
-      collection === "posts"
-    ) &&
-    data.slug
-  ) {
-    /*
-     * Do not build the unique index during a user request.
-     * Legacy duplicate slugs can make MongoDB reject createIndex()
-     * and turn a normal product create into a 500.
-     */
-    const duplicate =
-      await db
-        .collection(collection)
-        .findOne({
-          slug: data.slug,
-
-          ...(id
-            ? {
-                _id: {
-                  $ne:
-                    new ObjectId(
-                      id
-                    ),
-                },
-              }
-            : {}),
-        });
-
+  const identity = duplicateIdentity(collection, data);
+  if (identity) {
+    const duplicate = await db.collection(collection).findOne({
+      ...identity,
+      ...(id && ObjectId.isValid(id) ? { _id: { $ne: new ObjectId(id) } } : {}),
+    });
     if (duplicate) {
-      return {
-        error:
-          "This slug is already in use.",
-      };
+      return { error: ["projects", "products", "posts"].includes(collection) ? "This slug is already in use." : "An entry with the same identifying details already exists." };
     }
   }
+
 
   return {
     db,
@@ -401,14 +432,10 @@ export async function POST(
       );
 
     if (prepared.error) {
+      const duplicate = prepared.error.toLowerCase().includes("already");
       return NextResponse.json(
-        {
-          message:
-            prepared.error,
-        },
-        {
-          status: 400,
-        }
+        { message: prepared.error },
+        { status: duplicate ? 409 : 400 }
       );
     }
 
@@ -454,6 +481,8 @@ export async function POST(
           "updated",
           `${result.collection} settings`
         );
+        await markCmsCollectionManaged(result.collection);
+        revalidatePublicContent(result.collection, data);
 
         return NextResponse.json(
           {
@@ -463,23 +492,6 @@ export async function POST(
           {
             status: 200,
           }
-        );
-      }
-    }
-
-    const identity = duplicateIdentity(result.collection, data);
-    if (identity) {
-      const existingDuplicate = await prepared.db!
-        .collection(result.collection)
-        .findOne(identity);
-
-      if (existingDuplicate) {
-        return NextResponse.json(
-          {
-            message: "An entry with the same identifying details already exists. Open the existing entry instead of creating a duplicate.",
-            id: String(existingDuplicate._id),
-          },
-          { status: 409 }
         );
       }
     }
@@ -515,6 +527,8 @@ export async function POST(
     } catch (activityError) {
       console.error("Admin activity log failed after create", activityError);
     }
+    await markCmsCollectionManaged(result.collection);
+    revalidatePublicContent(result.collection, data);
 
     return NextResponse.json(
       {
@@ -626,43 +640,40 @@ export async function PATCH(
       );
 
     if (prepared.error) {
+      const duplicate = prepared.error.toLowerCase().includes("already");
       return NextResponse.json(
-        {
-          message:
-            prepared.error,
-        },
-        {
-          status: 400,
-        }
+        { message: prepared.error },
+        { status: duplicate ? 409 : 400 }
       );
     }
 
-    await prepared.db!
-      .collection(
-        result.collection
-      )
-      .updateOne(
-        {
-          _id:
-            new ObjectId(
-              body.id
-            ),
-        },
-        {
-          $set: {
-            ...data,
+    const targetCollection = prepared.db!.collection(result.collection);
+    const existingBeforeUpdate = await targetCollection.findOne({ _id: new ObjectId(body.id) });
+    if (!existingBeforeUpdate) {
+      return NextResponse.json({ message: "Entry not found. Reload the CMS and try again." }, { status: 404 });
+    }
 
-            updatedAt:
-              new Date(),
-          },
-        }
-      );
-
-    await logActivity(
-      result.user,
-      "updated",
-      `${result.collection} entry`
+    const updateResult = await targetCollection.updateOne(
+      { _id: new ObjectId(body.id) },
+      { $set: { ...data, updatedAt: new Date() } }
     );
+
+    if (!updateResult.matchedCount) {
+      return NextResponse.json({ message: "Entry not found. Reload the CMS and try again." }, { status: 404 });
+    }
+
+    try {
+      await logActivity(
+        result.user,
+        "updated",
+        `${result.collection} entry`
+      );
+    } catch (activityError) {
+      console.error("Admin activity log failed after update", activityError);
+    }
+    await markCmsCollectionManaged(result.collection);
+    revalidatePublicContent(result.collection, existingBeforeUpdate as Record<string, unknown>);
+    revalidatePublicContent(result.collection, data);
 
     return NextResponse.json({
       ok: true,
@@ -774,22 +785,26 @@ export async function DELETE(
     );
   }
 
-  await (
-    await getDb()
-  )
-    .collection(
-      result.collection
-    )
-    .deleteOne({
-      _id:
-        new ObjectId(id),
-    });
+  const deleteDb = await getDb();
+  const collection = deleteDb.collection(result.collection);
+  const existing = await collection.findOne({ _id: new ObjectId(id) });
+  const deleted = await collection.deleteOne({ _id: new ObjectId(id) });
 
-  await logActivity(
-    result.user,
-    "deleted",
-    `${result.collection} entry`
-  );
+  if (!deleted.deletedCount) {
+    return NextResponse.json({ message: "Entry not found. It may already have been deleted." }, { status: 404 });
+  }
+
+  try {
+    await logActivity(
+      result.user,
+      "deleted",
+      `${result.collection} entry`
+    );
+  } catch (activityError) {
+    console.error("Admin activity log failed after delete", activityError);
+  }
+  await markCmsCollectionManaged(result.collection);
+  revalidatePublicContent(result.collection, (existing || {}) as Record<string, unknown>);
 
   return NextResponse.json({
     ok: true,

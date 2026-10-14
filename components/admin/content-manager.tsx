@@ -105,7 +105,14 @@ function toValues(
         value = [role, company].filter((part) => typeof part === "string" && part).join(" · ");
       }
       if (field.name === "status" && (value === undefined || value === null || value === "")) {
-        value = item?.active === false || item?.published === false ? "draft" : "published";
+        const options = field.options || [];
+        if (!item) {
+          value = options.includes("draft") ? "draft" : options[0] || "";
+        } else if (item.active === false || item.published === false) {
+          value = options.includes("draft") ? "draft" : options[0] || "";
+        } else {
+          value = options.includes("published") ? "published" : item.status || options[0] || "";
+        }
       }
       if ((field.name === "active" || field.name === "published") && value === undefined) {
         value = item?.status === "published";
@@ -300,8 +307,12 @@ export function ContentManager({
   const [pending, setPending] =
     useState(false);
 
+  const [previewPending, setPreviewPending] =
+    useState(false);
+
   // A ref closes the same-tick double-submit window before React re-renders.
   const saveLock = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [
     loading,
@@ -564,6 +575,46 @@ export function ContentManager({
     }
   }
 
+  async function preview() {
+    if (previewPending || saveLock.current) return;
+    if (!formRef.current?.reportValidity()) return;
+
+    const previewWindow = window.open("about:blank", "_blank");
+    if (!previewWindow) {
+      setMessage("Allow pop-ups for this site to open the public preview.");
+      return;
+    }
+
+    previewWindow.opener = null;
+    setPreviewPending(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/admin/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          collection,
+          ...(editing ? { id: getItemId(editing) } : {}),
+          data: toData(fields, values),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || typeof result.url !== "string") {
+        throw new Error(result.message || "Unable to create a public preview.");
+      }
+
+      previewWindow.location.replace(result.url);
+      setMessage("Preview opened in a new tab. This preview does not publish your changes.");
+    } catch (error) {
+      previewWindow.close();
+      setMessage(error instanceof Error ? error.message : "Unable to create a public preview.");
+    } finally {
+      setPreviewPending(false);
+    }
+  }
+
   function edit(
     item: Item
   ) {
@@ -684,6 +735,7 @@ export function ContentManager({
           </div>
         ) : (
           <form
+            ref={formRef}
             onSubmit={save}
             className="mt-8 grid gap-7"
           >
@@ -733,9 +785,24 @@ export function ContentManager({
                   ? "Saving..."
                   : singleton
                     ? "Save Settings"
-                    : editing
-                      ? "Save Changes"
-                      : "Create Entry"}
+                    : values.status === "published"
+                      ? editing ? "Publish Changes" : "Publish Entry"
+                      : values.status === "draft"
+                        ? "Save Draft"
+                        : values.status === "archived"
+                          ? "Archive Entry"
+                          : editing
+                            ? "Save Changes"
+                            : "Create Entry"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pending || previewPending}
+                onClick={() => void preview()}
+              >
+                {previewPending ? "Preparing Preview..." : "Preview Public Page"}
               </Button>
 
               {editing &&
@@ -781,11 +848,12 @@ export function ContentManager({
                     className="flex items-start justify-between gap-4 py-4"
                   >
                     <div className="min-w-0">
-                      <h3 className="font-medium">
-                        {titleOf(
-                          item
-                        )}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-medium">
+                          {titleOf(item)}
+                        </h3>
+                        {typeof item.status === "string" && <span className="border border-line px-2 py-1 text-[10px] uppercase tracking-[.12em] text-muted">{item.status}</span>}
+                      </div>
                     </div>
 
                     <div className="flex shrink-0 gap-3 text-sm">

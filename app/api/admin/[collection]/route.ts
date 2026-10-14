@@ -159,7 +159,7 @@ function duplicateIdentity(
     homeSections: ["sectionKey"],
     navigation: ["label", "href", "location"],
     team: ["name"],
-    testimonials: ["clientName", "quote"],
+    testimonials: ["clientName", "text"],
     announcements: ["title"],
     faqs: ["question"],
     socialLinks: ["label", "url"],

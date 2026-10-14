@@ -21,17 +21,17 @@ return (
         {services.map((service, index) => (
           <article
             key={service.title}
-            className="border-b border-line py-9 lg:odd:pr-12 lg:even:border-l lg:even:pl-12"
+            className="motion-lift min-w-0 border-b border-line px-4 py-8 transition-colors hover:bg-surface/50 sm:px-6 sm:py-10 lg:odd:pl-0 lg:odd:pr-12 lg:even:border-l lg:even:pl-12"
           >
             <span className="text-xs text-gold">
               {String(index + 1).padStart(2, "0")}
             </span>
 
-            <h2 className="mt-5 font-display text-3xl">
+            <h2 className="mt-5 font-display text-2xl leading-tight sm:text-3xl">
               {service.title}
             </h2>
 
-            <p className="mt-4 max-w-md leading-relaxed text-muted">
+            <p className="mt-4 max-w-md text-sm leading-7 text-muted sm:text-base">
               {service.text}
             </p>
 
@@ -44,14 +44,14 @@ return (
     </Container>
   </section>
 
-  <section className="border-y border-line bg-surface py-20">
+  <section className="border-y border-line bg-surface py-16 sm:py-20 lg:py-24">
     <Container className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
       <p className="text-xs font-medium uppercase tracking-[.18em] text-gold">
         A custom fit
       </p>
 
       <div>
-        <h2 className="font-display text-4xl leading-tight">
+        <h2 className="text-balance font-display text-3xl leading-tight sm:text-4xl lg:text-5xl">
           No fixed packages. No forced fit.
         </h2>
 

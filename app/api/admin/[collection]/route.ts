@@ -310,190 +310,121 @@ export async function POST(
     params: Promise<{ collection: string }>;
   }
 ) {
-  if (!csrfValid(request)) return NextResponse.json({ message: "Invalid request origin." }, { status: 403 });
-  const result =
-    await access(
-      request,
-      (await params).collection,
-      "write"
-    );
-
-  if (!result) {
-    return NextResponse.json(
-      {
-        message:
-          "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-
-  const body =
-    await request.json();
-
-  const data =
-    safeDocument(
-      body.data
-    );
-
-  if (!data) {
-    return NextResponse.json(
-      {
-        message:
-          "Invalid data.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+  let collection = "unknown";
 
   try {
-    const prepared =
-      await validateAndPrepare(
-        result.collection,
-        data
+    if (!csrfValid(request)) {
+      return NextResponse.json(
+        { message: "Invalid request origin." },
+        { status: 403 }
       );
+    }
+
+    collection = (await params).collection;
+
+    const result = await access(request, collection, "write");
+
+    if (!result) {
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { message: "Request body must be valid JSON." },
+        { status: 400 }
+      );
+    }
+
+    const data = safeDocument(
+      body && typeof body === "object" && !Array.isArray(body)
+        ? (body as Record<string, unknown>).data
+        : undefined
+    );
+
+    if (!data) {
+      return NextResponse.json(
+        { message: "Invalid data." },
+        { status: 400 }
+      );
+    }
+
+    const prepared = await validateAndPrepare(result.collection, data);
 
     if (prepared.error) {
       return NextResponse.json(
-        {
-          message:
-            prepared.error,
-        },
-        {
-          status: 400,
-        }
+        { message: prepared.error },
+        { status: 400 }
       );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SINGLETON
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-      isSingleton(
-        result.collection
-      )
-    ) {
-      const existing =
-        await prepared.db!
-          .collection(
-            result.collection
-          )
-          .findOne();
+    if (isSingleton(result.collection)) {
+      const existing = await prepared.db!
+        .collection(result.collection)
+        .findOne();
 
       if (existing) {
         await prepared.db!
-          .collection(
-            result.collection
-          )
+          .collection(result.collection)
           .updateOne(
-            {
-              _id:
-                existing._id,
-            },
-            {
-              $set: {
-                ...data,
-                updatedAt:
-                  new Date(),
-              },
-            }
+            { _id: existing._id },
+            { $set: { ...data, updatedAt: new Date() } }
           );
 
-        await logActivity(
-          result.user,
-          "updated",
-          `${result.collection} settings`
-        );
+        try {
+          await logActivity(result.user, "updated", `${result.collection} settings`);
+        } catch (activityError) {
+          console.error("Admin activity log failed after singleton update", activityError);
+        }
 
-        return NextResponse.json(
-          {
-            id:
-              existing._id,
-          },
-          {
-            status: 200,
-          }
-        );
+        return NextResponse.json({ id: existing._id }, { status: 200 });
       }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | INSERT
-    |--------------------------------------------------------------------------
-    */
-
-    const now =
-      new Date();
-
-    const inserted =
-      await prepared.db!
-        .collection(
-          result.collection
-        )
-        .insertOne({
-          ...data,
-
-          createdAt: now,
-
-          updatedAt: now,
-        });
+    const now = new Date();
+    const inserted = await prepared.db!
+      .collection(result.collection)
+      .insertOne({
+        ...data,
+        createdAt: now,
+        updatedAt: now,
+      });
 
     try {
-      await logActivity(
-        result.user,
-        "created",
-        `${result.collection} entry`
-      );
+      await logActivity(result.user, "created", `${result.collection} entry`);
     } catch (activityError) {
+      // A secondary audit-log failure must not make a successful content save
+      // appear to have failed to the user.
       console.error("Admin activity log failed after create", activityError);
     }
 
-    return NextResponse.json(
-      {
-        id:
-          inserted.insertedId,
-      },
-      {
-        status: 201,
-      }
-    );
-  } catch (
-    error
-  ) {
+    return NextResponse.json({ id: inserted.insertedId }, { status: 201 });
+  } catch (error) {
+    console.error("Admin collection POST failed", {
+      collection,
+      error,
+    });
+
     if (
-      (
-        error as {
-          code?: number;
-        }
-      ).code === 11000
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: number }).code === 11000
     ) {
       return NextResponse.json(
-        {
-          message:
-            "This slug is already in use.",
-        },
-        {
-          status: 409,
-        }
+        { message: "This slug is already in use." },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      {
-        message:
-          "Unable to save content.",
-      },
-      {
-        status: 500,
-      }
+      { message: "Unable to save content. Check the server logs for the underlying error." },
+      { status: 500 }
     );
   }
 }

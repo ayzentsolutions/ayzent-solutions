@@ -14,6 +14,8 @@ export const cmsCollections = [
 
   "siteSettings",
   "heroSlides",
+  "homeSections",
+  "process",
 
   /*
   |--------------------------------------------------------------------------
@@ -95,6 +97,8 @@ export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+  "homeSections",
+  "process",
 
   "aboutContent",
 
@@ -187,6 +191,7 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
+      "homeSections",
       "testimonials",
       "clientLogos",
       "faqs",
@@ -218,6 +223,7 @@ export const cmsNavigation = [
     ],
   },
   { title: "PRODUCTS", items: ["products"] },
+  { title: "ENGINEERING", items: ["process"] },
 
   {
     title: "BLOG",
@@ -273,6 +279,9 @@ export const collectionLabels:
 
   heroSlides:
     "Hero Background Slides",
+
+  homeSections: "Homepage Section Layouts",
+  process: "Engineering Process",
 
   aboutContent:
     "About Page Content",
@@ -497,6 +506,8 @@ export function validateCmsData(
   if (
     [
       "heroSlides",
+      "homeSections",
+      "process",
       "services",
       "projects", "products",
       "posts",
@@ -1187,6 +1198,26 @@ export function validateCmsData(
         "Slug must use lowercase letters, numbers, and hyphens only."
       );
     }
+  }
+
+  if (collection === "homeSections") {
+    const sectionKeys = ["intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"];
+    const layouts = ["editorial", "compact", "full-bleed"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported homepage section.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Background variant is invalid.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Section status must be draft, published, or archived.");
+    ["title", "eyebrow", "description", "ctaText"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
+
+  if (collection === "process") {
+    requireField("title", "Process step title");
+    requireField("description", "Process step description");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (data.status && !statuses.includes(String(data.status))) errors.push("Process status is invalid.");
   }
 
   return errors;

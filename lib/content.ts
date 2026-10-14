@@ -28,6 +28,22 @@ export type Service = {
   published?: boolean;
 };
 
+export type PageContent = {
+  _id?: string;
+  pageKey: "about" | "services" | "products" | "projects" | "blog" | "careers" | "contact" | "search";
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "image-led";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  seoTitle?: string;
+  seoDescription?: string;
+  socialImage?: string;
+  status: "draft" | "published" | "archived";
+};
 export type NavigationItem = {
   _id?: string;
   label: string;
@@ -593,6 +609,11 @@ function normalizeProject(item: Record<string, unknown>): Project {
 export async function getProjects(): Promise<Project[]> {
   const items = await read<Record<string, unknown>>("projects", projects as unknown as Record<string, unknown>[]);
   return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+}
+
+export async function getPageContent(pageKey: PageContent["pageKey"]): Promise<PageContent | undefined> {
+  const pages = await read<PageContent>("pageContent", []);
+  return pages.find((page) => page.pageKey === pageKey);
 }
 
 export async function getNavigation(): Promise<NavigationItem[]> {

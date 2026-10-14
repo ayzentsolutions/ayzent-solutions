@@ -541,10 +541,10 @@ async function read<T>(
         })
         .toArray();
 
-    return documents as unknown as T[];
+    return documents.length ? documents as unknown as T[] : fallback;
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
-    return [];
+    return fallback;
   }
 }
 

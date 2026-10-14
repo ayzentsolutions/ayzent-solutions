@@ -610,6 +610,15 @@ async function getCmsPreviewSnapshot(collection: string): Promise<CmsPreviewReco
   }
 }
 
+function makePreviewVisible(collection: string, data: Record<string, unknown>) {
+  const visible = { ...data };
+  if ("active" in visible) visible.active = true;
+  if ("published" in visible) visible.published = true;
+  if (visible.status === "draft" || visible.status === "archived") visible.status = "published";
+  if (collection === "jobs" && visible.status === "closed") visible.status = "open";
+  return visible;
+}
+
 function previewMatches(
   collection: string,
   item: Record<string, unknown>,
@@ -648,7 +657,7 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
     if (preview) {
       const index = rows.findIndex((item) => previewMatches(collection, item, preview));
       const current = index >= 0 ? rows[index] : {};
-      const merged = { ...current, ...preview.data, ...(preview.id ? { _id: current._id || preview.id } : {}) };
+      const merged = { ...current, ...makePreviewVisible(collection, preview.data), ...(preview.id ? { _id: current._id || preview.id } : {}) };
       if (index >= 0) rows[index] = merged;
       else rows.push(merged);
       rows.sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999));
@@ -787,7 +796,7 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
       } else if (typeof preview.data.slug === "string") {
         existing = await db.collection(collection).findOne({ slug: preview.data.slug }) as Record<string, unknown> | null;
       }
-      const merged = { ...(existing || {}), ...preview.data, ...(existing?._id ? { _id: existing._id } : {}) };
+      const merged = { ...(existing || {}), ...makePreviewVisible(collection, preview.data), ...(existing?._id ? { _id: existing._id } : {}) };
       if (merged.slug === slug) return merged as T;
     }
     return (await db.collection(collection).findOne({
@@ -980,8 +989,18 @@ export async function getClientLogos() {
 export async function getJobs(): Promise<Job[]> {
   try {
     const db = await getDb();
-    const documents = await db.collection("jobs").find({ status: "open" }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
-    return (documents as unknown as Job[]).filter((job) => job.published !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+    const preview = await getCmsPreviewSnapshot("jobs");
+    const documents = await db.collection("jobs").find({ status: "open", $or: [{ status: "open" }] }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
+    const rows = documents as unknown as Record<string, unknown>[];
+    if (preview) {
+      const index = rows.findIndex((item) => previewMatches("jobs", item, preview));
+      const current = index >= 0 ? rows[index] : {};
+      const merged = { ...current, ...makePreviewVisible("jobs", preview.data), ...(preview.id ? { _id: current._id || preview.id } : {}) };
+      if (index >= 0) rows[index] = merged;
+      else rows.push(merged);
+    }
+    return rows.filter((job) => job.status === "open" && job.published !== false)
+      .sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999)) as unknown as Job[];
   } catch (error) {
     console.error("CMS read failed for jobs", error);
     return [];

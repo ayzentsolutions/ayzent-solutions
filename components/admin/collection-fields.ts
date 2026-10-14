@@ -961,6 +961,22 @@ export const collectionFields: Record<
     { name: "status", label: "Moderation Status", type: "select", group: "Moderation", options: ["pending", "approved", "rejected"] },
   ],
 
+  pageContent: [
+    { name: "pageKey", label: "Public Page", type: "select", required: true, group: "Page", options: ["about", "services", "products", "projects", "blog", "careers", "contact", "search"] },
+    { name: "eyebrow", label: "Hero Eyebrow", type: "text", group: "Hero" },
+    { name: "title", label: "Hero Title", type: "textarea", group: "Hero" },
+    { name: "description", label: "Hero Description", type: "textarea", group: "Hero" },
+    { name: "image", label: "Hero Image", type: "image", group: "Hero" },
+    { name: "ctaText", label: "Primary CTA Text", type: "text", group: "Hero CTA" },
+    { name: "ctaLink", label: "Primary CTA Link", type: "url", group: "Hero CTA" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "image-led"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
+    { name: "socialImage", label: "Social Preview Image", type: "image", group: "SEO" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
   navigation: [
     { name: "label", label: "Navigation Label", type: "text", required: true, group: "Link" },
     { name: "href", label: "Destination", type: "url", required: true, group: "Link", placeholder: "/services" },

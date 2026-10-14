@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type DashboardData = {
@@ -120,5 +121,5 @@ export function Dashboard() {
 }
 
 function LinkToCollection({ href, label }: { href: string; label: string }) {
-  return <a href={href} className="shrink-0 text-xs font-medium text-gold transition hover:text-foreground">{label} <span aria-hidden="true">→</span></a>;
+  return <Link href={href} className="shrink-0 text-xs font-medium text-gold transition hover:text-foreground">{label} <span aria-hidden="true">→</span></Link>;
 }

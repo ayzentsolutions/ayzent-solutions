@@ -15,16 +15,17 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const companyName = settings.companyName || "Ayzent Solutions";
-  const description = settings.footerDescription || "Ideas. Engineered.";
+  const title = settings.seoTitle || companyName;
+  const description = settings.seoDescription || settings.footerDescription || "Ideas. Engineered.";
   const socialImage = settings.socialImage || settings.companyLogo;
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-    title: { default: companyName, template: `%s | ${companyName}` },
+    title: { default: title, template: `%s | ${companyName}` },
     description,
     alternates: { canonical: "/" },
-    openGraph: { type: "website", siteName: companyName, title: companyName, description, images: socialImage ? [{ url: socialImage }] : undefined },
-    twitter: { card: "summary_large_image", title: companyName, description, images: socialImage ? [socialImage] : undefined },
+    openGraph: { type: "website", siteName: companyName, title, description, images: socialImage ? [{ url: socialImage }] : undefined },
+    twitter: { card: "summary_large_image", title, description, images: socialImage ? [socialImage] : undefined },
     icons: { icon: settings.companyLogo || "/favicon.ico" },
   };
 }

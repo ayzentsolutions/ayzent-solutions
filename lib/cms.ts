@@ -569,6 +569,8 @@ export function validateCmsData(
 
       "companyLogo",
       "socialImage",
+      "seoTitle",
+      "seoDescription",
 
       "email",
       "phone",

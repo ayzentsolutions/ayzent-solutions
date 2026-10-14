@@ -105,7 +105,14 @@ function toValues(
         value = [role, company].filter((part) => typeof part === "string" && part).join(" · ");
       }
       if (field.name === "status" && (value === undefined || value === null || value === "")) {
-        value = item?.active === false || item?.published === false ? "draft" : "published";
+        const options = field.options || [];
+        if (!item) {
+          value = options.includes("draft") ? "draft" : options[0] || "";
+        } else if (item.active === false || item.published === false) {
+          value = options.includes("draft") ? "draft" : options[0] || "";
+        } else {
+          value = options.includes("published") ? "published" : item.status || options[0] || "";
+        }
       }
       if ((field.name === "active" || field.name === "published") && value === undefined) {
         value = item?.status === "published";
@@ -778,9 +785,15 @@ export function ContentManager({
                   ? "Saving..."
                   : singleton
                     ? "Save Settings"
-                    : editing
-                      ? "Save Changes"
-                      : "Create Entry"}
+                    : values.status === "published"
+                      ? editing ? "Publish Changes" : "Publish Entry"
+                      : values.status === "draft"
+                        ? "Save Draft"
+                        : values.status === "archived"
+                          ? "Archive Entry"
+                          : editing
+                            ? "Save Changes"
+                            : "Create Entry"}
               </Button>
 
               <Button
@@ -835,11 +848,12 @@ export function ContentManager({
                     className="flex items-start justify-between gap-4 py-4"
                   >
                     <div className="min-w-0">
-                      <h3 className="font-medium">
-                        {titleOf(
-                          item
-                        )}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-medium">
+                          {titleOf(item)}
+                        </h3>
+                        {typeof item.status === "string" && <span className="border border-line px-2 py-1 text-[10px] uppercase tracking-[.12em] text-muted">{item.status}</span>}
+                      </div>
                     </div>
 
                     <div className="flex shrink-0 gap-3 text-sm">

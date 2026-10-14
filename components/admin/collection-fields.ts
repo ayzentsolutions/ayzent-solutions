@@ -836,6 +836,86 @@ export const collectionFields: Record<
   |--------------------------------------------------------------------------
   */
 
+  posts: [
+    { name: "title", label: "Article Title", type: "text", required: true, group: "Article" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Article" },
+    { name: "category", label: "Category", type: "text", required: true, group: "Article" },
+    { name: "excerpt", label: "Excerpt", type: "textarea", required: true, group: "Article" },
+    { name: "content", label: "Article Content", type: "markdown", required: true, group: "Article" },
+    { name: "date", label: "Publication Date", type: "text", group: "Article" },
+    { name: "tags", label: "Tags", type: "tags", group: "Discovery" },
+    { name: "coverImage", label: "Cover Image", type: "image", group: "Media" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
+  ],
+
+  categories: [
+    { name: "name", label: "Category Name", type: "text", required: true, group: "Category" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Category" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  tags: [
+    { name: "name", label: "Tag Name", type: "text", required: true, group: "Tag" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Tag" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  jobs: [
+    { name: "title", label: "Role Title", type: "text", required: true, group: "Role" },
+    { name: "description", label: "Role Description", type: "markdown", required: true, group: "Role" },
+    { name: "requirements", label: "Requirements", type: "tags", group: "Role" },
+    { name: "location", label: "Location", type: "text", group: "Role" },
+    { name: "type", label: "Employment Type", type: "text", group: "Role" },
+    { name: "applicationInstructions", label: "Application Instructions", type: "textarea", group: "Application" },
+    { name: "status", label: "Role Status", type: "select", required: true, group: "Publishing", options: ["open", "closed"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+  ],
+
+  clientLogos: [
+    { name: "name", label: "Client / Brand Name", type: "text", required: true, group: "Brand" },
+    { name: "logo", label: "Logo Image", type: "image", group: "Brand" },
+    { name: "link", label: "Website Link", type: "url", group: "Links" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  socialLinks: [
+    { name: "label", label: "Network Name", type: "text", required: true, group: "Social Link" },
+    { name: "url", label: "Profile URL", type: "url", required: true, group: "Social Link" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  inquiries: [
+    { name: "name", label: "Contact Name", type: "text", group: "Inquiry" },
+    { name: "email", label: "Email", type: "text", group: "Inquiry" },
+    { name: "phone", label: "Phone", type: "text", group: "Inquiry" },
+    { name: "company", label: "Company", type: "text", group: "Inquiry" },
+    { name: "service", label: "Service", type: "text", group: "Inquiry" },
+    { name: "budget", label: "Budget", type: "text", group: "Inquiry" },
+    { name: "description", label: "Message", type: "textarea", group: "Inquiry" },
+    { name: "status", label: "Status", type: "select", group: "Workflow", options: ["new", "in-progress", "responded", "closed"] },
+  ],
+
+  newsletterSubscribers: [
+    { name: "email", label: "Subscriber Email", type: "text", required: true, group: "Subscriber" },
+    { name: "status", label: "Subscription Status", type: "select", group: "Subscriber", options: ["subscribed", "unsubscribed"] },
+  ],
+
+  comments: [
+    { name: "name", label: "Author Name", type: "text", group: "Comment" },
+    { name: "message", label: "Comment", type: "textarea", group: "Comment" },
+    { name: "slug", label: "Article Slug", type: "text", group: "Comment" },
+    { name: "status", label: "Moderation Status", type: "select", group: "Moderation", options: ["pending", "approved", "rejected"] },
+  ],
+
   navigation: [
     { name: "label", label: "Navigation Label", type: "text", required: true, group: "Link" },
     { name: "href", label: "Destination", type: "url", required: true, group: "Link", placeholder: "/services" },

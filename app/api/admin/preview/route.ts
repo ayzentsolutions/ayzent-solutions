@@ -9,6 +9,12 @@ import { csrfValid } from "@/lib/security";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const previewableCollections = new Set([
+  "siteSettings", "heroSlides", "pageSections", "pageContent", "navigation", "homeSections", "process", "aboutContent",
+  "services", "projects", "products", "posts", "categories", "tags", "jobs", "team", "testimonials", "clientLogos", "faqs",
+  "announcements", "socialLinks",
+]);
+
 function cleanData(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const entries = Object.entries(value as Record<string, unknown>).filter(
@@ -49,7 +55,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const collection = typeof body.collection === "string" ? body.collection : "";
     const id = typeof body.id === "string" ? body.id : undefined;
-    if (!isCmsCollection(collection) || !canEditCollection(collection, user.role)) {
+    if (!isCmsCollection(collection) || !previewableCollections.has(collection) || !canEditCollection(collection, user.role)) {
       return NextResponse.json({ message: "This content cannot be previewed with your account." }, { status: 403 });
     }
 
@@ -65,6 +71,7 @@ export async function POST(request: NextRequest) {
       if (!existing) return NextResponse.json({ message: "This entry no longer exists. Reload the CMS and try again." }, { status: 404 });
     }
 
+    await db.collection("cmsPreviews").deleteMany({ expiresAt: { $lte: new Date() } });
     const token = randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
     await db.collection("cmsPreviews").insertOne({

@@ -14,6 +14,11 @@ export const cmsCollections = [
 
   "siteSettings",
   "heroSlides",
+  "pageSections",
+  "pageContent",
+  "navigation",
+  "homeSections",
+  "process",
 
   /*
   |--------------------------------------------------------------------------
@@ -95,6 +100,11 @@ export const editorCollections:
   CmsCollection[] = [
   "siteSettings",
   "heroSlides",
+  "pageSections",
+  "pageContent",
+  "navigation",
+  "homeSections",
+  "process",
 
   "aboutContent",
 
@@ -187,6 +197,10 @@ export const cmsNavigation = [
     items: [
       "siteSettings",
       "heroSlides",
+      "pageSections",
+      "pageContent",
+      "navigation",
+      "homeSections",
       "testimonials",
       "clientLogos",
       "faqs",
@@ -218,6 +232,8 @@ export const cmsNavigation = [
     ],
   },
   { title: "PRODUCTS", items: ["products"] },
+  { title: "ENGINEERING", items: ["process"] },
+  { title: "PUBLIC PAGES", items: ["pageContent", "pageSections"] },
 
   {
     title: "BLOG",
@@ -273,6 +289,14 @@ export const collectionLabels:
 
   heroSlides:
     "Hero Background Slides",
+
+  pageContent: "Public Page Content",
+  pageSections: "Public Page Section Layouts",
+
+  navigation: "Header & Footer Navigation",
+
+  homeSections: "Homepage Section Layouts",
+  process: "Engineering Process",
 
   aboutContent:
     "About Page Content",
@@ -497,6 +521,9 @@ export function validateCmsData(
   if (
     [
       "heroSlides",
+      "navigation",
+      "homeSections",
+      "process",
       "services",
       "projects", "products",
       "posts",
@@ -545,6 +572,9 @@ export function validateCmsData(
       "companyName",
 
       "companyLogo",
+      "socialImage",
+      "seoTitle",
+      "seoDescription",
 
       "email",
       "phone",
@@ -579,6 +609,8 @@ export function validateCmsData(
         }
       }
     );
+
+    if (!isUrl(data.socialImage)) errors.push("Social preview image must be a valid image URL.");
 
     if (
       !isUrl(
@@ -782,6 +814,8 @@ export function validateCmsData(
         "Overview must be text."
       );
     }
+
+    ["seoTitle", "seoDescription"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
 
     if (
       data.category !== undefined &&
@@ -1187,6 +1221,60 @@ export function validateCmsData(
         "Slug must use lowercase letters, numbers, and hyphens only."
       );
     }
+  }
+
+  if (collection === "pageSections") {
+    const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
+    const sectionKeys = ["hero", "story", "mission", "values", "team", "quote", "cta", "service-list", "project-list", "product-list", "article-list", "job-list", "contact-form", "search-results"];
+    const layouts = ["editorial", "compact", "full-bleed"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!pageKeys.includes(String(data.pageKey))) errors.push("Choose a supported public page.");
+    if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported page section.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Section layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Section background variant is invalid.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Section status must be draft, published, or archived.");
+    ["title", "eyebrow", "description", "ctaText"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
+  if (collection === "pageContent") {
+    const pageKeys = ["about", "services", "products", "projects", "blog", "careers", "contact", "search"];
+    const layouts = ["editorial", "compact", "image-led"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!pageKeys.includes(String(data.pageKey))) errors.push("Choose a supported public page.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Page layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Page background variant is invalid.");
+    if (!statuses.includes(String(data.status))) errors.push("Page content status must be draft, published, or archived.");
+    ["eyebrow", "title", "description", "ctaText", "seoTitle", "seoDescription"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink", "socialImage"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
+  if (collection === "navigation") {
+    requireField("label", "Navigation label");
+    requireField("href", "Destination");
+    if (!["header", "footer", "both"].includes(String(data.location))) errors.push("Navigation placement is invalid.");
+    if (!isUrl(data.href)) errors.push("Navigation destination must be a valid internal or HTTP(S) URL.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Navigation status must be draft, published, or archived.");
+  }
+
+  if (collection === "homeSections") {
+    const sectionKeys = ["hero", "intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"];
+    const layouts = ["editorial", "compact", "full-bleed"];
+    const backgrounds = ["midnight", "navy", "elevated"];
+    if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported homepage section.");
+    if (data.layoutVariant && !layouts.includes(String(data.layoutVariant))) errors.push("Layout variant is invalid.");
+    if (data.backgroundVariant && !backgrounds.includes(String(data.backgroundVariant))) errors.push("Background variant is invalid.");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (!statuses.includes(String(data.status))) errors.push("Section status must be draft, published, or archived.");
+    ["title", "eyebrow", "description", "ctaText"].forEach((key) => { if (!isOptionalText(data[key])) errors.push(`${key} must be text.`); });
+    ["image", "ctaLink"].forEach((key) => { if (!isUrl(data[key])) errors.push(`${key} must be a valid URL.`); });
+  }
+
+  if (collection === "process") {
+    requireField("title", "Process step title");
+    requireField("description", "Process step description");
+    if (!isOrder(data.displayOrder)) errors.push("Display order must be a non-negative whole number.");
+    if (data.status && !statuses.includes(String(data.status))) errors.push("Process status is invalid.");
   }
 
   return errors;

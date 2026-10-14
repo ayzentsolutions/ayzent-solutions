@@ -7,27 +7,26 @@ const config: Config = {
     container: { center: true, padding: "1.25rem" },
     extend: {
       colors: {
-        ink: "#08152B",
-        paper: "#F5F1E8",
-        graphite: "#647087",
-        gold: { DEFAULT: "#246BFF", light: "#66A0FF" },
+        ink: "#080D18",
+        paper: "#E2E8F0",
+        graphite: "#94A3B8",
+        gold: { DEFAULT: "#477BFF", light: "#6792FF" },
         line: { DEFAULT: "var(--line)" },
         background: "var(--background)",
         foreground: "var(--foreground)",
         muted: "var(--muted)",
         surface: "var(--surface)",
-        electric: "#246BFF",
-        teal: "#2ED3C2",
-        midnight: "#08152B",
-        ivory: "#F5F1E8"
+        electric: "#477BFF",
+        teal: "#25C6B7",
+        midnight: "#080D18",
+        ivory: "#E2E8F0"
       },
       fontFamily: { display: ["var(--font-display)", "serif"], sans: ["var(--font-sans)", "sans-serif"] },
       maxWidth: { content: "76rem" },
       keyframes: {
         "fade-up": { "0%": { opacity: "0", transform: "translateY(16px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
-        "orbit": { to: { transform: "rotate(360deg)" } }
       },
-      animation: { "fade-up": "fade-up 0.7s cubic-bezier(.2,.75,.25,1) forwards", "orbit-slow": "orbit 28s linear infinite" }
+      animation: { "fade-up": "fade-up 0.7s cubic-bezier(.2,.75,.25,1) forwards" }
     }
   },
   plugins: []

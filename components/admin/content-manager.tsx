@@ -77,8 +77,38 @@ function toValues(
 ): Values {
   return Object.fromEntries(
     fields.map((field) => {
-      const value =
-        item?.[field.name];
+      const aliases: Record<string, string[]> = {
+        name: ["title"],
+        text: ["shortDescription", "description", "quote"],
+        summary: ["shortDescription", "description", "overview"],
+        overview: ["description", "summary"],
+        coverImage: ["image"],
+        displayOrder: ["order"],
+        featured: ["active"],
+        shortBio: ["bio"],
+        heroEyebrow: ["eyebrow"],
+        heroTitle: ["title"],
+        heroText: ["description"],
+        storyParagraphOne: ["story"],
+        mission: ["missionDescription"],
+        vision: ["visionDescription"],
+      };
+      let value = item?.[field.name];
+      if (value === undefined || value === null) {
+        const alias = aliases[field.name]?.map((key) => item?.[key]).find((candidate) => candidate !== undefined && candidate !== null && candidate !== "");
+        if (alias !== undefined) value = alias;
+      }
+      if (field.name === "roleCompany" && (value === undefined || value === null || value === "")) {
+        const role = item?.clientRole || item?.role;
+        const company = item?.company;
+        value = [role, company].filter((part) => typeof part === "string" && part).join(" · ");
+      }
+      if (field.name === "status" && (value === undefined || value === null || value === "")) {
+        value = item?.active === false || item?.published === false ? "draft" : "published";
+      }
+      if ((field.name === "active" || field.name === "published") && value === undefined) {
+        value = item?.status === "published";
+      }
 
       if (
         field.type ===

@@ -81,6 +81,14 @@ export const collectionFields: Record<
         "Upload or replace the company logo. The image is uploaded through the existing Cloudinary media API.",
     },
 
+    {
+      name: "socialImage",
+      label: "Social Preview Image",
+      type: "image",
+      group: "Brand & Identity",
+      hint: "Optional default image for Open Graph and social sharing previews.",
+    },
+
     /*
     ------------------------------------------------------------------------
     CONTACT INFORMATION
@@ -349,6 +357,9 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -420,6 +431,10 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "text", label: "Service Summary", type: "textarea", group: "Service Details" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -512,6 +527,29 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    {
+      name: "seoTitle",
+      label: "SEO Title",
+      type: "text",
+      group: "SEO",
+    },
+    {
+      name: "seoDescription",
+      label: "SEO Description",
+      type: "textarea",
+      group: "SEO",
+    },
+    { name: "name", label: "Project Name", type: "text", required: true, group: "Project Details" },
+    { name: "summary", label: "Project Summary", type: "textarea", group: "Project Content" },
+    { name: "overview", label: "Overview", type: "markdown", group: "Project Content" },
+    { name: "coverImage", label: "Cover Image", type: "image", group: "Visual" },
+    { name: "gallery", label: "Image Gallery", type: "tags", group: "Visual" },
+    { name: "technologies", label: "Technologies", type: "tags", group: "Project Details" },
+    { name: "features", label: "Key Features", type: "tags", group: "Project Details" },
+    { name: "featured", label: "Feature on Homepage", type: "checkbox", group: "Publishing" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -576,6 +614,10 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "shortBio", label: "Short Bio", type: "textarea", group: "Team Member" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -642,6 +684,11 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "text", label: "Testimonial Text", type: "textarea", group: "Testimonial" },
+    { name: "roleCompany", label: "Role / Company", type: "text", group: "Client" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
   ],
 
   /*
@@ -701,6 +748,9 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
   ],
 
   /*
@@ -744,6 +794,9 @@ export const collectionFields: Record<
       type: "checkbox",
       group: "Settings",
     },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Settings", options: ["draft", "published", "archived"] },
+
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Settings" },
   ],
 
   /*
@@ -808,6 +861,160 @@ export const collectionFields: Record<
       type: "textarea",
       group: "Vision",
     },
+    { name: "heroEyebrow", label: "Hero Eyebrow", type: "text", group: "About Page" },
+    { name: "heroTitle", label: "Hero Title", type: "textarea", group: "About Page" },
+    { name: "heroText", label: "Hero Description", type: "textarea", group: "About Page" },
+    { name: "storyEyebrow", label: "Story Eyebrow", type: "text", group: "Story" },
+    { name: "storyParagraphOne", label: "Story Paragraph One", type: "textarea", group: "Story" },
+    { name: "storyParagraphTwo", label: "Story Paragraph Two", type: "textarea", group: "Story" },
+    { name: "mission", label: "Mission", type: "textarea", group: "Mission" },
+    { name: "vision", label: "Vision", type: "textarea", group: "Vision" },
+    { name: "values", label: "Values", type: "tags", group: "Values" },
+    { name: "teamTitle", label: "Team Section Title", type: "text", group: "Team" },
+    { name: "teamText", label: "Team Description", type: "textarea", group: "Team" },
+
+  ],
+
+  /*
+  |--------------------------------------------------------------------------
+  | HOMEPAGE SECTION CONTROL
+  |--------------------------------------------------------------------------
+  */
+
+  posts: [
+    { name: "title", label: "Article Title", type: "text", required: true, group: "Article" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Article" },
+    { name: "category", label: "Category", type: "text", required: true, group: "Article" },
+    { name: "excerpt", label: "Excerpt", type: "textarea", required: true, group: "Article" },
+    { name: "content", label: "Article Content", type: "markdown", required: true, group: "Article" },
+    { name: "date", label: "Publication Date", type: "text", group: "Article" },
+    { name: "tags", label: "Tags", type: "tags", group: "Discovery" },
+    { name: "coverImage", label: "Cover Image", type: "image", group: "Media" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
+  ],
+
+  categories: [
+    { name: "name", label: "Category Name", type: "text", required: true, group: "Category" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Category" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  tags: [
+    { name: "name", label: "Tag Name", type: "text", required: true, group: "Tag" },
+    { name: "slug", label: "URL Slug", type: "text", required: true, group: "Tag" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  jobs: [
+    { name: "title", label: "Role Title", type: "text", required: true, group: "Role" },
+    { name: "description", label: "Role Description", type: "markdown", required: true, group: "Role" },
+    { name: "requirements", label: "Requirements", type: "tags", group: "Role" },
+    { name: "location", label: "Location", type: "text", group: "Role" },
+    { name: "type", label: "Employment Type", type: "text", group: "Role" },
+    { name: "applicationInstructions", label: "Application Instructions", type: "textarea", group: "Application" },
+    { name: "status", label: "Role Status", type: "select", required: true, group: "Publishing", options: ["open", "closed"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+  ],
+
+  clientLogos: [
+    { name: "name", label: "Client / Brand Name", type: "text", required: true, group: "Brand" },
+    { name: "logo", label: "Logo Image", type: "image", group: "Brand" },
+    { name: "link", label: "Website Link", type: "url", group: "Links" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  socialLinks: [
+    { name: "label", label: "Network Name", type: "text", required: true, group: "Social Link" },
+    { name: "url", label: "Profile URL", type: "url", required: true, group: "Social Link" },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  inquiries: [
+    { name: "name", label: "Contact Name", type: "text", group: "Inquiry" },
+    { name: "email", label: "Email", type: "text", group: "Inquiry" },
+    { name: "phone", label: "Phone", type: "text", group: "Inquiry" },
+    { name: "company", label: "Company", type: "text", group: "Inquiry" },
+    { name: "service", label: "Service", type: "text", group: "Inquiry" },
+    { name: "budget", label: "Budget", type: "text", group: "Inquiry" },
+    { name: "description", label: "Message", type: "textarea", group: "Inquiry" },
+    { name: "status", label: "Status", type: "select", group: "Workflow", options: ["new", "in-progress", "responded", "closed"] },
+  ],
+
+  newsletterSubscribers: [
+    { name: "email", label: "Subscriber Email", type: "text", required: true, group: "Subscriber" },
+    { name: "status", label: "Subscription Status", type: "select", group: "Subscriber", options: ["subscribed", "unsubscribed"] },
+  ],
+
+  comments: [
+    { name: "name", label: "Author Name", type: "text", group: "Comment" },
+    { name: "message", label: "Comment", type: "textarea", group: "Comment" },
+    { name: "slug", label: "Article Slug", type: "text", group: "Comment" },
+    { name: "status", label: "Moderation Status", type: "select", group: "Moderation", options: ["pending", "approved", "rejected"] },
+  ],
+
+  pageSections: [
+    { name: "pageKey", label: "Public Page", type: "select", required: true, group: "Section", options: ["about", "services", "products", "projects", "blog", "careers", "contact", "search"] },
+    { name: "sectionKey", label: "Section", type: "select", required: true, group: "Section", options: ["hero", "story", "mission", "values", "team", "quote", "cta", "service-list", "project-list", "product-list", "article-list", "job-list", "contact-form", "search-results"] },
+    { name: "title", label: "Title Override", type: "textarea", group: "Content" },
+    { name: "eyebrow", label: "Eyebrow Override", type: "text", group: "Content" },
+    { name: "description", label: "Description Override", type: "textarea", group: "Content" },
+    { name: "image", label: "Supporting Image", type: "image", group: "Media" },
+    { name: "ctaText", label: "CTA Text", type: "text", group: "CTA" },
+    { name: "ctaLink", label: "CTA Link", type: "url", group: "CTA" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "displayOrder", label: "Display Order", type: "number", required: true, group: "Publishing" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  pageContent: [
+    { name: "pageKey", label: "Public Page", type: "select", required: true, group: "Page", options: ["about", "services", "products", "projects", "blog", "careers", "contact", "search"] },
+    { name: "eyebrow", label: "Hero Eyebrow", type: "text", group: "Hero" },
+    { name: "title", label: "Hero Title", type: "textarea", group: "Hero" },
+    { name: "description", label: "Hero Description", type: "textarea", group: "Hero" },
+    { name: "image", label: "Hero Image", type: "image", group: "Hero" },
+    { name: "ctaText", label: "Primary CTA Text", type: "text", group: "Hero CTA" },
+    { name: "ctaLink", label: "Primary CTA Link", type: "url", group: "Hero CTA" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "image-led"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "seoTitle", label: "SEO Title", type: "text", group: "SEO" },
+    { name: "seoDescription", label: "SEO Description", type: "textarea", group: "SEO" },
+    { name: "socialImage", label: "Social Preview Image", type: "image", group: "SEO" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  navigation: [
+    { name: "label", label: "Navigation Label", type: "text", required: true, group: "Link" },
+    { name: "href", label: "Destination", type: "url", required: true, group: "Link", placeholder: "/services" },
+    { name: "location", label: "Show In", type: "select", required: true, group: "Placement", options: ["header", "footer", "both"] },
+    { name: "displayOrder", label: "Display Order", type: "number", required: true, group: "Placement" },
+    { name: "active", label: "Visible", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", required: true, group: "Publishing", options: ["draft", "published", "archived"] },
+  ],
+
+  homeSections: [
+    { name: "sectionKey", label: "Homepage Section", type: "select", required: true, group: "Section", options: ["hero", "intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"] },
+    { name: "title", label: "Title Override", type: "textarea", group: "Content", hint: "Optional. Leave empty to use the current CMS page content." },
+    { name: "eyebrow", label: "Eyebrow Override", type: "text", group: "Content" },
+    { name: "description", label: "Description Override", type: "textarea", group: "Content" },
+    { name: "image", label: "Supporting Image", type: "image", group: "Media" },
+    { name: "ctaText", label: "CTA Text", type: "text", group: "CTA" },
+    { name: "ctaLink", label: "CTA Link", type: "url", group: "CTA", placeholder: "/contact" },
+    { name: "layoutVariant", label: "Layout Variant", type: "select", group: "Presentation", options: ["editorial", "compact", "full-bleed"] },
+    { name: "backgroundVariant", label: "Dark Background Variant", type: "select", group: "Presentation", options: ["midnight", "navy", "elevated"] },
+    { name: "displayOrder", label: "Display Order", type: "number", group: "Publishing", required: true },
+    { name: "active", label: "Visible on Homepage", type: "checkbox", group: "Publishing" },
+    { name: "status", label: "Publishing Status", type: "select", group: "Publishing", options: ["draft", "published", "archived"], required: true },
   ],
 
   /*
@@ -840,10 +1047,11 @@ export const collectionFields: Record<
     },
 
     {
-      name: "order",
+      name: "displayOrder",
       label: "Display Order",
       type: "number",
       group: "Settings",
+      required: true,
     },
 
     {
@@ -851,6 +1059,14 @@ export const collectionFields: Record<
       label: "Active",
       type: "checkbox",
       group: "Settings",
+    },
+    {
+      name: "status",
+      label: "Publishing Status",
+      type: "select",
+      group: "Settings",
+      options: ["draft", "published", "archived"],
+      required: true,
     },
   ],
 };

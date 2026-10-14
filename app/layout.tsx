@@ -5,7 +5,8 @@ import "./globals.css";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { getSiteSettings } from "@/lib/content";
+import { CursorAtmosphere } from "@/components/effects/cursor-atmosphere";
+import { getNavigation, getSiteSettings } from "@/lib/content";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,15 +16,17 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const companyName = settings.companyName || "Ayzent Solutions";
-  const description = settings.footerDescription || "Ideas. Engineered.";
+  const title = settings.seoTitle || companyName;
+  const description = settings.seoDescription || settings.footerDescription || "Ideas. Engineered.";
+  const socialImage = settings.socialImage || settings.companyLogo;
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-    title: { default: companyName, template: `%s | ${companyName}` },
+    title: { default: title, template: `%s | ${companyName}` },
     description,
     alternates: { canonical: "/" },
-    openGraph: { type: "website", siteName: companyName, title: companyName, description },
-    twitter: { card: "summary_large_image", title: companyName, description },
+    openGraph: { type: "website", siteName: companyName, title, description, images: socialImage ? [{ url: socialImage }] : undefined },
+    twitter: { card: "summary_large_image", title, description, images: socialImage ? [socialImage] : undefined },
     icons: { icon: settings.companyLogo || "/favicon.ico" },
   };
 }
@@ -33,7 +36,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getSiteSettings();
+  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
   const companyName = settings.companyName || "Ayzent Solutions";
   const headerButtonText = settings.headerButtonText || "Start a Project";
   const headerButtonLink = settings.headerButtonLink || "/contact";
@@ -41,11 +44,12 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}>
+        <CursorAtmosphere />
         <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
           Skip to main content
         </a>
         <div className="flex min-h-screen flex-col">
-          <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} />
+          <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} navigation={navigation} />
           <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
             {children}
           </main>

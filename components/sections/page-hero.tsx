@@ -1,31 +1,47 @@
+import Image from "next/image";
+import type { CSSProperties } from "react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
+import { InteractiveBackdrop } from "@/components/effects/interactive-backdrop";
+import { Magnetic } from "@/components/effects/magnetic";
 
-type PageHeroProps = { eyebrow: string; title: string; text: string; primaryText?: string; primaryLink?: string; };
+type PageHeroProps = {
+  eyebrow: string;
+  title: string;
+  text: string;
+  primaryText?: string;
+  primaryLink?: string;
+  image?: string;
+  layoutVariant?: "editorial" | "compact" | "image-led";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  style?: CSSProperties;
+  hidden?: boolean;
+  "data-layout"?: string;
+  "data-section-key"?: string;
+};
 
-export function PageHero({ eyebrow, title, text, primaryText, primaryLink }: PageHeroProps) {
+const backgrounds = { midnight: "#080D18", navy: "#0D1423", elevated: "#131D30" } as const;
+
+export function PageHero({ eyebrow, title, text, primaryText, primaryLink, image, layoutVariant = "editorial", backgroundVariant = "midnight", style, hidden, "data-layout": configuredLayout, "data-section-key": sectionKey }: PageHeroProps) {
   return (
-    <section className="relative isolate overflow-hidden bg-[#08152B] text-[#F5F1E8]">
-      <div aria-hidden="true" className="grid-blueprint pointer-events-none absolute inset-0 -z-20 opacity-70" />
-      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[28rem] w-[28rem] rounded-full border border-[#66A0FF]/25 sm:h-[42rem] sm:w-[42rem]">
-        <div className="absolute inset-8 rounded-full border border-[#66A0FF]/20 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#66A0FF]/15 sm:inset-32" />
-      </div>
-      <Container className="relative grid min-h-[25rem] gap-8 py-14 sm:py-20 lg:min-h-[34rem] lg:grid-cols-[minmax(0,1.15fr)_minmax(15rem,.85fr)] lg:items-end lg:gap-12 lg:py-24">
-        <div className="motion-reveal max-w-4xl">
-          <div className="flex items-center gap-3"><span className="h-px w-9 bg-[#66A0FF]" /><p className="eyebrow text-[#66A0FF]">{eyebrow}</p></div>
-          <h1 className="mt-6 max-w-5xl text-balance font-display text-5xl font-semibold leading-[.98] tracking-[-.045em] sm:text-6xl md:text-7xl lg:text-[5.5rem]">{title}</h1>
-          {text && <p className="mt-6 max-w-2xl text-base leading-7 text-white/65 sm:mt-8 sm:text-lg sm:leading-8">{text}</p>}
-          {primaryText && <div className="mt-7"><ButtonLink href={primaryLink || "/contact"} className="bg-[#246BFF] text-white hover:bg-[#1452D5]">{primaryText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink></div>}
+    <section hidden={hidden} data-layout={configuredLayout || layoutVariant} data-section-key={sectionKey || "hero"} style={{ backgroundColor: backgrounds[backgroundVariant], ...style }} className="page-hero relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
+      <InteractiveBackdrop variant="ambient" />
+      <div aria-hidden="true" className="grid-blueprint pointer-events-none absolute inset-0 opacity-50" />
+      <Container className="page-hero-grid relative z-10 grid min-h-[25rem] gap-10 py-14 sm:py-20 lg:min-h-[32rem] lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,.8fr)] lg:items-end lg:gap-16 lg:py-24">
+        <div className="max-w-4xl">
+          <div className="flex items-center gap-3"><span className="h-px w-10 bg-[#477BFF]" /><p className="eyebrow text-[#8AA8FF]">{eyebrow}</p></div>
+          <h1 className="mt-6 max-w-5xl text-balance font-display text-5xl font-semibold leading-[.94] tracking-[-.05em] sm:text-6xl md:text-7xl lg:text-[5.6rem]">{title}</h1>
+          {text && <p className="mt-6 max-w-2xl text-base leading-7 text-[#94A3B8] sm:mt-8 sm:text-lg sm:leading-8">{text}</p>}
+          {primaryText && <div className="mt-7"><Magnetic><ButtonLink href={primaryLink || "/contact"} className="bg-[#477BFF] text-white hover:bg-[#345FD1]">{primaryText}<span aria-hidden="true" className="ml-2">↗</span></ButtonLink></Magnetic></div>}
         </div>
-        <div className="relative hidden min-h-52 items-end justify-end lg:flex">
-          <div className="relative w-full max-w-xs border border-white/15 bg-white/[.04] p-5 backdrop-blur-sm">
-            <div className="flex items-center justify-between"><span className="eyebrow text-white/40">Studio / 01</span><span className="h-2 w-2 rounded-full bg-[#2ED3C2]" /></div>
-            <div aria-hidden="true" className="mt-7 flex h-20 items-end gap-2">{[38,72,49,92,62,82,42,100,68,86,55,75].map((height,index)=><span key={index} className="flex-1 bg-gradient-to-t from-[#246BFF]/25 to-[#66A0FF]" style={{height:`${height}%`}} />)}</div>
-            <p className="mt-5 text-xs text-white/55">Ideas translated into useful digital systems.</p>
-          </div>
-          <div aria-hidden="true" className="absolute -right-3 -top-4 h-12 w-12 border border-[#66A0FF]/60 bg-[#246BFF]/20 backdrop-blur" />
+        <div className={`page-hero-art fx-parallax relative min-h-56 items-end ${image ? "flex" : "hidden lg:flex"}`}>
+          {image ? <div className="relative aspect-[4/3] w-full overflow-hidden border border-[#27344A] bg-[#131D30] sm:aspect-[5/4]"><Image src={image} alt={title} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" /></div> : <div className="w-full border border-[#27344A] bg-[#0D1423] p-5 sm:p-7">
+            <div className="flex items-center justify-between gap-4 border-b border-[#27344A] pb-4"><span className="eyebrow text-[#94A3B8]">Ayzent / Field notes</span><span className="font-mono text-xs text-[#6792FF]">A—01</span></div>
+            <div className="mt-7 grid grid-cols-[1fr_auto] items-end gap-4"><div><div className="h-2 w-4/5 bg-[#477BFF]/80" /><div className="mt-3 h-2 w-3/5 bg-[#27344A]" /><div className="mt-3 h-2 w-2/5 bg-[#27344A]" /></div><div className="grid h-16 w-16 place-items-center border border-[#477BFF]/50 bg-[#477BFF]/10 font-display text-2xl text-[#8AA8FF]">A.</div></div>
+            <div className="mt-7 grid grid-cols-3 gap-2"><div className="h-9 border border-[#27344A] bg-[#131D30]" /><div className="h-9 border border-[#27344A] bg-[#131D30]" /><div className="h-9 border border-[#27344A] bg-[#477BFF]/15" /></div>
+          </div>}
+          <div aria-hidden="true" className="absolute -bottom-3 -left-3 h-8 w-8 border-b border-l border-[#477BFF]" />
         </div>
-        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[.22em] text-white/35 lg:absolute lg:bottom-7 lg:left-1/2"><span>Scroll to explore</span><span className="h-px w-10 bg-white/20" /><span>01—04</span></div>
       </Container>
     </section>
   );

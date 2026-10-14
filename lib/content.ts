@@ -28,6 +28,74 @@ export type Service = {
   published?: boolean;
 };
 
+export type PageSection = {
+  _id?: string;
+  pageKey: "about" | "services" | "products" | "projects" | "blog" | "careers" | "contact" | "search";
+  sectionKey: "hero" | "story" | "mission" | "values" | "team" | "quote" | "cta" | "service-list" | "project-list" | "product-list" | "article-list" | "job-list" | "contact-form" | "search-results";
+  title?: string;
+  eyebrow?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "full-bleed";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
+export type PageContent = {
+  _id?: string;
+  pageKey: "about" | "services" | "products" | "projects" | "blog" | "careers" | "contact" | "search";
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "image-led";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  seoTitle?: string;
+  seoDescription?: string;
+  socialImage?: string;
+  status: "draft" | "published" | "archived";
+};
+export type NavigationItem = {
+  _id?: string;
+  label: string;
+  href: string;
+  location: "header" | "footer" | "both";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
+
+export type HomeSection = {
+  _id?: string;
+  sectionKey: "hero" | "intro" | "services" | "projects" | "products" | "process" | "studio" | "testimonials" | "faqs" | "cta";
+  title?: string;
+  eyebrow?: string;
+  description?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  layoutVariant?: "editorial" | "compact" | "full-bleed";
+  backgroundVariant?: "midnight" | "navy" | "elevated";
+  displayOrder: number;
+  active?: boolean;
+  status: "draft" | "published" | "archived";
+};
+
+export type ProcessStep = {
+  _id?: string;
+  step?: string;
+  title: string;
+  description: string;
+  displayOrder?: number;
+  active?: boolean;
+  status?: "draft" | "published" | "archived";
+};
+
 export type Product = {
   _id?: string; name: string; slug: string; shortDescription: string; content: string;
   category?: string; coverImage?: string; gallery?: string[]; technologies?: string[]; features?: string[];
@@ -280,6 +348,12 @@ export type SiteSettings = {
 
   companyLogo?: string;
 
+  socialImage?: string;
+
+  seoTitle?: string;
+
+  seoDescription?: string;
+
   /*
   |--------------------------------------------------------------------------
   | Contact Information
@@ -503,10 +577,10 @@ async function read<T>(
         })
         .toArray();
 
-    return documents as unknown as T[];
+    return documents.length ? documents as unknown as T[] : fallback;
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
-    return [];
+    return fallback;
   }
 }
 
@@ -516,18 +590,71 @@ async function read<T>(
 |--------------------------------------------------------------------------
 */
 
-export function getServices() {
-  return read<Service>(
-    "services",
-    services
-  );
+export async function getServices(): Promise<Service[]> {
+  const items = await read<Record<string, unknown>>("services", services as unknown as Record<string, unknown>[]);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    ...item,
+    title: String(item.title || item.name || "Service"),
+    text: String(item.text || item.shortDescription || item.description || ""),
+    slug: typeof item.slug === "string" ? item.slug : undefined,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    published: item.published !== false,
+  })) as unknown as Service[];
 }
 
-export function getProjects() {
-  return read<Project>(
-    "projects",
-    projects
-  );
+function normalizeProject(item: Record<string, unknown>): Project {
+  const name = String(item.name || item.title || "Project");
+  const description = String(item.summary || item.shortDescription || item.description || item.overview || "");
+  const stringList = (value: unknown) => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
+  return {
+    slug: String(item.slug || "project"),
+    name,
+    category: String(item.category || "Project"),
+    summary: description,
+    client: typeof item.client === "string" ? item.client : undefined,
+    technologies: stringList(item.technologies),
+    accent: "bg-[#477BFF]",
+    challenge: String(item.challenge || item.description || description),
+    solution: String(item.solution || item.approach || item.description || description),
+    features: stringList(item.features),
+    overview: String(item.overview || item.description || description),
+    featured: item.featured === true || item.active === true,
+    coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
+    seoTitle: typeof item.seoTitle === "string" ? item.seoTitle : undefined,
+    seoDescription: typeof item.seoDescription === "string" ? item.seoDescription : undefined,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+  };
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const items = await read<Record<string, unknown>>("projects", projects as unknown as Record<string, unknown>[]);
+  return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+}
+
+export async function getPageSections(pageKey: PageSection["pageKey"]): Promise<PageSection[]> {
+  const sections = (await read<PageSection>("pageSections", [])).filter((section) => section.pageKey === pageKey).sort((a, b) => a.displayOrder - b.displayOrder);
+  const seen = new Set<string>();
+  return sections.filter((section) => { if (seen.has(section.sectionKey)) return false; seen.add(section.sectionKey); return true; });
+}
+export async function getPageContent(pageKey: PageContent["pageKey"]): Promise<PageContent | undefined> {
+  const pages = await read<PageContent>("pageContent", []);
+  return pages.find((page) => page.pageKey === pageKey);
+}
+
+export async function getNavigation(): Promise<NavigationItem[]> {
+  const items = await read<NavigationItem>("navigation", []);
+  return items.filter((item) => item.active !== false).sort((a, b) => a.displayOrder - b.displayOrder);
+}
+
+export async function getHomeSections(): Promise<HomeSection[]> {
+  const sections = (await read<HomeSection>("homeSections", [])).sort((a, b) => a.displayOrder - b.displayOrder);
+  const seen = new Set<string>();
+  return sections.filter((section) => { if (seen.has(section.sectionKey)) return false; seen.add(section.sectionKey); return true; });
+}
+
+export async function getProcess(): Promise<ProcessStep[]> {
+  const steps = await read<ProcessStep>("process", []);
+  return steps.filter((step) => step.active !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 export function getProducts() { return read<Product>("products", []); }
@@ -546,7 +673,7 @@ export function getPosts() {
 |--------------------------------------------------------------------------
 */
 
-export async function getProject(slug: string) { return getPublishedBySlug<Project>("projects", slug); }
+export async function getProject(slug: string): Promise<Project | undefined> { const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug); if (item) return normalizeProject(item); const fallback = projects.find((project) => project.slug === slug); return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined; }
 
 /*
 |--------------------------------------------------------------------------
@@ -554,7 +681,7 @@ export async function getProject(slug: string) { return getPublishedBySlug<Proje
 |--------------------------------------------------------------------------
 */
 
-export async function getPost(slug: string) { return getPublishedBySlug<Post>("posts", slug); }
+export async function getPost(slug: string): Promise<Post | undefined> { const item = await getPublishedBySlug<Post>("posts", slug); if (item) return item; return posts.find((post) => post.slug === slug); }
 
 async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
   try { return (await (await getDb()).collection(collection).findOne({ slug, status: "published" })) as T | undefined; }
@@ -593,22 +720,18 @@ export function getTags() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTeam() {
-  return (
-    await read<TeamMember>(
-      "team",
-      []
-    )
-  )
-    .filter(
-      (member) =>
-        member.published !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getTeam(): Promise<TeamMember[]> {
+  const items = await read<Record<string, unknown>>("team", []);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    _id: typeof item._id === "string" ? item._id : undefined,
+    name: String(item.name || item.title || "Team member"),
+    role: String(item.role || item.position || ""),
+    shortBio: typeof item.shortBio === "string" ? item.shortBio : typeof item.bio === "string" ? item.bio : undefined,
+    image: typeof item.image === "string" ? item.image : undefined,
+    socialLinks: Array.isArray(item.socialLinks) ? item.socialLinks.filter((value): value is string => typeof value === "string") : [item.linkedin, item.instagram].filter((value): value is string => typeof value === "string"),
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+    published: item.published !== false,
+  })).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*
@@ -666,22 +789,20 @@ export async function getFaqs() {
 |--------------------------------------------------------------------------
 */
 
-export async function getTestimonials() {
-  return (
-    await read<Testimonial>(
-      "testimonials",
-      []
-    )
-  )
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const items = await read<Record<string, unknown>>("testimonials", []);
+  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+    _id: typeof item._id === "string" ? item._id : undefined,
+    clientName: String(item.clientName || item.name || "Client"),
+    roleCompany: String(item.roleCompany || [item.clientRole, item.company].filter((value) => typeof value === "string" && value).join(" · ") || ""),
+    company: typeof item.company === "string" ? item.company : undefined,
+    role: typeof item.role === "string" ? item.role : typeof item.clientRole === "string" ? item.clientRole : undefined,
+    text: String(item.text || item.quote || ""),
+    image: typeof item.image === "string" ? item.image : undefined,
+    active: item.active !== false,
+    published: item.published !== false,
+    displayOrder: Number(item.displayOrder ?? item.order ?? 999),
+  })).filter((item) => Boolean(item.text)).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*
@@ -733,22 +854,15 @@ export async function getClientLogos() {
 |--------------------------------------------------------------------------
 */
 
-export async function getJobs() {
-  return (
-    await read<Job>(
-      "jobs",
-      []
-    )
-  )
-    .filter(
-      (job) =>
-        job.status === "open"
-    )
-    .sort(
-      (a, b) =>
-        (a.displayOrder ?? 999) -
-        (b.displayOrder ?? 999)
-    );
+export async function getJobs(): Promise<Job[]> {
+  try {
+    const db = await getDb();
+    const documents = await db.collection("jobs").find({ status: "open" }).sort({ displayOrder: 1, order: 1, createdAt: -1 }).toArray();
+    return (documents as unknown as Job[]).filter((job) => job.published !== false).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  } catch (error) {
+    console.error("CMS read failed for jobs", error);
+    return [];
+  }
 }
 
 /*
@@ -846,7 +960,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
   )
     .filter(
       (slide) =>
-        slide.active !== false
+        slide.active !== false && slide.published !== false
     )
     .sort(
       (a, b) =>
@@ -880,6 +994,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       "Ayzent Solutions",
 
     companyLogo:
+      "",
+
+    socialImage:
+      "",
+
+    seoTitle:
+      "",
+
+    seoDescription:
       "",
 
     /*
@@ -1006,10 +1129,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       return fallback;
     }
 
+    const raw = document as unknown as Record<string, unknown>;
     return {
       ...fallback,
-
-      ...(document as unknown as SiteSettings),
+      ...(raw as unknown as SiteSettings),
+      homeCtaEyebrow: typeof raw.homeCtaEyebrow === "string" ? raw.homeCtaEyebrow : typeof raw.ctaEyebrow === "string" ? raw.ctaEyebrow : fallback.homeCtaEyebrow,
+      homeCtaTitle: typeof raw.homeCtaTitle === "string" ? raw.homeCtaTitle : typeof raw.ctaTitle === "string" ? raw.ctaTitle : fallback.homeCtaTitle,
+      homeCtaButtonText: typeof raw.homeCtaButtonText === "string" ? raw.homeCtaButtonText : typeof raw.ctaButtonText === "string" ? raw.ctaButtonText : fallback.homeCtaButtonText,
+      homeCtaButtonLink: typeof raw.homeCtaButtonLink === "string" ? raw.homeCtaButtonLink : typeof raw.ctaButtonLink === "string" ? raw.ctaButtonLink : fallback.homeCtaButtonLink,
+      contactText: typeof raw.contactText === "string" ? raw.contactText : typeof raw.contactDescription === "string" ? raw.contactDescription : fallback.contactText,
     };
   } catch {
     return fallback;
@@ -1164,10 +1292,26 @@ export async function getAboutContent(): Promise<AboutContent> {
       return fallback;
     }
 
+    const raw = document as unknown as Record<string, unknown>;
+    const text = (...values: unknown[]) => {
+      const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
+      return typeof found === "string" ? found : "";
+    };
+    const cmsValues = Array.isArray(raw.values) ? raw.values.filter((value): value is string => typeof value === "string") : undefined;
     return {
       ...fallback,
-
-      ...(document as unknown as AboutContent),
+      ...(raw as unknown as AboutContent),
+      heroEyebrow: text(raw.heroEyebrow, raw.eyebrow, fallback.heroEyebrow),
+      heroTitle: text(raw.heroTitle, raw.title, fallback.heroTitle),
+      heroText: text(raw.heroText, raw.description, fallback.heroText),
+      storyEyebrow: text(raw.storyEyebrow, raw.storyLabel, fallback.storyEyebrow),
+      storyParagraphOne: text(raw.storyParagraphOne, raw.story, fallback.storyParagraphOne),
+      storyParagraphTwo: text(raw.storyParagraphTwo, raw.storyContinuation, fallback.storyParagraphTwo),
+      mission: text(raw.mission, raw.missionDescription, fallback.mission),
+      vision: text(raw.vision, raw.visionDescription, fallback.vision),
+      values: cmsValues?.length ? cmsValues : fallback.values,
+      teamTitle: text(raw.teamTitle, raw.teamHeading, fallback.teamTitle),
+      teamText: text(raw.teamText, raw.teamDescription, fallback.teamText),
     };
   } catch {
     return fallback;

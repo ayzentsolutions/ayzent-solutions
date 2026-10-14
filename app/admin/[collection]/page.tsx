@@ -19,7 +19,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ col
       </header>
 
       <div className="mx-auto grid max-w-[90rem] gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10">
-        <aside className="min-w-0 lg:sticky lg:top-24 lg:h-fit">
+        <aside className="min-w-0 border border-line bg-surface p-3 sm:p-4 lg:sticky lg:top-24 lg:h-fit">
           <nav aria-label="CMS collections" className="space-y-5 lg:space-y-7">
             {cmsNavigation.map((group) => (
               <div key={group.title}>

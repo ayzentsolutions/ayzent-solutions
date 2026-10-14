@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
+  const settings = await getSiteSettings();
   const companyName = settings.companyName || "Ayzent Solutions";
   const description = settings.footerDescription || "Ideas. Engineered.";
   const socialImage = settings.socialImage || settings.companyLogo;
@@ -34,7 +34,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getSiteSettings();
+  const [settings, navigation] = await Promise.all([getSiteSettings(), getNavigation()]);
   const companyName = settings.companyName || "Ayzent Solutions";
   const headerButtonText = settings.headerButtonText || "Start a Project";
   const headerButtonLink = settings.headerButtonLink || "/contact";

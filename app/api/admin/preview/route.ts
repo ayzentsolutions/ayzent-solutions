@@ -21,7 +21,7 @@ function cleanData(value: unknown): Record<string, unknown> | null {
     ([key, item]) =>
       !key.startsWith("$") &&
       key !== "_id" &&
-      (item === null || ["string", "number", "boolean"].includes(typeof item) || Array.isArray(item))
+      (item === null || ["string", "number", "boolean"].includes(typeof item) || (Array.isArray(item) && item.every((entry) => typeof entry === "string")))
   );
   return Object.fromEntries(entries);
 }

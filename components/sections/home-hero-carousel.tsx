@@ -10,10 +10,10 @@ export interface HeroSlide {
   id?: string; _id?: string; eyebrow?: string; title?: string; description?: string; text?: string; primaryButtonText?: string; primaryButtonLink?: string; primaryText?: string; primaryLink?: string;
   secondaryButtonText?: string; secondaryButtonLink?: string; secondaryText?: string; secondaryLink?: string; image?: string; alt?: string; active?: boolean; published?: boolean; order?: number; displayOrder?: number;
 }
-type Props = { slides?: HeroSlide[]; style?: CSSProperties; hidden?: boolean; "data-layout"?: string; "data-home-section"?: string };
+type Props = { slides?: HeroSlide[]; style?: CSSProperties; hidden?: boolean; "data-layout"?: string; "data-home-section"?: string; imageOverride?: string };
 const fallback = { eyebrow: "AYZENT SOLUTIONS / DIGITAL ENGINEERING", title: "Ideas into impact.", description: "We engineer digital experiences and products for teams ready to make their next move.", primaryButtonText: "Start a project", primaryButtonLink: "/contact", secondaryButtonText: "Explore selected work", secondaryButtonLink: "/projects" };
 
-export function HomeHeroCarousel({ slides = [], style, hidden, "data-layout": layoutVariant, "data-home-section": sectionKey }: Props) {
+export function HomeHeroCarousel({ slides = [], style, hidden, "data-layout": layoutVariant, "data-home-section": sectionKey, imageOverride }: Props) {
   const activeSlides = useMemo(() => [...slides].filter(slide => slide.active !== false && slide.published !== false).sort((a,b) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0)), [slides]);
   const contentSlide = activeSlides[0];
   const content = {
@@ -27,7 +27,7 @@ export function HomeHeroCarousel({ slides = [], style, hidden, "data-layout": la
   };
   const images = activeSlides.filter(slide => typeof slide.image === "string" && slide.image.trim());
   const [selected, setSelected] = useState(0);
-  const currentImage = images[selected] || images[0];
+  const currentImage: HeroSlide | undefined = images[selected] || images[0] || (imageOverride ? { image: imageOverride } : undefined);
   return (
     <section style={style} hidden={hidden} data-layout={layoutVariant} data-home-section={sectionKey || "hero"} className="home-section relative isolate overflow-hidden border-b border-[#27344A] bg-[#080D18] text-[#E2E8F0]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0,transparent_calc(50%-1px),rgba(39,52,74,.45)_50%,transparent_calc(50%+1px),transparent_100%)] opacity-40" />

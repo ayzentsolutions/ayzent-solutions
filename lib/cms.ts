@@ -1201,7 +1201,7 @@ export function validateCmsData(
   }
 
   if (collection === "homeSections") {
-    const sectionKeys = ["intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"];
+    const sectionKeys = ["hero", "intro", "services", "projects", "products", "process", "studio", "testimonials", "faqs", "cta"];
     const layouts = ["editorial", "compact", "full-bleed"];
     const backgrounds = ["midnight", "navy", "elevated"];
     if (!sectionKeys.includes(String(data.sectionKey))) errors.push("Choose a supported homepage section.");

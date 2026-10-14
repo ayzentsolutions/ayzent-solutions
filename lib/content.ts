@@ -914,7 +914,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
   )
     .filter(
       (slide) =>
-        slide.active !== false
+        slide.active !== false && slide.published !== false
     )
     .sort(
       (a, b) =>

@@ -7,7 +7,7 @@ import { cmsNavigation, collectionLabels, isCmsCollection } from "@/lib/cms";
 
 export default async function CollectionPage({ params }: { params: Promise<{ collection: string }> }) {
   const { collection } = await params;
-  if (!isCmsCollection(collection)) notFound();
+  if (!isCmsCollection(collection) || ["pageSections", "pageContent", "homeSections"].includes(collection)) notFound();
 
   return (
     <main className="min-h-screen bg-background">

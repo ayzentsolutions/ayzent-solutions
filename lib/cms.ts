@@ -198,7 +198,6 @@ export const cmsNavigation = [
       "siteSettings",
       "heroSlides",
       "navigation",
-      "homeSections",
       "testimonials",
       "clientLogos",
       "faqs",
@@ -231,7 +230,6 @@ export const cmsNavigation = [
   },
   { title: "PRODUCTS", items: ["products"] },
   { title: "ENGINEERING", items: ["process"] },
-  { title: "PUBLIC PAGES", items: ["pageContent", "pageSections"] },
 
   {
     title: "BLOG",

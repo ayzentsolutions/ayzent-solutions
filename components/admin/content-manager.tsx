@@ -266,10 +266,9 @@ function groupFields(
 
 export function ContentManager({
   collection,
-  label,
 }: {
   collection: string;
-  label: string;
+  label?: string;
 }) {
   const fields = useMemo(
     () =>
@@ -711,10 +710,6 @@ export function ContentManager({
   return (
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <section>
-        <h1 className="font-display text-4xl">
-          {label}
-        </h1>
-
         <p className="mt-3 text-sm leading-relaxed text-muted">
           {singleton
             ? loading

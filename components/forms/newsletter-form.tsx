@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 export function NewsletterForm() {
@@ -74,10 +75,11 @@ export function NewsletterForm() {
       </div>
 
       {message && (
-        <p className="text-xs text-muted">
+        <p role="status" aria-live="polite" className="text-xs text-muted">
           {message}
         </p>
       )}
+      <p className="text-xs text-muted">See our <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">privacy notice</Link>.</p>
     </form>
   );
 }

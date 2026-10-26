@@ -10,6 +10,7 @@ export function ProjectBrowser({ projects }: { projects: Project[] }) {
   const [category, setCategory] = useState("All");
   const [visible, setVisible] = useState(6);
   const filtered = category === "All" ? projects : projects.filter((project) => project.category === category);
+  if (projects.length === 0) return <p className="border-y border-dashed border-line py-10 text-sm leading-7 text-muted">No projects are currently published.</p>;
 
   function select(next: string) {
     setCategory(next);

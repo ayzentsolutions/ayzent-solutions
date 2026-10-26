@@ -1,10 +1,11 @@
 name: Quality checks
+# Run type, lint, test and production-build checks on the remediation branch as well.
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, "feature/**"]
+    branches: [main, "feature/**", "fix/**"]
 
 permissions:
   contents: read

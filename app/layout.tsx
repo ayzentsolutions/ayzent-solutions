@@ -5,7 +5,6 @@ import "./globals.css";
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { CursorAtmosphere } from "@/components/effects/cursor-atmosphere";
 import { getActiveAnnouncement, getCmsPreviewSession, getNavigation, getSiteSettings } from "@/lib/content";
 import { AnnouncementPopup } from "@/components/announcements/announcement-popup";
 import { PublicSiteOnly } from "@/components/layout/public-site-only";
@@ -19,14 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const companyName = settings.companyName || "Ayzent Solutions";
   const title = settings.seoTitle || companyName;
-  const description = settings.seoDescription || settings.footerDescription || "Ideas. Engineered.";
+  const description = settings.seoDescription || settings.footerDescription || "Contact Ayzent Solutions about a website or software project.";
   const socialImage = settings.socialImage || settings.companyLogo;
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ayzent-solutions.vercel.app"),
     title: { default: title, template: `%s | ${companyName}` },
     description,
-    alternates: { canonical: "/" },
     openGraph: { type: "website", siteName: companyName, title, description, images: socialImage ? [{ url: socialImage }] : undefined },
     twitter: { card: "summary_large_image", title, description, images: socialImage ? [socialImage] : undefined },
     icons: { icon: settings.companyLogo || "/favicon.ico" },
@@ -46,7 +44,6 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}>
-        <CursorAtmosphere />
         <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
           Skip to main content
         </a>

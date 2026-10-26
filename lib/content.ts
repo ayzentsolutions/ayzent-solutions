@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
 import {
-  faqs,
   posts,
   projects,
   services,
@@ -651,9 +650,14 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
     const db = await getDb();
     const preview = await getCmsPreviewSnapshot(collection);
     const filter = {
-      $or: [
-        { status: "published" },
-        { status: { $exists: false }, published: { $ne: false } },
+      $and: [
+        { published: { $ne: false } },
+        {
+          $or: [
+            { status: "published" },
+            { status: { $exists: false } },
+          ],
+        },
       ],
     };
     const [total, state, documents] = await Promise.all([
@@ -680,7 +684,7 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
     return total === 0 && !state ? fallback : [];
   } catch (error) {
     console.error(`CMS read failed for ${collection}`, error);
-    return fallback;
+    return [];
   }
 }
 
@@ -692,9 +696,9 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
 
 export async function getServices(): Promise<Service[]> {
   const items = await read<Record<string, unknown>>("services", services as unknown as Record<string, unknown>[]);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.title || item.name || "").trim())).map((item) => ({
     ...item,
-    title: String(item.title || item.name || "Service"),
+    title: String(item.title || item.name).trim(),
     text: String(item.text || item.shortDescription || item.description || ""),
     description: typeof item.description === "string" ? item.description : undefined,
     icon: typeof item.icon === "string" ? item.icon : undefined,
@@ -715,22 +719,22 @@ export async function getService(slug: string): Promise<Service | undefined> {
 }
 
 function normalizeProject(item: Record<string, unknown>): Project {
-  const name = String(item.name || item.title || "Project");
-  const description = String(item.summary || item.shortDescription || item.description || item.overview || "");
+  const name = String(item.name || item.title || "").trim();
+  const description = String(item.summary || item.shortDescription || item.description || item.overview || "").trim();
   const stringList = (value: unknown) => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
   return {
     slug: String(item.slug || "project"),
     name,
-    category: String(item.category || "Project"),
+    category: String(item.category || "Portfolio"),
     summary: description,
     client: typeof item.client === "string" ? item.client : undefined,
     technologies: stringList(item.technologies),
     accent: "bg-[#477BFF]",
-    challenge: String(item.challenge || item.description || description),
-    solution: String(item.solution || item.approach || item.description || description),
+    challenge: typeof item.challenge === "string" ? item.challenge.trim() : "",
+    solution: typeof item.solution === "string" ? item.solution.trim() : typeof item.approach === "string" ? item.approach.trim() : "",
     features: stringList(item.features),
     overview: String(item.overview || item.description || description),
-    featured: item.featured === true || item.active === true,
+    featured: item.featured === true,
     coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
     gallery: stringList(item.gallery),
     projectUrl: typeof item.projectUrl === "string" ? item.projectUrl : typeof item.liveLink === "string" ? item.liveLink : typeof item.url === "string" ? item.url : undefined,
@@ -742,7 +746,16 @@ function normalizeProject(item: Record<string, unknown>): Project {
 
 export async function getProjects(): Promise<Project[]> {
   const items = await read<Record<string, unknown>>("projects", projects as unknown as Record<string, unknown>[]);
-  return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  return items
+    .filter((item) =>
+      item.active !== false &&
+      item.published !== false &&
+      typeof item.slug === "string" &&
+      Boolean(item.slug.trim()) &&
+      Boolean(String(item.name || item.title || "").trim())
+    )
+    .map(normalizeProject)
+    .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 export async function getPageSections(pageKey: PageSection["pageKey"]): Promise<PageSection[]> {
@@ -797,7 +810,7 @@ export async function getNavigation(): Promise<NavigationItem[]> {
     });
   } catch (error) {
     console.error("CMS navigation read failed", error);
-    return defaultNavigation;
+    return [];
   }
 }
 
@@ -815,11 +828,22 @@ export async function getProcess(): Promise<ProcessStep[]> {
 export function getProducts() { return read<Product>("products", []); }
 export async function getProduct(slug: string) { return getPublishedBySlug<Product>("products", slug); }
 
-export function getPosts() {
-  return read<Post>(
-    "posts",
-    posts
-  );
+function hasMeaningfulArticleBody(post: Pick<Post, "slug" | "title" | "content" | "excerpt">): boolean {
+  if (!post.slug.trim() || !post.title.trim()) return false;
+  const body = typeof post.content === "string" ? post.content.trim() : "";
+  if (!body || body === post.excerpt?.trim()) return false;
+  const readableText = body
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[[^\]]+\]\([^)]*\)/g, " ")
+    .replace(/[`*_>#~|-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return readableText.length >= 250;
+}
+
+export async function getPosts(): Promise<Post[]> {
+  const items = await read<Post>("posts", posts);
+  return items.filter((post) => post.published !== false && hasMeaningfulArticleBody(post));
 }
 
 /*
@@ -830,7 +854,7 @@ export function getPosts() {
 
 export async function getProject(slug: string): Promise<Project | undefined> {
   const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug);
-  if (item) return normalizeProject(item);
+  if (item && typeof item.slug === "string" && Boolean(item.slug.trim()) && Boolean(String(item.name || item.title || "").trim())) return normalizeProject(item);
   if (await hasCmsRecords("projects")) return undefined;
   const fallback = projects.find((project) => project.slug === slug);
   return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined;
@@ -844,9 +868,9 @@ export async function getProject(slug: string): Promise<Project | undefined> {
 
 export async function getPost(slug: string): Promise<Post | undefined> {
   const item = await getPublishedBySlug<Post>("posts", slug);
-  if (item) return item;
-  if (await hasCmsRecords("posts")) return undefined;
-  return posts.find((post) => post.slug === slug);
+  if (item) return hasMeaningfulArticleBody(item) ? item : undefined;
+  // Never turn a database failure or absent CMS record into demo content.
+  return undefined;
 }
 
 async function getPublishedBySlug<T>(collection: string, slug: string): Promise<T | undefined> {
@@ -865,9 +889,10 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
     }
     return (await db.collection(collection).findOne({
       slug,
+      published: { $ne: false },
       $or: [
         { status: "published" },
-        { status: { $exists: false }, published: { $ne: false } },
+        { status: { $exists: false } },
       ],
     })) as T | undefined;
   } catch (error) {
@@ -921,9 +946,9 @@ export function getTags() {
 
 export async function getTeam(): Promise<TeamMember[]> {
   const items = await read<Record<string, unknown>>("team", []);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.name || item.title || "").trim())).map((item) => ({
     _id: typeof item._id === "string" ? item._id : undefined,
-    name: String(item.name || item.title || "Team member"),
+    name: String(item.name || item.title).trim(),
     role: String(item.role || item.position || ""),
     shortBio: typeof item.shortBio === "string" ? item.shortBio : typeof item.bio === "string" ? item.bio : undefined,
     image: typeof item.image === "string" ? item.image : undefined,
@@ -939,47 +964,15 @@ export async function getTeam(): Promise<TeamMember[]> {
 |--------------------------------------------------------------------------
 */
 
-export async function getFaqs() {
-  const items =
-    await read<
-      Record<string, unknown>
-    >(
-      "faqs",
-      []
-    );
-
-  /*
-  |--------------------------------------------------------------------------
-  | Use existing static FAQs when CMS has no entries.
-  |--------------------------------------------------------------------------
-  */
-
-  if (!items.length) {
-    return faqs;
-  }
-
+export async function getFaqs(): Promise<[string, string][]> {
+  const items = await read<Record<string, unknown>>("faqs", []);
   return items
-    .filter(
-      (item) =>
-        item.active !== false
-    )
-    .map(
-      (item) =>
-        [
-          String(
-            item.question || ""
-          ),
-
-          String(
-            item.answer || ""
-          ),
-        ] as [string, string]
-    )
-    .filter(
-      ([question, answer]) =>
-        Boolean(question) &&
-        Boolean(answer)
-    );
+    .filter((item) => item.active !== false && item.published !== false)
+    .map((item) => [
+      String(item.question || "").trim(),
+      String(item.answer || "").trim(),
+    ] as [string, string])
+    .filter(([question, answer]) => Boolean(question) && Boolean(answer));
 }
 
 /*
@@ -990,9 +983,9 @@ export async function getFaqs() {
 
 export async function getTestimonials(): Promise<Testimonial[]> {
   const items = await read<Record<string, unknown>>("testimonials", []);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.clientName || item.name || "").trim()) && Boolean(String(item.text || item.quote || "").trim())).map((item) => ({
     _id: typeof item._id === "string" ? item._id : undefined,
-    clientName: String(item.clientName || item.name || "Client"),
+    clientName: String(item.clientName || item.name).trim(),
     roleCompany: String(item.roleCompany || [item.clientRole, item.company].filter((value) => typeof value === "string" && value).join(" · ") || ""),
     company: typeof item.company === "string" ? item.company : undefined,
     role: typeof item.role === "string" ? item.role : typeof item.clientRole === "string" ? item.clientRole : undefined,
@@ -1001,7 +994,7 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     active: item.active !== false,
     published: item.published !== false,
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
-  })).filter((item) => Boolean(item.text)).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  })).filter((item) => Boolean(item.text.trim())).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*
@@ -1019,7 +1012,9 @@ export async function getClientLogos() {
   )
     .filter(
       (item) =>
-        item.active !== false
+        item.active !== false &&
+        item.published !== false &&
+        Boolean(String(item.name || "").trim())
     )
     .map(
       (item) => ({
@@ -1066,7 +1061,7 @@ export async function getJobs(): Promise<Job[]> {
       if (index >= 0) rows[index] = merged;
       else rows.push(merged);
     }
-    return rows.filter((job) => job.status === "open" && job.published !== false)
+    return rows.filter((job) => job.status === "open" && job.published !== false && Boolean(String(job.title || "").trim()))
       .sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999)) as unknown as Job[];
   } catch (error) {
     console.error("CMS read failed for jobs", error);
@@ -1083,10 +1078,10 @@ export async function getJobs(): Promise<Job[]> {
 export async function getAnnouncements(): Promise<Announcement[]> {
   const items = await read<Record<string, unknown>>("announcements", []);
   return items
-    .filter((item) => item.active !== false && item.published !== false)
+    .filter((item) => item.active !== false && item.published !== false && Boolean(String(item.title || "").trim()) && Boolean(String(item.content || item.description || "").trim()))
     .map((item) => ({
       ...item,
-      title: String(item.title || ""),
+      title: String(item.title || "").trim(),
       content: String(item.content || item.description || ""),
       ctaText: String(item.ctaText || item.linkText || ""),
       ctaLink: String(item.ctaLink || item.link || ""),
@@ -1132,7 +1127,10 @@ export async function getSocialLinks() {
   )
     .filter(
       (item) =>
-        item.active !== false
+        item.active !== false &&
+        item.published !== false &&
+        Boolean(String(item.label || "").trim()) &&
+        Boolean(String(item.url || "").trim())
     )
     .sort(
       (a, b) =>
@@ -1190,149 +1188,41 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 */
 
 export async function getSiteSettings(): Promise<SiteSettings> {
+  // Keep only safe application defaults. Business contact details and editable
+  // marketing copy must come from the CMS, not assumptions in source code.
   const fallback: SiteSettings = {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Brand & Identity
-    |--------------------------------------------------------------------------
-    */
-
-    companyName:
-      "Ayzent Solutions",
-
-    companyLogo:
-      "",
-
-    socialImage:
-      "",
-
-    seoTitle:
-      "",
-
-    seoDescription:
-      "",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Contact Information
-    |--------------------------------------------------------------------------
-    */
-
-    email:
-      "hello@ayzent.com",
-
-    phone:
-      "",
-
-    whatsapp:
-      "",
-
-    location:
-      "India · Serving clients worldwide",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Header
-    |--------------------------------------------------------------------------
-    */
-
-    headerButtonText:
-      "Get a Quote",
-
-    headerButtonLink:
-      "/contact",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Homepage Hero
-    |
-    | Backward compatibility only.
-    |--------------------------------------------------------------------------
-    */
-
-    heroEyebrow:
-      "Ayzent Solutions",
-
-    heroTitle:
-      "Digital work with real momentum.",
-
-    heroHighlight:
-      "real momentum.",
-
-    heroText:
-      "We build thoughtful websites, brands, and digital products for businesses ready to make their next move count.",
-
-    heroPrimaryText:
-      "Start a Project",
-
-    heroPrimaryLink:
-      "/contact",
-
-    heroSecondaryText:
-      "Explore Our Work",
-
-    heroSecondaryLink:
-      "/projects",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Homepage CTA
-    |--------------------------------------------------------------------------
-    */
-
-    homeCtaEyebrow:
-      "A good place to begin",
-
-    homeCtaTitle:
-      "Have something worthwhile in mind?",
-
-    homeCtaButtonText:
-      "Discuss Your Requirements",
-
-    homeCtaButtonLink:
-      "/contact",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Footer
-    |--------------------------------------------------------------------------
-    */
-
-    footerDescription:
-      "Ideas. Engineered.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Contact Page
-    |--------------------------------------------------------------------------
-    */
-
-    contactEyebrow:
-      "Contact",
-
-    contactTitle:
-      "Tell us what you’re working towards.",
-
-    contactText:
-      "A little context goes a long way. Tell us about the opportunity, and we’ll come back with a practical next step.",
+    companyName: "Ayzent Solutions",
+    companyLogo: "",
+    socialImage: "",
+    seoTitle: "Ayzent Solutions",
+    seoDescription: "Contact Ayzent Solutions about a website or software project.",
+    email: "",
+    phone: "",
+    whatsapp: "",
+    location: "",
+    headerButtonText: "Contact us",
+    headerButtonLink: "/contact",
+    heroEyebrow: "",
+    heroTitle: "Ayzent Solutions",
+    heroHighlight: "",
+    heroText: "",
+    heroPrimaryText: "Contact us",
+    heroPrimaryLink: "/contact",
+    heroSecondaryText: "Services",
+    heroSecondaryLink: "/services",
+    homeCtaEyebrow: "",
+    homeCtaTitle: "Contact Ayzent Solutions",
+    homeCtaButtonText: "Contact us",
+    homeCtaButtonLink: "/contact",
+    footerDescription: "",
+    contactEyebrow: "Contact",
+    contactTitle: "Contact Ayzent Solutions",
+    contactText: "",
   };
 
   try {
     const db = await getDb();
-
-    const document =
-      await db
-        .collection(
-          "siteSettings"
-        )
-        .find()
-        .sort({
-          createdAt: 1,
-        })
-        .limit(1)
-        .next();
-
+    const document = await db.collection("siteSettings").find({ published: { $ne: false }, $or: [{ status: "published" }, { status: { $exists: false } }] }).sort({ createdAt: 1 }).limit(1).next();
     const preview = await getCmsPreviewSnapshot("siteSettings");
     if (!document && !preview) return fallback;
 
@@ -1349,7 +1239,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       homeCtaButtonLink: typeof raw.homeCtaButtonLink === "string" ? raw.homeCtaButtonLink : typeof raw.ctaButtonLink === "string" ? raw.ctaButtonLink : fallback.homeCtaButtonLink,
       contactText: typeof raw.contactText === "string" ? raw.contactText : typeof raw.contactDescription === "string" ? raw.contactDescription : fallback.contactText,
     };
-  } catch {
+  } catch (error) {
+    console.error("CMS read failed for siteSettings", error);
     return fallback;
   }
 }
@@ -1365,139 +1256,35 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 */
 
 export async function getAboutContent(): Promise<AboutContent> {
+  // Company history, values, team claims and quotations are CMS-managed.
+  // Do not fill missing records with invented brand storytelling.
   const fallback: AboutContent = {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Hero
-    |--------------------------------------------------------------------------
-    */
-
-    heroEyebrow:
-      "About Ayzent",
-
-    heroTitle:
-      "The ideas behind more purposeful digital work.",
-
-    heroText:
-      "Ayzent Solutions is a design and technology studio for organisations with a clear sense of where they are going.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Story
-    |--------------------------------------------------------------------------
-    */
-
-    storyEyebrow:
-      "Our story",
-
-    storyParagraphOne:
-      "We started Ayzent with a simple belief: the digital work that matters most is built with attention, not noise. It should make a business easier to understand, easier to choose, and easier to grow.",
-
-    storyParagraphTwo:
-      "Today, we work at the point where strong ideas meet practical delivery—bringing strategy, design, and engineering into one considered process.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mission
-    |--------------------------------------------------------------------------
-    */
-
-    missionEyebrow:
-      "Mission",
-
-    mission:
-      "Help good businesses make a stronger digital impression.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Vision
-    |--------------------------------------------------------------------------
-    */
-
-    visionEyebrow:
-      "Vision",
-
-    vision:
-      "A more thoughtful internet, shaped by teams that care about the people they serve.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Values
-    |--------------------------------------------------------------------------
-    */
-
-    valuesEyebrow:
-      "What guides us",
-
-    values: [
-      "Curiosity before certainty",
-      "Clarity over clutter",
-      "Care in the details",
-      "Partnership over hand-off",
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Team
-    |--------------------------------------------------------------------------
-    */
-
-    teamEyebrow:
-      "The people",
-
-    teamTitle:
-      "The people behind the work.",
-
-    teamText:
-      "Ayzent is led by people who care about the balance of ideas, craft, and dependable execution.",
-
-    /*
-    |--------------------------------------------------------------------------
-    | Quote
-    |--------------------------------------------------------------------------
-    */
-
-    quote:
-      "The best work happens when ambition is met with honesty and care.",
-
-    quoteAuthor:
-      "Founder, Ayzent Solutions",
-
-    /*
-    |--------------------------------------------------------------------------
-    | CTA
-    |--------------------------------------------------------------------------
-    */
-
-    ctaTitle:
-      "Let’s build what’s next.",
-
-    ctaText:
-      "Bring us the opportunity, challenge, or half-formed idea.",
-
-    ctaButtonText:
-      "Start a Project",
-
-    ctaButtonLink:
-      "/contact",
+    heroEyebrow: "About Ayzent",
+    heroTitle: "Ayzent Solutions",
+    heroText: "",
+    storyEyebrow: "",
+    storyParagraphOne: "",
+    storyParagraphTwo: "",
+    missionEyebrow: "",
+    mission: "",
+    visionEyebrow: "",
+    vision: "",
+    valuesEyebrow: "",
+    values: [],
+    teamEyebrow: "",
+    teamTitle: "",
+    teamText: "",
+    quote: "",
+    quoteAuthor: "",
+    ctaTitle: "",
+    ctaText: "",
+    ctaButtonText: "Contact us",
+    ctaButtonLink: "/contact",
   };
 
   try {
     const db = await getDb();
-
-    const document =
-      await db
-        .collection(
-          "aboutContent"
-        )
-        .find()
-        .sort({
-          createdAt: 1,
-        })
-        .limit(1)
-        .next();
-
+    const document = await db.collection("aboutContent").find({ published: { $ne: false }, $or: [{ status: "published" }, { status: { $exists: false } }] }).sort({ createdAt: 1 }).limit(1).next();
     const preview = await getCmsPreviewSnapshot("aboutContent");
     if (!document && !preview) return fallback;
 
@@ -1525,7 +1312,8 @@ export async function getAboutContent(): Promise<AboutContent> {
       teamTitle: text(raw.teamTitle, raw.teamHeading, fallback.teamTitle),
       teamText: text(raw.teamText, raw.teamDescription, fallback.teamText),
     };
-  } catch {
+  } catch (error) {
+    console.error("CMS read failed for aboutContent", error);
     return fallback;
   }
 }

@@ -6,7 +6,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { getAboutContent, getPageContent, getPageSections, getTeam } from "@/lib/content";
 import { getPageSectionProps } from "@/lib/page-sections";
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> { const [page, about] = await Promise.all([getPageContent("about"), getAboutContent()]); const title = page?.seoTitle || page?.title || about.heroTitle; const description = page?.seoDescription || page?.description || about.heroText; const image = page?.socialImage || page?.image; return { title, description, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
+export async function generateMetadata(): Promise<Metadata> { const [page, about] = await Promise.all([getPageContent("about"), getAboutContent()]); const title = page?.seoTitle || page?.title || about.heroTitle; const description = page?.seoDescription || page?.description || about.heroText; const image = page?.socialImage || page?.image; return { title, description, alternates: { canonical: "/about" }, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
 export default async function AboutPage() {
   const [content,team,page,pageSections] = await Promise.all([getAboutContent(),getTeam(),getPageContent("about"),getPageSections("about")]);
   const sectionConfig = new Map(pageSections.map(section => [section.sectionKey, section]));

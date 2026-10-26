@@ -6,7 +6,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { getPageContent, getPageSections, getPosts } from "@/lib/content";
 import { getPageSectionProps } from "@/lib/page-sections";
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("blog"); const title = page?.seoTitle || page?.title || "Journal"; const description = page?.seoDescription || page?.description || "Published articles from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
+export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("blog"); const title = page?.seoTitle || page?.title || "Journal"; const description = page?.seoDescription || page?.description || "Published articles from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, alternates: { canonical: "/blog" }, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
 export default async function BlogPage() {
   const [posts,page,pageSections] = await Promise.all([getPosts(),getPageContent("blog"),getPageSections("blog")]);
   const sectionConfig = new Map(pageSections.map(section => [section.sectionKey, section]));

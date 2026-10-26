@@ -6,7 +6,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { getPageContent, getPageSections, getProducts } from "@/lib/content";
 import { getPageSectionProps } from "@/lib/page-sections";
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("products"); const title = page?.seoTitle || page?.title || "Our Products"; const description = page?.seoDescription || page?.description || "Explore products and digital offerings built by Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
+export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("products"); const title = page?.seoTitle || page?.title || "Our Products"; const description = page?.seoDescription || page?.description || "Explore products and digital offerings built by Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, alternates: { canonical: "/products" }, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
 export default async function ProductsPage() {
   const [products,page,pageSections] = await Promise.all([getProducts(),getPageContent("products"),getPageSections("products")]);
   const sectionConfig = new Map(pageSections.map(section => [section.sectionKey, section]));

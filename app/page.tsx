@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -9,6 +10,7 @@ import { ProductShowcase } from "@/components/sections/product-showcase";
 import { getAboutContent, getClientLogos, getFaqs, getHeroSlides, getHomeSections, getProcess, getProducts, getProjects, getServices, getSiteSettings, getTestimonials, type HomeSection } from "@/lib/content";
 
 export const revalidate = 60;
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const [heroSlides, faqs, projects, services, testimonials, clientLogos, settings, products, about, homeSections, processSteps] = await Promise.all([

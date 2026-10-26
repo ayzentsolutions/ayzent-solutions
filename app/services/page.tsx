@@ -7,7 +7,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { getPageContent, getPageSections, getServices } from "@/lib/content";
 import { getPageSectionProps } from "@/lib/page-sections";
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("services"); const title = page?.seoTitle || page?.title || "Services"; const description = page?.seoDescription || page?.description || "Published service information from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
+export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("services"); const title = page?.seoTitle || page?.title || "Services"; const description = page?.seoDescription || page?.description || "Published service information from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, alternates: { canonical: "/services" }, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
 export default async function ServicesPage() {
   const [services,page,pageSections] = await Promise.all([getServices(),getPageContent("services"),getPageSections("services")]);
   const sectionConfig = new Map(pageSections.map(section => [section.sectionKey, section]));

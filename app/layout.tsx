@@ -25,7 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ayzent-solutions.vercel.app"),
     title: { default: title, template: `%s | ${companyName}` },
     description,
-    alternates: { canonical: "/" },
     openGraph: { type: "website", siteName: companyName, title, description, images: socialImage ? [{ url: socialImage }] : undefined },
     twitter: { card: "summary_large_image", title, description, images: socialImage ? [socialImage] : undefined },
     icons: { icon: settings.companyLogo || "/favicon.ico" },

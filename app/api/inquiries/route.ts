@@ -65,7 +65,8 @@ export async function POST(request: Request) {
       updatedAt: new Date(),
     });
 
-    void notifyInquiry(inquiry).catch((error) => {
+    await notifyInquiry(inquiry).catch((error) => {
+      // The inquiry is safely stored even if optional email delivery fails.
       console.error("Inquiry notification failed", error);
     });
 

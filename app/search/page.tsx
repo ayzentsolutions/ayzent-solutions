@@ -6,7 +6,7 @@ import { SearchBrowser } from "@/components/search/search-browser";
 import { getFaqs, getPageContent, getPageSections, getPosts, getProjects, getServices } from "@/lib/content";
 import { getPageSectionProps } from "@/lib/page-sections";
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("search"); const title = page?.seoTitle || page?.title || "Search"; const description = page?.seoDescription || page?.description || "Search projects, articles, services, and FAQs from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
+export async function generateMetadata(): Promise<Metadata> { const page = await getPageContent("search"); const title = page?.seoTitle || page?.title || "Search"; const description = page?.seoDescription || page?.description || "Search projects, articles, services, and FAQs from Ayzent Solutions."; const image = page?.socialImage || page?.image; return { title, description, robots: { index: false, follow: true }, openGraph: { title, description, images: image ? [image] : [] }, twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] } }; }
 export default async function SearchPage() {
   const [projects,posts,services,faqs,page,pageSections] = await Promise.all([getProjects(),getPosts(),getServices(),getFaqs(),getPageContent("search"),getPageSections("search")]);
   const sectionConfig = new Map(pageSections.map(section => [section.sectionKey, section]));

@@ -1014,7 +1014,7 @@ export async function getClientLogos() {
       (item) =>
         item.active !== false &&
         item.published !== false &&
-        Boolean(item.name.trim())
+        Boolean(String(item.name || "").trim())
     )
     .map(
       (item) => ({
@@ -1129,8 +1129,8 @@ export async function getSocialLinks() {
       (item) =>
         item.active !== false &&
         item.published !== false &&
-        Boolean(item.label.trim()) &&
-        Boolean(item.url.trim())
+        Boolean(String(item.label || "").trim()) &&
+        Boolean(String(item.url || "").trim())
     )
     .sort(
       (a, b) =>

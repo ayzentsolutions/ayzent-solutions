@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const socialImage = settings.socialImage || settings.companyLogo;
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ayzent-solutions.vercel.app"),
     title: { default: title, template: `%s | ${companyName}` },
     description,
     alternates: { canonical: "/" },

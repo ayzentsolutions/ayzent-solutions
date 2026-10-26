@@ -29,12 +29,12 @@ export default async function Home() {
     <div className="flex flex-col">
       <HomeHeroCarousel slides={heroSlides} imageOverride={sectionConfig.get("hero")?.image} {...sectionProps("hero", 0, "midnight")} />
 
-      <section {...sectionProps("intro", 1, "navy")} className="home-section border-b border-[#27344A] bg-[#0D1423] py-14 sm:py-20 lg:py-28">
+      {(sectionConfig.get("intro")?.title || sectionConfig.get("intro")?.description || sectionConfig.get("intro")?.image || about.storyParagraphOne || about.storyParagraphTwo || about.heroText || about.mission) && <section {...sectionProps("intro", 1, "navy")} className="home-section border-b border-[#27344A] bg-[#0D1423] py-14 sm:py-20 lg:py-28">
         <Container className="grid gap-8 lg:grid-cols-[.45fr_1.55fr] lg:gap-16">
           <div><p className="eyebrow flex items-center gap-3 text-[#8AA8FF]"><span className="h-px w-8 bg-[#477BFF]" />{sectionConfig.get("intro")?.eyebrow || about.storyEyebrow || "About Ayzent"}</p><p className="mt-4 max-w-xs text-sm leading-6 text-[#64748B]">{sectionConfig.get("intro")?.description || about.heroText || about.mission || ""}</p>{sectionConfig.get("intro")?.image && <div className="relative mt-5 aspect-[4/3] overflow-hidden border border-[#27344A]"><Image src={sectionConfig.get("intro")!.image!} alt={sectionConfig.get("intro")?.title || about.storyEyebrow || "Studio image"} fill sizes="(max-width: 1024px) 100vw, 30vw" className="object-cover" /></div>}</div>
           <div><h2 className="max-w-5xl font-display text-3xl leading-[1.08] tracking-[-.04em] sm:text-4xl lg:text-6xl">{sectionConfig.get("intro")?.title || story || settings.footerDescription || settings.companyName || "Ayzent Solutions"}</h2><div className="mt-8 flex flex-col justify-between gap-5 border-t border-[#27344A] pt-5 sm:flex-row sm:items-end"><p className="max-w-xl text-sm leading-7 text-[#94A3B8] sm:text-base">{about.mission || settings.footerDescription || ""}</p><Link href="/about" className="inline-flex min-h-11 shrink-0 items-center gap-3 text-sm font-semibold text-[#8AA8FF] hover:text-white">About the studio <span aria-hidden="true">↗</span></Link></div></div>
         </Container>
-      </section>
+      </section>}
 
       <section {...sectionProps("services", 2, "midnight")} className="home-section bg-[#080D18] py-14 sm:py-20 lg:py-28">
         <Container>

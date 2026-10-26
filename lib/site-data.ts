@@ -22,12 +22,12 @@ export type Project = {
 export const inquiryBudgetOptions = ["Not sure yet", "To be discussed"] as const;
 
 export const services = [
-  { number: "01", title: "Website Development", text: "Fast, thoughtful websites that make your business feel unmistakably yours." },
-  { number: "02", title: "Digital Marketing", text: "Clear campaigns and content that turn attention into qualified conversations." },
-  { number: "03", title: "SEO", text: "Sustainable search visibility built around useful content and solid technical foundations." },
-  { number: "04", title: "Website & Software Maintenance", text: "Reliable ongoing care that keeps your most important digital tools working hard." },
-  { number: "05", title: "UI/UX Design", text: "Interfaces with clarity, character, and a genuinely better path for every user." },
-  { number: "06", title: "Deployment & Cloud Services", text: "Confident releases, resilient infrastructure, and room to grow without friction." },
+  { number: "01", title: "Website Development", text: "Responsive websites planned around your content, audience, and key user journeys." },
+  { number: "02", title: "Digital Marketing", text: "Digital campaigns with defined audiences, channel choices, and measurable actions." },
+  { number: "03", title: "SEO", text: "Technical and on-page improvements that help search engines understand your pages and people find relevant information." },
+  { number: "04", title: "Website & Software Maintenance", text: "Routine updates, issue triage, bug fixes, and ongoing care for websites and software." },
+  { number: "05", title: "UI/UX Design", text: "User journeys, information structure, interface design, and prototypes prepared for development." },
+  { number: "06", title: "Deployment & Cloud Services", text: "Application environment setup, deployment configuration, hosting support, and release preparation." },
 ];
 
 // Production portfolio content must come from published CMS records.

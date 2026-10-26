@@ -1,4 +1,5 @@
 name: Quality checks
+# Run type, lint, test and production-build checks on the remediation branch as well.
 
 on:
   pull_request:

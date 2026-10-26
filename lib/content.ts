@@ -1012,7 +1012,9 @@ export async function getClientLogos() {
   )
     .filter(
       (item) =>
-        item.active !== false
+        item.active !== false &&
+        item.published !== false &&
+        Boolean(item.name.trim())
     )
     .map(
       (item) => ({
@@ -1059,7 +1061,7 @@ export async function getJobs(): Promise<Job[]> {
       if (index >= 0) rows[index] = merged;
       else rows.push(merged);
     }
-    return rows.filter((job) => job.status === "open" && job.published !== false)
+    return rows.filter((job) => job.status === "open" && job.published !== false && Boolean(String(job.title || "").trim()))
       .sort((a, b) => Number(a.displayOrder ?? a.order ?? 999) - Number(b.displayOrder ?? b.order ?? 999)) as unknown as Job[];
   } catch (error) {
     console.error("CMS read failed for jobs", error);
@@ -1076,10 +1078,10 @@ export async function getJobs(): Promise<Job[]> {
 export async function getAnnouncements(): Promise<Announcement[]> {
   const items = await read<Record<string, unknown>>("announcements", []);
   return items
-    .filter((item) => item.active !== false && item.published !== false)
+    .filter((item) => item.active !== false && item.published !== false && Boolean(String(item.title || "").trim()) && Boolean(String(item.content || item.description || "").trim()))
     .map((item) => ({
       ...item,
-      title: String(item.title || ""),
+      title: String(item.title || "").trim(),
       content: String(item.content || item.description || ""),
       ctaText: String(item.ctaText || item.linkText || ""),
       ctaLink: String(item.ctaLink || item.link || ""),
@@ -1125,7 +1127,10 @@ export async function getSocialLinks() {
   )
     .filter(
       (item) =>
-        item.active !== false
+        item.active !== false &&
+        item.published !== false &&
+        Boolean(item.label.trim()) &&
+        Boolean(item.url.trim())
     )
     .sort(
       (a, b) =>

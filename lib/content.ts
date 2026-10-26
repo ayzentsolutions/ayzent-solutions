@@ -650,9 +650,14 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
     const db = await getDb();
     const preview = await getCmsPreviewSnapshot(collection);
     const filter = {
-      $or: [
-        { status: "published" },
-        { status: { $exists: false }, published: { $ne: false } },
+      $and: [
+        { published: { $ne: false } },
+        {
+          $or: [
+            { status: "published" },
+            { status: { $exists: false } },
+          ],
+        },
       ],
     };
     const [total, state, documents] = await Promise.all([
@@ -883,9 +888,10 @@ async function getPublishedBySlug<T>(collection: string, slug: string): Promise<
     }
     return (await db.collection(collection).findOne({
       slug,
+      published: { $ne: false },
       $or: [
         { status: "published" },
-        { status: { $exists: false }, published: { $ne: false } },
+        { status: { $exists: false } },
       ],
     })) as T | undefined;
   } catch (error) {
@@ -1210,7 +1216,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
   try {
     const db = await getDb();
-    const document = await db.collection("siteSettings").find().sort({ createdAt: 1 }).limit(1).next();
+    const document = await db.collection("siteSettings").find({ published: { $ne: false }, $or: [{ status: "published" }, { status: { $exists: false } }] }).sort({ createdAt: 1 }).limit(1).next();
     const preview = await getCmsPreviewSnapshot("siteSettings");
     if (!document && !preview) return fallback;
 
@@ -1272,7 +1278,7 @@ export async function getAboutContent(): Promise<AboutContent> {
 
   try {
     const db = await getDb();
-    const document = await db.collection("aboutContent").find().sort({ createdAt: 1 }).limit(1).next();
+    const document = await db.collection("aboutContent").find({ published: { $ne: false }, $or: [{ status: "published" }, { status: { $exists: false } }] }).sort({ createdAt: 1 }).limit(1).next();
     const preview = await getCmsPreviewSnapshot("aboutContent");
     if (!document && !preview) return fallback;
 

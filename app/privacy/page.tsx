@@ -58,14 +58,14 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-2xl text-[#E2E8F0]">Updates to this notice</h2>
             <p className="mt-3">
-              This page may be updated when the website's data handling changes. For a question about
+              This page may be updated when the website&apos;s data handling changes. For a question about
               this notice, use the contact page.
             </p>
           </section>
         </div>
 
         <p className="mt-10 border-t border-[#27344A] pt-5 text-xs leading-6 text-[#94A3B8]">
-          This summary does not replace a review of the company's applicable privacy obligations.
+          This summary does not replace a review of the company&apos;s applicable privacy obligations.
         </p>
       </Container>
     </article>

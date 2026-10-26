@@ -691,9 +691,9 @@ async function read<T>(collection: string, fallback: T[]): Promise<T[]> {
 
 export async function getServices(): Promise<Service[]> {
   const items = await read<Record<string, unknown>>("services", services as unknown as Record<string, unknown>[]);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.title || item.name || "").trim())).map((item) => ({
     ...item,
-    title: String(item.title || item.name || "Service"),
+    title: String(item.title || item.name).trim(),
     text: String(item.text || item.shortDescription || item.description || ""),
     description: typeof item.description === "string" ? item.description : undefined,
     icon: typeof item.icon === "string" ? item.icon : undefined,
@@ -714,22 +714,22 @@ export async function getService(slug: string): Promise<Service | undefined> {
 }
 
 function normalizeProject(item: Record<string, unknown>): Project {
-  const name = String(item.name || item.title || "Project");
-  const description = String(item.summary || item.shortDescription || item.description || item.overview || "");
+  const name = String(item.name || item.title || "").trim();
+  const description = String(item.summary || item.shortDescription || item.description || item.overview || "").trim();
   const stringList = (value: unknown) => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
   return {
     slug: String(item.slug || "project"),
     name,
-    category: String(item.category || "Project"),
+    category: String(item.category || "Portfolio"),
     summary: description,
     client: typeof item.client === "string" ? item.client : undefined,
     technologies: stringList(item.technologies),
     accent: "bg-[#477BFF]",
-    challenge: String(item.challenge || item.description || description),
-    solution: String(item.solution || item.approach || item.description || description),
+    challenge: typeof item.challenge === "string" ? item.challenge.trim() : "",
+    solution: typeof item.solution === "string" ? item.solution.trim() : typeof item.approach === "string" ? item.approach.trim() : "",
     features: stringList(item.features),
     overview: String(item.overview || item.description || description),
-    featured: item.featured === true || item.active === true,
+    featured: item.featured === true,
     coverImage: typeof item.coverImage === "string" ? item.coverImage : typeof item.image === "string" ? item.image : undefined,
     gallery: stringList(item.gallery),
     projectUrl: typeof item.projectUrl === "string" ? item.projectUrl : typeof item.liveLink === "string" ? item.liveLink : typeof item.url === "string" ? item.url : undefined,
@@ -741,7 +741,16 @@ function normalizeProject(item: Record<string, unknown>): Project {
 
 export async function getProjects(): Promise<Project[]> {
   const items = await read<Record<string, unknown>>("projects", projects as unknown as Record<string, unknown>[]);
-  return items.filter((item) => item.active !== false && item.published !== false).map(normalizeProject).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  return items
+    .filter((item) =>
+      item.active !== false &&
+      item.published !== false &&
+      typeof item.slug === "string" &&
+      Boolean(item.slug.trim()) &&
+      Boolean(String(item.name || item.title || "").trim())
+    )
+    .map(normalizeProject)
+    .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 export async function getPageSections(pageKey: PageSection["pageKey"]): Promise<PageSection[]> {
@@ -839,7 +848,7 @@ export async function getPosts(): Promise<Post[]> {
 
 export async function getProject(slug: string): Promise<Project | undefined> {
   const item = await getPublishedBySlug<Record<string, unknown>>("projects", slug);
-  if (item) return normalizeProject(item);
+  if (item && typeof item.slug === "string" && Boolean(item.slug.trim()) && Boolean(String(item.name || item.title || "").trim())) return normalizeProject(item);
   if (await hasCmsRecords("projects")) return undefined;
   const fallback = projects.find((project) => project.slug === slug);
   return fallback ? normalizeProject(fallback as unknown as Record<string, unknown>) : undefined;
@@ -930,9 +939,9 @@ export function getTags() {
 
 export async function getTeam(): Promise<TeamMember[]> {
   const items = await read<Record<string, unknown>>("team", []);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.name || item.title || "").trim())).map((item) => ({
     _id: typeof item._id === "string" ? item._id : undefined,
-    name: String(item.name || item.title || "Team member"),
+    name: String(item.name || item.title).trim(),
     role: String(item.role || item.position || ""),
     shortBio: typeof item.shortBio === "string" ? item.shortBio : typeof item.bio === "string" ? item.bio : undefined,
     image: typeof item.image === "string" ? item.image : undefined,
@@ -967,9 +976,9 @@ export async function getFaqs(): Promise<[string, string][]> {
 
 export async function getTestimonials(): Promise<Testimonial[]> {
   const items = await read<Record<string, unknown>>("testimonials", []);
-  return items.filter((item) => item.active !== false && item.published !== false).map((item) => ({
+  return items.filter((item) => item.active !== false && item.published !== false && Boolean(String(item.clientName || item.name || "").trim()) && Boolean(String(item.text || item.quote || "").trim())).map((item) => ({
     _id: typeof item._id === "string" ? item._id : undefined,
-    clientName: String(item.clientName || item.name || "Client"),
+    clientName: String(item.clientName || item.name).trim(),
     roleCompany: String(item.roleCompany || [item.clientRole, item.company].filter((value) => typeof value === "string" && value).join(" · ") || ""),
     company: typeof item.company === "string" ? item.company : undefined,
     role: typeof item.role === "string" ? item.role : typeof item.clientRole === "string" ? item.clientRole : undefined,
@@ -978,7 +987,7 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     active: item.active !== false,
     published: item.published !== false,
     displayOrder: Number(item.displayOrder ?? item.order ?? 999),
-  })).filter((item) => Boolean(item.text)).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+  })).filter((item) => Boolean(item.text.trim())).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 }
 
 /*

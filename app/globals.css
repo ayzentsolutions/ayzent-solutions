@@ -69,7 +69,7 @@ select option { color: #e2e8f0; background: #0d1423; }
 input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus { -webkit-text-fill-color: #e2e8f0; box-shadow: 0 0 0 1000px #0d1423 inset; transition: background-color 9999s ease-out; }
 
 .page-hero[data-layout="compact"] .page-hero-grid { min-height: auto !important; padding-block: clamp(3rem, 5vw, 4.25rem) !important; }
-@media (min-width: 1024px) { .page-hero[data-layout="image-led"] .page-hero-grid { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); } }
+@media (min-width: 1024px) { .page-hero[data-layout="image-led"][data-has-image="true"] .page-hero-grid { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); } }
 
 .page-section[hidden], .page-hero[hidden] { display: none !important; }
 .page-section[data-layout="compact"] { padding-top: clamp(3rem, 5vw, 4.25rem) !important; padding-bottom: clamp(3rem, 5vw, 4.25rem) !important; }

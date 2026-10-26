@@ -13,10 +13,15 @@ export async function Footer() {
   const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : undefined;
   const companyName = settings.companyName || "Ayzent Solutions";
   const footerDescription = settings.footerDescription || "Contact Ayzent Solutions about a website or software project.";
+  const columnsClass = quickLinks.length > 0 && services.length > 0
+    ? "lg:grid-cols-[1.3fr_.7fr_.8fr_1fr]"
+    : quickLinks.length > 0 || services.length > 0
+      ? "lg:grid-cols-[1.3fr_.8fr_1fr]"
+      : "lg:grid-cols-[1fr_1fr]";
   return (
     <footer className="relative isolate overflow-hidden bg-[#080D18] text-[#E2E8F0]">
       <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[30rem] w-[30rem] rounded-full border border-[#6792FF]/20 sm:h-[42rem] sm:w-[42rem]"><div className="absolute inset-8 rounded-full border border-[#6792FF]/15 sm:inset-16" /><div className="absolute inset-20 rounded-full border border-[#6792FF]/10 sm:inset-32" /></div>
-      <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[1.3fr_.7fr_.8fr_1fr] lg:gap-14 lg:py-24">
+      <Container className={`grid gap-12 py-14 sm:py-20 lg:gap-14 lg:py-24 ${columnsClass}`}>
         <div className="min-w-0">
           <p className="eyebrow text-[#6792FF]">Contact</p>
           <h2 className="mt-5 max-w-md font-display text-4xl leading-[1.02] sm:text-5xl">Contact Ayzent Solutions</h2>

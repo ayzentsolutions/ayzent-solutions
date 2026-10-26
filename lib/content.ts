@@ -828,7 +828,8 @@ export async function getProcess(): Promise<ProcessStep[]> {
 export function getProducts() { return read<Product>("products", []); }
 export async function getProduct(slug: string) { return getPublishedBySlug<Product>("products", slug); }
 
-function hasMeaningfulArticleBody(post: Pick<Post, "content" | "excerpt">): boolean {
+function hasMeaningfulArticleBody(post: Pick<Post, "slug" | "title" | "content" | "excerpt">): boolean {
+  if (!post.slug.trim() || !post.title.trim()) return false;
   const body = typeof post.content === "string" ? post.content.trim() : "";
   if (!body || body === post.excerpt?.trim()) return false;
   const readableText = body

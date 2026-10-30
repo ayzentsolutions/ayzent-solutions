@@ -127,7 +127,8 @@ html.light .text-gradient-gold { background-image: linear-gradient(110deg,#17203
 /* Existing dark utility classes are translated without changing CMS content or markup. */
 html.light [class*="bg-[#080D18]"], html.light [class*="bg-[#080d18]"], html.light [class*="bg-[#0d1423]"], html.light [class*="bg-[#0D1423]"], html.light [class*="bg-[#131d30]"], html.light [class*="bg-[#131D30]"], html.light [class*="bg-midnight"], html.light [class*="bg-ink"] { background-color: #ffffff !important; }
 html.light [class*="bg-white/"], html.light [class*="border-white/"] { border-color: #e2e8f0 !important; }
-html.light [class*="text-white/"], html.light [class~="text-white"] { color: #334155 !important; }
+html.light [class*="text-white/"] { color: #334155 !important; }
+html.light header nav a[class~="text-white"] { color: #172033 !important; }
 html.light [class*="text-[#E2E8F0]"], html.light [class*="text-[#e2e8f0]"], html.light [class*="text-paper"] { color: #172033 !important; }
 html.light [class*="text-[#94A3B8]"], html.light [class*="text-[#94a3b8]"], html.light [class*="text-graphite"] { color: #64748b !important; }
 html.light [class*="border-white/"] { border-color: #e2e8f0 !important; }

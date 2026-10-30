@@ -1302,6 +1302,11 @@ function ImageField({
       return;
     }
 
+    const approved = window.confirm(
+      "Remove the background using Cloudinary AI? This may use your Cloudinary plan quota or incur charges, depending on your account. The original image will be kept."
+    );
+    if (!approved) return;
+
     setRemovingBackground(true);
     setError("");
     setNotice("");

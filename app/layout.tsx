@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/footer";
 import { getActiveAnnouncement, getCmsPreviewSession, getNavigation, getSiteSettings } from "@/lib/content";
 import { AnnouncementPopup } from "@/components/announcements/announcement-popup";
 import { PublicSiteOnly } from "@/components/layout/public-site-only";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}>
+        <ThemeProvider>
         <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
           Skip to main content
         </a>
@@ -60,6 +62,7 @@ export default async function RootLayout({
             <AnnouncementPopup announcement={announcement || undefined} />
           </PublicSiteOnly>
         </div>
+        </ThemeProvider>
       </body>
     </html>
   );

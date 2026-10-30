@@ -1129,8 +1129,6 @@ async function waitForBackgroundRemovedImage(source: string) {
   // Cloudinary may return HTTP 423 while it creates the first derived image.
   // Retry the same URL so the browser can load it once processing is complete.
   const retryDelays = [0, 1500, 3000, 5000];
-  let lastError: unknown;
-
   for (const delay of retryDelays) {
     if (delay > 0) {
       await new Promise<void>((resolve) => window.setTimeout(resolve, delay));
@@ -1145,8 +1143,8 @@ async function waitForBackgroundRemovedImage(source: string) {
       });
 
       return;
-    } catch (error) {
-      lastError = error;
+    } catch {
+      // The first Cloudinary request can return 423 while the derivative is processing.
     }
   }
 
@@ -1375,7 +1373,7 @@ function ImageField({
       <div className="flex flex-wrap items-center gap-3">
         <label
           className={`inline-flex cursor-pointer border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
-            uploading
+            uploading || removingBackground
               ? "cursor-not-allowed opacity-60"
               : ""
           }`}

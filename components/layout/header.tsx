@@ -46,7 +46,7 @@ export function Header({ buttonText = "Start a project", buttonLink = "/contact"
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080D18]/95 text-[#E2E8F0] backdrop-blur-2xl">
       <Container className="flex h-[76px] items-center justify-between gap-3 sm:gap-5">
         <Link href="/" aria-label={`${companyName} home`} className="group flex min-w-0 items-center gap-3">
-          <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden"><Image src={logo || "/logo/mark-white.png"} alt="" fill sizes="40px" className="object-contain" /></span>
+          <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden"><Image src={logo || "/logo/mark-white.png"} alt="" fill sizes="40px" className="object-contain dark:brightness-0 dark:invert" /></span>
           <span className="min-w-0"><span className="block truncate text-sm font-semibold tracking-wide">{companyName}</span></span>
         </Link>
         <nav aria-label="Main navigation" className="hidden items-center gap-6 xl:flex">

@@ -86,3 +86,15 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 @media (hover: none), (pointer: coarse) {
   .fx-hover-card:hover { border-color: var(--line); }
 }
+
+/* Show alpha transparency clearly inside CMS image previews. */
+.transparency-checkerboard {
+  background-color: #f8fafc;
+  background-image:
+    linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1),
+    linear-gradient(-45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1),
+    linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+    linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+  background-size: 24px 24px;
+}

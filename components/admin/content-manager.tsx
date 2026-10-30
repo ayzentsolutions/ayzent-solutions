@@ -1074,6 +1074,85 @@ function Field({
   );
 }
 
+function getCloudinaryBackgroundRemovalUrl(source: string): string | null {
+  let imageUrl: URL;
+
+  try {
+    imageUrl = new URL(source);
+  } catch {
+    return null;
+  }
+
+  if (
+    imageUrl.protocol !== "https:" ||
+    imageUrl.hostname !== "res.cloudinary.com"
+  ) {
+    return null;
+  }
+
+  const segments = imageUrl.pathname.split("/").filter(Boolean);
+  const uploadIndex = segments.indexOf("upload");
+
+  if (uploadIndex === -1) return null;
+
+  // The upload API returns versioned Cloudinary URLs. Starting at the version
+  // segment also discards any existing delivery transformations.
+  const versionIndex = segments.findIndex(
+    (segment, index) => index > uploadIndex && /^v\d+$/.test(segment)
+  );
+
+  if (versionIndex === -1) return null;
+
+  const assetSegments = segments.slice(versionIndex);
+  const filenameIndex = assetSegments.length - 1;
+  const originalFilename = assetSegments[filenameIndex];
+
+  if (!originalFilename) return null;
+
+  const filename = originalFilename.replace(/\.[a-zA-Z0-9]+$/, "");
+  if (!filename) return null;
+
+  assetSegments[filenameIndex] = `${filename}.png`;
+
+  imageUrl.pathname = `/${[
+    ...segments.slice(0, uploadIndex + 1),
+    "e_background_removal,f_png",
+    ...assetSegments,
+  ].join("/")}`;
+  imageUrl.search = "";
+  imageUrl.hash = "";
+
+  return imageUrl.toString();
+}
+
+async function waitForBackgroundRemovedImage(source: string) {
+  // Cloudinary may return HTTP 423 while it creates the first derived image.
+  // Retry the same URL so the browser can load it once processing is complete.
+  const retryDelays = [0, 1500, 3000, 5000];
+  for (const delay of retryDelays) {
+    if (delay > 0) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, delay));
+    }
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const image = new window.Image();
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error("Cloudinary image processing is not ready."));
+        image.src = source;
+      });
+
+      return;
+    } catch {
+      // The first Cloudinary request can return 423 while the derivative is processing.
+    }
+  }
+
+  throw new Error(
+    "Background removal could not be completed. Check that Cloudinary AI Background Removal is enabled for this account, then try again."
+  );
+}
+
 function ImageField({
   field,
   value,
@@ -1096,6 +1175,16 @@ function ImageField({
     error,
     setError,
   ] = useState("");
+
+  const [
+    notice,
+    setNotice,
+  ] = useState("");
+
+  const [
+    removingBackground,
+    setRemovingBackground,
+  ] = useState(false);
 
   async function upload(
     event: ChangeEvent<HTMLInputElement>
@@ -1147,6 +1236,7 @@ function ImageField({
     setUploading(true);
 
     setError("");
+    setNotice("");
 
     try {
       const formData =
@@ -1187,6 +1277,7 @@ function ImageField({
           result.url
         )
       );
+      setNotice("Image uploaded. Transparent pixels will appear on the checkerboard preview.");
     } catch (
       uploadError
     ) {
@@ -1203,6 +1294,38 @@ function ImageField({
     }
   }
 
+  async function removeBackground() {
+    const transformedUrl = getCloudinaryBackgroundRemovalUrl(value);
+
+    if (!transformedUrl) {
+      setError("Background removal is available for images uploaded to this Cloudinary account.");
+      return;
+    }
+
+    const approved = window.confirm(
+      "Remove the background using Cloudinary AI? This may use your Cloudinary plan quota or incur charges, depending on your account. The original image will be kept."
+    );
+    if (!approved) return;
+
+    setRemovingBackground(true);
+    setError("");
+    setNotice("");
+
+    try {
+      await waitForBackgroundRemovedImage(transformedUrl);
+      onChange(transformedUrl);
+      setNotice("Background removed. Save this entry to use the transparent PNG. The original Cloudinary image is kept.");
+    } catch (backgroundError) {
+      setError(
+        backgroundError instanceof Error
+          ? backgroundError.message
+          : "Unable to remove this image background."
+      );
+    } finally {
+      setRemovingBackground(false);
+    }
+  }
+
   function removeImage() {
     if (
       !window.confirm(
@@ -1213,6 +1336,7 @@ function ImageField({
     }
 
     setError("");
+    setNotice("");
 
     onChange("");
   }
@@ -1236,7 +1360,7 @@ function ImageField({
       </div>
 
       {value ? (
-        <div className="overflow-hidden border border-line bg-background p-4">
+        <div className="transparency-checkerboard overflow-hidden border border-line p-4">
           <img
             src={value}
             alt={
@@ -1254,7 +1378,7 @@ function ImageField({
       <div className="flex flex-wrap items-center gap-3">
         <label
           className={`inline-flex cursor-pointer border border-line px-4 py-2 text-sm transition hover:border-gold hover:text-gold ${
-            uploading
+            uploading || removingBackground
               ? "cursor-not-allowed opacity-60"
               : ""
           }`}
@@ -1266,33 +1390,51 @@ function ImageField({
               upload
             }
             disabled={
-              uploading
+              uploading || removingBackground
             }
             className="hidden"
           />
 
           {uploading
             ? "Uploading..."
-            : value
-              ? "Replace Image"
-              : "Upload Image"}
+            : removingBackground
+              ? "Removing Background..."
+              : value
+                ? "Replace Image"
+                : "Upload Image"}
         </label>
+
+        {value && getCloudinaryBackgroundRemovalUrl(value) && (
+          <button
+            type="button"
+            className="border border-line px-3 py-2 text-sm transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => void removeBackground()}
+            disabled={uploading || removingBackground}
+          >
+            {removingBackground ? "Removing Background..." : "Remove Background"}
+          </button>
+        )}
 
         {value && (
           <button
             type="button"
-            className="text-sm text-red-600 transition hover:opacity-70"
-            onClick={
-              removeImage
-            }
+            className="text-sm text-red-600 transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={removeImage}
+            disabled={uploading || removingBackground}
           >
             Remove Image
           </button>
         )}
       </div>
 
+      {notice && (
+        <p role="status" className="text-sm text-muted">
+          {notice}
+        </p>
+      )}
+
       {error && (
-        <p className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-400">
           {error}
         </p>
       )}

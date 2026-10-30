@@ -24,9 +24,9 @@
   --motion-slow: 550ms;
   --ease-out: cubic-bezier(.2,.75,.25,1);
 }
-html { color-scheme: dark; scroll-behavior: smooth; scroll-padding-top: 6rem; text-size-adjust: 100%; background: #080d18; }
+html { color-scheme: dark; scroll-behavior: smooth; scroll-padding-top: 6rem; text-size-adjust: 100%; background: var(--background); }
 * { border-color: var(--line); }
-body { min-width: 320px; overflow-x: clip; background: #080d18 !important; color: var(--foreground); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body { min-width: 320px; overflow-x: clip; background: var(--background) !important; color: var(--foreground); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 ::selection { background: #243d70; color: #f8fafc; }
 :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 a,button,input,select,textarea { -webkit-tap-highlight-color: transparent; }
@@ -98,3 +98,37 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
   background-position: 0 0, 0 12px, 12px -12px, -12px 0;
   background-size: 24px 24px;
 }
+
+
+/* User-selectable light theme: intentionally bright, neutral and paper-white. */
+html.light {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #172033;
+  --muted: #64748b;
+  --surface: #ffffff;
+  --surface-raised: #f8fafc;
+  --line: #e2e8f0;
+  --accent: #315fd4;
+  --accent-strong: #244bb4;
+  --accent-soft: #eef3ff;
+  --focus-ring: #315fd4;
+  --shadow-soft: 0 12px 32px rgb(15 23 42 / 8%);
+  --shadow-lift: 0 18px 42px rgb(15 23 42 / 12%);
+}
+html.light, html.light body { background: #ffffff !important; color: #172033; }
+html.light body { background-image: none !important; }
+html.light ::selection { background: #dbeafe; color: #172033; }
+html.light :where(input,textarea,select) { color: #172033; background-color: #ffffff; border-color: #cbd5e1; }
+html.light select option { color: #172033; background: #ffffff; }
+html.light input:-webkit-autofill, html.light input:-webkit-autofill:hover, html.light input:-webkit-autofill:focus { -webkit-text-fill-color: #172033; box-shadow: 0 0 0 1000px #ffffff inset; }
+html.light .surface-raised, html.light .dark-panel { background: #f8fafc; border-color: #e2e8f0; }
+html.light .text-gradient-gold { background-image: linear-gradient(110deg,#172033 15%,#315fd4 88%); }
+/* Existing dark utility classes are translated without changing CMS content or markup. */
+html.light [class*="bg-[#080D18]"], html.light [class*="bg-[#080d18]"], html.light [class*="bg-[#0d1423]"], html.light [class*="bg-[#0D1423]"], html.light [class*="bg-[#131d30]"], html.light [class*="bg-[#131D30]"], html.light [class*="bg-midnight"], html.light [class*="bg-ink"] { background-color: #ffffff !important; }
+html.light [class*="bg-white/"], html.light [class*="border-white/"] { border-color: #e2e8f0 !important; }
+html.light [class*="text-white/"], html.light [class~="text-white"] { color: #334155 !important; }
+html.light [class*="text-[#E2E8F0]"], html.light [class*="text-[#e2e8f0]"], html.light [class*="text-paper"] { color: #172033 !important; }
+html.light [class*="text-[#94A3B8]"], html.light [class*="text-[#94a3b8]"], html.light [class*="text-graphite"] { color: #64748b !important; }
+html.light [class*="border-white/"] { border-color: #e2e8f0 !important; }
+html.light .transparency-checkerboard { background-color: #f8fafc; }

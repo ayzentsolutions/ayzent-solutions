@@ -46,22 +46,26 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} min-h-screen bg-background font-sans text-foreground antialiased`}>
         <ThemeProvider>
-        <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
-          Skip to main content
-        </a>
-        <div className="flex min-h-screen flex-col">
           <PublicSiteOnly>
-            {previewSession && <aside className="relative z-[70] flex flex-wrap items-center justify-center gap-3 bg-[#477BFF] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm" role="status"><span>CMS preview mode · {previewSession.collection}</span><a href="/api/preview/exit" className="underline underline-offset-4">Exit preview</a></aside>}
+            <a href="#main-content" className="sr-only z-[100] rounded-md bg-background px-4 py-3 text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-offset-4">
+              Skip to main content
+            </a>
           </PublicSiteOnly>
-          <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} navigation={navigation} />
-          <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
-            {children}
-          </main>
-          <PublicSiteOnly>
-            <Footer />
-            <AnnouncementPopup announcement={announcement || undefined} />
-          </PublicSiteOnly>
-        </div>
+          <div className="flex min-h-screen flex-col">
+            <PublicSiteOnly>
+              {previewSession && <aside className="relative z-[70] flex flex-wrap items-center justify-center gap-3 bg-[#477BFF] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm" role="status"><span>CMS preview mode · {previewSession.collection}</span><a href="/api/preview/exit" className="underline underline-offset-4">Exit preview</a></aside>}
+            </PublicSiteOnly>
+            <PublicSiteOnly>
+              <Header companyName={companyName} logo={settings.companyLogo} buttonText={headerButtonText} buttonLink={headerButtonLink} navigation={navigation} />
+            </PublicSiteOnly>
+            <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
+              {children}
+            </main>
+            <PublicSiteOnly>
+              <Footer />
+              <AnnouncementPopup announcement={announcement || undefined} />
+            </PublicSiteOnly>
+          </div>
         </ThemeProvider>
       </body>
     </html>

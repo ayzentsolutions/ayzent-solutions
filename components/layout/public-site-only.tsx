@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 
 export function PublicSiteOnly({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/admin")) return null;
+  const isStandaloneLandingRoute = pathname === "/" || pathname === "/contact";
+
+  if (pathname.startsWith("/admin") || isStandaloneLandingRoute) return null;
   return children;
 }
